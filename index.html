@@ -1,70 +1,35 @@
 <!doctype html>
 <html lang="fa" dir="rtl">
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>روال — پیش‌نمایش کامپیوتر</title>
-<style>
-*{box-sizing:border-box}body{margin:0;background:#eff5f2;color:#173d38;font:16px Tahoma,Arial;line-height:1.9}main{max-width:1050px;margin:auto;padding:24px}header{display:flex;justify-content:space-between;align-items:center;gap:15px}h1,h2,h3,p{margin:0 0 12px}small,.muted{color:#637d74}button,input,select{font:inherit;border:1px solid #c9ded4;border-radius:12px;padding:9px 14px}button{cursor:pointer;background:white;color:#086e5b}button:hover{background:#def0e7}button.primary,nav button.on{background:#087f69;color:white;border-color:#087f69}button.danger{color:#ae3434}input,select{background:#fff;min-width:0;max-width:100%}nav{display:flex;gap:8px;margin:22px 0;flex-wrap:wrap}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}.card{background:white;border:1px solid #e0eae4;border-radius:20px;padding:22px;margin-bottom:16px}.hero{background:#dcefe5}.big{font-size:38px;font-weight:bold;color:#087f69}.row{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.stack{display:grid;gap:12px}progress{width:100%;height:12px;accent-color:#087f69}.badge{border-radius:20px;background:#eff5f2;padding:2px 12px;font-size:13px}label{display:block}.field{width:100%}table{width:100%;border-collapse:collapse}td,th{padding:9px;text-align:right;border-bottom:1px solid #e7eee9}.notice{background:#fff3d7;border-radius:12px;padding:10px 16px;margin:15px 0;font-size:13px}dialog{width:min(470px,94vw);border:0;border-radius:20px;padding:24px;color:#173d38}dialog::backdrop{background:#123a3066}#clock{font-variant-numeric:tabular-nums;direction:ltr}.task{display:flex;gap:10px;align-items:center;padding:10px 0}.task span{flex:1}input[type=checkbox]{accent-color:#087f69;width:20px;height:20px}.done{text-decoration:line-through;opacity:.55}.bar{background:#b5ddcb;border-radius:6px;height:12px;min-width:2px}.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#173d38;color:white;padding:10px 20px;border-radius:12px;z-index:5}@media(max-width:600px){main{padding:14px}.big{font-size:28px}header{align-items:start}table{font-size:13px}td,th{padding:6px}}
-</style>
-<main>
-<header><div><h1>روال 🌿</h1><small id="date"></small></div><span class="badge">پیش‌نمایش تعاملی کامپیوتر</span></header>
-<div class="notice">این نسخه برای بررسی طرح و جریان کار است. داده‌ها فقط در این مرورگر ذخیره می‌شوند؛ زنگ اندروید و همگام‌سازی ندارد. پیش از پاک‌کردن مرورگر، پشتیبان بگیر.</div>
-<nav id="nav"></nav><section id="view"></section>
-</main>
-<dialog id="dialog"><form id="form" class="stack"></form></dialog>
-<script>
-'use strict';
-const $=s=>document.querySelector(s),fa=n=>Number(n).toLocaleString('fa-IR'),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const names=['پیاده‌روی / ورزش','کتاب','پلتفرم','مطالعه تکنیکال','تحلیل چارت','استراحت','خارج از برنامه'];
-const initial=()=>({version:1,goals:[20,30,15,15,35,0,0],projects:['خانه بالا','خانه پایین','پشت‌بام','دفتر','پروژه‌های حاشیه‌ای','خرید'],tasks:[],entries:[],active:null,session:null,wake:'07:00'});
-let state,tab=0,days=7,filter='';try{const raw=localStorage.getItem('raval-desktop-v1');state=raw?JSON.parse(raw):initial();validate(state)}catch(e){state=initial();alert('اطلاعات ذخیره‌شده خوانده نشد؛ برای حفظ فایل قبلی، صفحه را ببندید و از آن پشتیبان بگیرید. ذخیره‌سازی این اجرا غیرفعال است.');window.storageFailed=true}
-function validate(s){if(s.version!==1||!Array.isArray(s.projects)||!s.projects.length||!s.projects.every(p=>typeof p==='string')||!Array.isArray(s.tasks)||!s.tasks.every(t=>typeof t.title==='string'&&typeof t.project==='string'&&typeof t.tags==='string'&&typeof t.done==='boolean')||!Array.isArray(s.entries)||!s.entries.every(e=>Number.isFinite(e.start)&&Number.isFinite(e.end)&&e.end>e.start&&typeof e.name==='string'&&typeof e.note==='string')||!Array.isArray(s.goals)||s.goals.length!==7||!s.goals.every(n=>Number.isFinite(n)&&n>=0&&n<=1440)||!/^([01]\d|2[0-3]):[0-5]\d$/.test(s.wake))throw Error('فایل پشتیبان معتبر نیست');}
-function save(){if(window.storageFailed)return;try{localStorage.setItem('raval-desktop-v1',JSON.stringify(state))}catch(e){toast('ذخیره‌سازی مرورگر در دسترس نیست؛ همین حالا پشتیبان بگیر.')}}
-function toast(s){const e=document.createElement('div');e.className='toast';e.textContent=s;document.body.append(e);setTimeout(()=>e.remove(),4000)}
-function dateKey(t){const d=new Date(t);return d.getFullYear()+'-'+d.getMonth()+'-'+d.getDate()}
-function time(t){return new Date(t).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit'})}
-function duration(ms){return new Date(Math.max(0,ms)).toISOString().slice(11,19).replace(/\d/g,n=>'۰۱۲۳۴۵۶۷۸۹'[n])}
-function minutes(name,span=1){const now=new Date(),end=+now;now.setHours(0,0,0,0);now.setDate(now.getDate()-span+1);const start=+now;return state.entries.filter(e=>name?e.name===name:e.name!=='استراحت').reduce((n,e)=>n+Math.max(0,Math.min(end,e.end)-Math.max(start,e.start))/60000,0)}
-function card(title,html,cls=''){return `<div class="card ${cls}"><h3>${title}</h3>${html}</div>`}
-function btn(label,code,cls=''){return `<button type="button" class="${cls}" onclick="${code}">${label}</button>`}
-function render(){
- $('#date').textContent=new Intl.DateTimeFormat('fa-IR',{dateStyle:'full'}).format(new Date());
- $('#nav').innerHTML=['امروز','تمرکز','پروژه‌ها','گزارش‌ها','تنظیمات'].map((n,i)=>btn(n,`tab=${i};render()`,tab===i?'on':'')).join('');
- if(tab===0)today();if(tab===1)focus();if(tab===2)projects();if(tab===3)reports();if(tab===4)settings();tick();
-}
-function today(){
- const a=state.active;
- $('#view').innerHTML=card('امروز، قدم‌به‌قدم',`<div class="row"><div><small>زمان مفید ثبت‌شده</small><div class="big">${fa(Math.round(minutes(null)))} دقیقه</div></div><div>بیدارباش: <b>${esc(state.wake)}</b><br>${btn('الان بیدار شدم','wakeNow()')}</div></div>`,'hero')+
- card(a?esc(a.name):'الان چه کار می‌کنی؟',a?`<div id="clock" class="big"></div><p>${esc(a.note||'')}</p>${btn('پایان و ثبت','stop()', 'primary')} ${btn('تغییر فعالیت','activityDialog()')}`:`<p class="muted">یک لمس برای شروع، یک لمس برای ثبت.</p>${btn('شروع فعالیت','activityDialog()','primary')} ${btn('از آخرین ثبت تا الان','sinceDialog()')}`)+
- `<h2>هدف‌های امروز</h2><div class="grid">`+names.slice(0,5).map((n,i)=>card(esc(n),`<p>${fa(Math.floor(minutes(n)))} از ${fa(state.goals[i])} دقیقه ${i>1?'• تخصصی':''}</p><progress max="${state.goals[i]||1}" value="${minutes(n)}"></progress>${btn('شروع',`start(${i})`,'primary')}`)).join('')+'</div><h2>خط زمانی امروز</h2>'+timeline();
-}
-function timeline(){const es=state.entries.map((e,i)=>({...e,index:i})).filter(e=>dateKey(e.start)===dateKey(Date.now())).reverse();return es.length?card('فعالیت‌های ثبت‌شده',es.map(e=>`<div class="row"><span>${esc(e.name)} ${e.note?'• '+esc(e.note):''}<br><small>${time(e.start)} ← ${time(e.end)} • ${fa(Math.round((e.end-e.start)/60000))} دقیقه</small></span>${btn('حذف',`removeEntry(${e.index})`,'danger')}</div>`).join('<hr style="border:0;border-top:1px solid #eef2ef">')):card('هنوز زمانی ثبت نشده','<p class="muted">اولین فعالیت را شروع کن.</p>')}
-function modal(title,content,onSubmit){$('#form').innerHTML=`<h2>${title}</h2>${content}<div class="row"><button class="primary">تأیید</button>${btn('انصراف',"$('#dialog').close()")}</div>`;$('#form').onsubmit=e=>{e.preventDefault();try{onSubmit(new FormData(e.target))}catch(err){toast(err.message)}};$('#dialog').showModal()}
-function selectActivities(){return `<label>فعالیت<select name="category" class="field">${names.map((n,i)=>`<option value="${i}">${esc(n)}</option>`).join('')}</select></label>`}
-function activityDialog(){modal('شروع فعالیت',selectActivities()+'<label>توضیح یا نام کار خارج از برنامه<input name="note" class="field" maxlength="200"></label>',f=>{start(+f.get('category'),f.get('note'));$('#dialog').close()})}
-function finishAt(end){if(state.active&&end>state.active.start)state.entries.push({name:state.active.name,note:state.active.note||'',start:state.active.start,end});state.active=null}
-function start(i,note=''){finishAt(Date.now());state.session=null;state.active={name:names[i],start:Date.now(),note};save();render()}
-function stop(){finishAt(Date.now());state.session=null;save();render()}
-function wakeNow(){state.woke=Date.now();save();toast('زمان بیداری ثبت شد')}
-function removeEntry(i){if(confirm('این ثبت حذف شود؟')){state.entries.splice(i,1);save();render()}}
-function sinceDialog(){if(state.active)return toast('اول فعالیت جاری را پایان بده');const today=new Date();today.setHours(0,0,0,0);const last=Math.max(+today,state.woke||0,...state.entries.map(e=>e.end));if(last===+today)return toast('ابتدا بیداری را ثبت کن یا یک فعالیت را شروع کن');const end=Date.now();modal('ثبت تا همین الان',`<p>${time(last)} تا ${time(end)} • ${fa(Math.round((end-last)/60000))} دقیقه</p>`+selectActivities(),f=>{state.entries.push({name:names[+f.get('category')],note:'ثبت از آخرین فعالیت',start:last,end});save();$('#dialog').close();render()})}
-function focus(){const s=state.session;$('#view').innerHTML=card('جلسهٔ تمرکز',s?`<p>${esc(s.name)} • دور ${fa(s.round)} از ${fa(s.rounds)} • ${s.rest?'استراحت':'کار'}</p><div id="clock" class="big"></div><p>${fa(s.work)} دقیقه کار / ${fa(s.break)} دقیقه استراحت</p>${btn('پایان جلسه','stop()','primary')}`:`<p>مثلاً ۳ دور کار ۵ دقیقه‌ای با استراحت ۱۰ دقیقه‌ای.</p>${btn('تنظیم و شروع جلسه','focusDialog()','primary')}`)+card('یادآوری در مرورگر','<p class="muted">انتقال مرحله هنگام بازبودن صفحه انجام می‌شود. تب بسته یا مرورگر معلق، هشدار قابل‌اعتماد نمی‌دهد؛ این محدودیت مربوط به پیش‌نمایش است.</p>')}
-function focusDialog(){modal('تنظیم تمرکز',selectActivities()+`<label>دقیقهٔ کار<input class="field" name="work" type="number" min="1" max="180" value="5" required></label><label>دقیقهٔ استراحت<input class="field" name="break" type="number" min="1" max="180" value="10" required></label><label>تعداد دور<input class="field" name="rounds" type="number" min="1" max="30" value="3" required></label>`,f=>{finishAt(Date.now());const work=+f.get('work'),rest=+f.get('break'),rounds=+f.get('rounds'),name=names[+f.get('category')];state.session={name,work,break:rest,rounds,round:1,rest:false,end:Date.now()+work*60000};state.active={name,start:Date.now(),note:'جلسه تمرکز'};save();$('#dialog').close();tab=1;render()})}
-function tick(){let s=state.session;if(s&&Date.now()>=s.end){finishAt(s.end);if(!s.rest&&s.round===s.rounds){state.session=null;toast('جلسهٔ تمرکز تمام شد')}else{if(s.rest)s.round++;s.rest=!s.rest;s.end=Date.now()+(s.rest?s.break:s.work)*60000;state.active={name:s.rest?'استراحت':s.name,start:Date.now(),note:'جلسه تمرکز'};toast(s.rest?'وقت استراحت است':'دور بعدی کار شروع شد')}save();render();return}const c=$('#clock');if(c)c.textContent=duration(s?s.end-Date.now():state.active?Date.now()-state.active.start:0)}
-function projects(){
- $('#view').innerHTML=`<div class="row"><h2>پروژه‌ها و کارها</h2><div>${btn('＋ کار جدید','taskDialog()','primary')} ${btn('＋ پروژه','addProject()')}</div></div><p><input id="search" placeholder="جست‌وجو: پروژه، شهر، کار…" value="${esc(filter)}"> ${btn('جست‌وجو',"filter=$('#search').value;render()")}</p><div class="grid">`+state.projects.map(p=>{const ts=state.tasks.map((t,i)=>({...t,index:i})).filter(t=>t.project===p&&(p+' '+t.title+' '+t.tags).includes(filter)),done=ts.filter(t=>t.done).length;return card(esc(p),`<small>${fa(done)} از ${fa(ts.length)} انجام‌شده</small><progress max="${ts.length||1}" value="${done}"></progress>`+ts.map(t=>`<div class="task"><input aria-label="تکمیل کار" type="checkbox" ${t.done?'checked':''} onchange="toggleTask(${t.index})"><span class="${t.done?'done':''}">${esc(t.title)}<br><small>${esc(t.tags)}</small></span>${btn('×',`deleteTask(${t.index})`,'danger')}</div>`).join(''))}).join('')+'</div>';
-}
-function addProject(){const p=prompt('نام پروژهٔ جدید');if(p&&p.trim()&&!state.projects.includes(p.trim())){state.projects.push(p.trim());save();render()}}
-function taskDialog(){modal('ثبت سریع کار',`<label>عنوان<input class="field" name="title" required maxlength="200"></label><label>پروژه<select class="field" name="project">${state.projects.map(p=>`<option>${esc(p)}</option>`).join('')}</select></label><label>شهر یا برچسب<input class="field" name="tags" placeholder="اصفهان، اداری" maxlength="200"></label>`,f=>{if(!f.get('title').trim())throw Error('عنوان را بنویس');state.tasks.push({title:f.get('title').trim(),project:f.get('project'),tags:f.get('tags'),done:false});save();$('#dialog').close();render()})}
-function toggleTask(i){state.tasks[i].done=!state.tasks[i].done;save();render()}
-function deleteTask(i){if(confirm('این کار حذف شود؟')){state.tasks.splice(i,1);save();render()}}
-function reports(){const amounts=names.map(n=>minutes(n,days)),max=Math.max(1,...amounts);$('#view').innerHTML=`<h2>گزارش عملکرد</h2><p>${[1,7,30].map(n=>btn(fa(n)+' روز اخیر',`days=${n};render()`,days===n?'primary':'')).join(' ')}</p>`+card('زمان مفید',`<div class="big">${fa(Math.round(minutes(null,days)))} دقیقه</div>`,'hero')+card('زمان هر فعالیت',names.map((n,i)=>`<p class="row"><span>${esc(n)}</span><b>${fa(Math.round(amounts[i]))} دقیقه</b></p><div class="bar" style="width:${Math.round(amounts[i]/max*100)}%"></div>`).join(''))+`<div class="row">${btn('پشتیبان JSON',"download('json')")}${btn('خروجی CSV',"download('csv')")}${btn('کپی گزارش','copyReport()')}</div>`}
-function reportText(){return `گزارش روال — ${days} روز اخیر\n`+names.map(n=>`${n}: ${Math.round(minutes(n,days))} دقیقه`).join('\n')}
-async function copyReport(){try{await navigator.clipboard.writeText(reportText());toast('گزارش کپی شد')}catch(e){modal('کپی دستی گزارش',`<textarea class="field" rows="10" readonly>${esc(reportText())}</textarea>`,()=>$('#dialog').close())}}
-function settings(){ $('#view').innerHTML=card('هدف‌های روزانه',names.slice(0,5).map((n,i)=>`<label>${esc(n)} (دقیقه)<input class="field" type="number" min="0" max="1440" value="${state.goals[i]}" onchange="goal(${i},this)"></label>`).join(''))+card('ساعت بیداری',`<input type="time" value="${esc(state.wake)}" onchange="state.wake=this.value||'07:00';save()"><p class="muted">این پیش‌نمایش زنگ بیدارباش ندارد.</p>`)+card('پشتیبان و بازیابی',`${btn('پشتیبان کامل JSON',"download('json')")} ${btn('خروجی CSV',"download('csv')")}<p>بازیابی فقط فایل همین پیش‌نمایش را می‌پذیرد و اطلاعات فعلی را جایگزین می‌کند.</p><input type="file" accept=".json,application/json" onchange="restore(this.files[0]);this.value=''">`) }
-function goal(i,input){const n=Number(input.value);if(input.value===''||!Number.isFinite(n)||n<0||n>1440){input.value=state.goals[i];toast('بین صفر تا ۱۴۴۰ وارد کن');return}state.goals[i]=n;save()}
-function csvCell(s){s=String(s);if(/^[=+@\-\t\r]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'}
-function download(type){let content;if(type==='json'){const copy=JSON.parse(JSON.stringify(state));copy.active=null;copy.session=null;content=JSON.stringify(copy,null,2)}else content='\uFEFFdate,activity,start,end,minutes,note\r\n'+state.entries.map(e=>[new Date(e.start).toLocaleDateString('sv-SE'),e.name,new Date(e.start).toISOString(),new Date(e.end).toISOString(),((e.end-e.start)/60000).toFixed(2),e.note].map(csvCell).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([content],{type:type==='json'?'application/json':'text/csv;charset=utf-8'})),a=document.createElement('a');a.href=url;a.download='raval-desktop-'+Date.now()+'.'+type;a.click();setTimeout(()=>URL.revokeObjectURL(url),5000)}
-async function restore(file){if(!file)return;try{if(file.size>8*1024*1024)throw Error('فایل باید کمتر از ۸ مگابایت باشد');const next=JSON.parse(await file.text());validate(next);if(confirm('اطلاعات فعلی با این پشتیبان جایگزین شود؟ ابتدا پشتیبان بگیر.')){next.active=null;next.session=null;state=next;window.storageFailed=false;save();render();toast('بازیابی شد')}}catch(e){toast(e.message)}}
-render();setInterval(tick,1000);
-</script>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#087f69" />
+    <link rel="icon" type="image/svg+xml" href="icon.svg" />
+    <title>روال • برنامهٔ امروز</title>
+    <link rel="stylesheet" href="style.css?v=2.0.0" />
+    <script defer src="engine.js?v=2.0.0"></script>
+    <script defer src="app.js?v=2.0.0"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <div>
+          <div class="eyebrow">یک روز، یک قدم جلوتر</div>
+          <h1>روال <span>🌿</span></h1>
+          <p id="date" class="muted"></p>
+        </div>
+        <div class="badge">نسخهٔ وب • ۲.۰</div>
+      </header>
+      <div id="storage-warning"></div>
+      <nav id="nav" aria-label="صفحه‌های اصلی"></nav>
+      <section id="view"></section>
+      <footer>
+        اطلاعات روی همین مرورگر می‌ماند. برای نگه‌داشتن و انتقال، پشتیبان JSON
+        بگیر.<br />یادآوری وب به بازبودن صفحه نیاز دارد؛ زنگ بیدارباش اندروید در
+        این نسخه اجرا نمی‌شود.
+      </footer>
+    </main>
+    <dialog id="dialog"><form id="form" class="stack"></form></dialog>
+    <div id="toasts" aria-live="polite"></div>
+  </body>
 </html>
