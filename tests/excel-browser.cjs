@@ -21,7 +21,7 @@ const { chromium } = require("playwright"),
     await page.waitForFunction(() => pendingExcel?.plans.length === 203);
     assert.match(await page.locator("#view").innerText(), /۲۰۳/);
     assert.equal(await page.evaluate(() => Object.keys(state.plans).length), 0);
-    await page.locator("[data-action=excelCommit]").click();
+    await page.locator("[data-action=excelCommit]").first().click();
     assert.equal(
       await page.evaluate(() => Object.keys(state.plans).length),
       203,
@@ -89,7 +89,7 @@ const { chromium } = require("playwright"),
     buffer: Buffer.from(await w.xlsx.writeBuffer()),
   });
   await page.waitForFunction(() => pendingExcel?.tasks.length === 1);
-  await page.locator("[data-action=excelCommit]").click();
+  await page.locator("[data-action=excelCommit]").first().click();
   assert.equal(await page.evaluate(() => state.tasks[0].project), "پروژه اکسل");
   assert.equal(await page.evaluate(() => state.tasks[0].time), "10:30");
   assert.ok(
@@ -140,17 +140,15 @@ const { chromium } = require("playwright"),
     });
     save();
   });
-  await page
-    .locator("#excel-file")
-    .setInputFiles({
-      name: "final.xlsx",
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      buffer: Buffer.from(await sourceBook.xlsx.writeBuffer()),
-    });
+  await page.locator("#excel-file").setInputFiles({
+    name: "final.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from(await sourceBook.xlsx.writeBuffer()),
+  });
   await page.waitForFunction(() => pendingExcel?.plans.length === 1);
   await page.locator("#excel-replace").check();
-  await page.locator("[data-action=excelCommit]").click();
+  await page.locator("[data-action=excelCommit]").first().click();
   assert.deepEqual(await page.evaluate(() => Object.keys(state.plans)), [
     "2026-10-20",
   ]);

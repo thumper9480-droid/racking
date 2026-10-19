@@ -34,6 +34,8 @@ const storageKey = "raval-desktop-v1",
 const graceExpanded = new Set();
 let pendingExcel = null,
   excelBusy = false,
+  excelFileName = "",
+  excelError = "",
   excelLoader = null;
 let state,
   tab = "today",
@@ -1017,12 +1019,30 @@ function loadExcelJS() {
   if (excelLoader) return excelLoader;
   excelLoader = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = "vendor/exceljs.min.js?v=4.4.0";
-    script.onload = () => resolve(window.ExcelJS);
-    script.onerror = () => {
+    const timer = setTimeout(
+      () =>
+        fail(
+          "دریافت ابزار اکسل طول کشید؛ اتصال اینترنت را بررسی کن و فایل را دوباره انتخاب کن.",
+        ),
+      20000,
+    );
+    function fail(message) {
+      clearTimeout(timer);
+      script.remove();
       excelLoader = null;
-      reject(Error("ابزار اکسل بارگذاری نشد؛ صفحه را تازه کن."));
+      reject(Error(message));
+    }
+    script.src = "vendor/exceljs.min.js?v=4.4.0";
+    script.onload = () => {
+      clearTimeout(timer);
+      if (!window.ExcelJS)
+        return fail("ابزار اکسل کامل دریافت نشد؛ فایل را دوباره انتخاب کن.");
+      resolve(window.ExcelJS);
     };
+    script.onerror = () =>
+      fail(
+        "ابزار اکسل دریافت نشد؛ اتصال اینترنت را بررسی کن و فایل را دوباره انتخاب کن.",
+      );
     document.head.append(script);
   });
   return excelLoader;
@@ -1032,9 +1052,9 @@ function renderExcel() {
     V.heading("اکسل", "مرجع برنامهٔ کلی تو، فایل اکسل است.") +
     card(
       "برنامه و کارها را از اکسل وارد کن",
-      `<p>فایل TRACK.xlsx و قالب خود روال پشتیبانی می‌شوند. برنامهٔ روزانه، گروه‌ها و کارهای پروژه هرکدام در بخش مربوط وارد می‌شوند.</p><label>انتخاب فایل Excel (.xlsx)<input class="field" id="excel-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ${excelBusy ? "disabled" : ""}></label>${excelBusy ? "<p>در حال خواندن فایل…</p>" : ""}<div class="notice">فایل فقط در مرورگر خودت خوانده می‌شود. قبل از ورود، پیش‌نمایش را ببین؛ ورود اکسل، زمان واقعی یا تیک انجام فعالیت‌ها ایجاد نمی‌کند.</div>`,
+      `<p>فایل TRACK.xlsx و قالب خود روال پشتیبانی می‌شوند. برنامهٔ روزانه، گروه‌ها و کارهای پروژه هرکدام در بخش مربوط وارد می‌شوند.</p><label>انتخاب فایل Excel (.xlsx)<input class="field" id="excel-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ${excelBusy ? "disabled" : ""}></label>${excelFileName ? `<p role="status">فایل انتخاب‌شده: <b>${esc(excelFileName)}</b>${excelBusy ? " — در حال خواندن…" : pendingExcel ? " — خوانده شد؛ ورود اطلاعات را تأیید کن." : ""}</p>` : ""}${excelError ? `<div class="notice" role="alert"><b>فایل وارد نشد</b><p>${esc(excelError)}</p><p>فایل را دوباره انتخاب کن. اطلاعات فعلی تغییری نکرده است.</p></div>` : ""}<div class="notice">فایل فقط در مرورگر خودت خوانده می‌شود. قبل از ورود، پیش‌نمایش را ببین؛ ورود اکسل، زمان واقعی یا تیک انجام فعالیت‌ها ایجاد نمی‌کند.</div>`,
     );
-  html += card(
+  const templateCard = card(
     "قالب ورودی برنامه و کارها",
     `<p class="muted">قالب به سبک فایل خودت است؛ برنامهٔ روزانه، گروه‌ها و کارهای پروژه را در اکسل وارد کن و همین‌جا بارگذاری کن.</p><a class="button primary" href="raval-template.xlsx?v=3.0.0" download>${V.icon("excel")}دانلود قالب خام برنامه و کارها</a>`,
   );
@@ -1043,7 +1063,7 @@ function renderExcel() {
       existing = p.plans.filter((r) => state.plans[r.date]).length;
     html += card(
       "پیش‌نمایش " + esc(p.fileName),
-      `<div class="grid"><div><b>${fa(p.plans.length)}</b> روز معتبر</div><div><b>${fa(p.tasks.length)}</b> کار پروژه‌ای</div><div><b>${fa(p.groups.length)}</b> گروه جدید</div></div><p>خطا: ${fa(p.errors.length)} ردیف • خانهٔ ستاره‌دار ارفاقی: ${fa(p.stars)}</p>${p.stars ? '<div class="notice">خانه‌های خالی یا * برای همان فعالیت ارفاقی‌اند؛ دقیقه یا انجام‌شده حساب نمی‌شوند و کل روز را تعطیل نمی‌کنند.</div>' : ""}${p.warnings.map((w) => '<p class="notice">' + esc(w) + "</p>").join("")}${
+      `<div id="excel-preview" tabindex="-1"><p><b>مرحلهٔ آخر: برای اضافه‌شدن برنامه‌ها، دکمهٔ زیر را بزن.</b></p><div class="actions">${p.plans.length || p.tasks.length || p.groups.length ? button("واردکردن برنامه‌ها", "excelCommit", "", "primary") : "هیچ برنامه یا کار معتبری پیدا نشد؛ پیام‌های زیر را بررسی کن."}</div></div><div class="grid"><div><b>${fa(p.plans.length)}</b> روز معتبر</div><div><b>${fa(p.tasks.length)}</b> کار پروژه‌ای</div><div><b>${fa(p.groups.length)}</b> گروه جدید</div></div><p>خطا: ${fa(p.errors.length)} ردیف • خانهٔ ستاره‌دار ارفاقی: ${fa(p.stars)}</p>${p.stars ? '<div class="notice">خانه‌های خالی یا * برای همان فعالیت ارفاقی‌اند؛ دقیقه یا انجام‌شده حساب نمی‌شوند و کل روز را تعطیل نمی‌کنند.</div>' : ""}${p.warnings.map((w) => '<p class="notice">' + esc(w) + "</p>").join("")}${
         p.errors.length
           ? '<div class="notice"><b>ردیف‌های زیر وارد نمی‌شوند؛ می‌توانی فایل را اصلاح و دوباره انتخاب کنی:</b><ul>' +
             p.errors
@@ -1088,7 +1108,7 @@ function renderExcel() {
         )}</tbody></table></div><p class="muted">نمایش چند ردیف اول؛ همهٔ ردیف‌های معتبر با تأیید وارد می‌شوند.</p><label><input id="excel-overwrite" type="checkbox" checked> برنامه‌ها و کارهای موجود با اطلاعات فایل جایگزین شوند</label><small>${fa(existing)} روز در حال حاضر برنامهٔ اختصاصی دارند؛ بدون این انتخاب حفظ می‌شوند. ثبت‌های زمانی و بقیهٔ تاریخ‌ها حذف نمی‌شوند.</small><label class="notice"><input id="excel-replace" type="checkbox"> این فایل مرجع کامل برنامه است؛ برنامه‌های قبلی که در فایل نیستند حذف شوند. زمان‌های واقعی، تیک‌ها و کارهای پروژه حفظ می‌شوند.</label>${p.startDate ? '<label><input id="excel-start" type="checkbox" checked> شروع شماره‌روز از ' + label(p.startDate) + "، مطابق جدول اکسل</label>" : ""}<div class="actions" style="margin-top:16px">${button(p.errors.length ? "ورود ردیف‌های معتبر" : "تأیید و ورود اطلاعات", "excelCommit", "", "primary")}${button("انصراف", "excelClear")}</div>`,
     );
   }
-  $("#view").innerHTML = html;
+  $("#view").innerHTML = html + templateCard;
 }
 async function importExcel(file) {
   if (!file || excelBusy) return;
@@ -1096,6 +1116,8 @@ async function importExcel(file) {
     return toast("فایل را با پسوند xlsx ذخیره کن.");
   if (file.size > 8 * 1024 * 1024)
     return toast("حداکثر اندازهٔ فایل ۸ مگابایت است.");
+  excelFileName = file.name;
+  excelError = "";
   excelBusy = true;
   pendingExcel = null;
   render();
@@ -1117,14 +1139,30 @@ async function importExcel(file) {
     );
     pendingExcel = { ...report, fileName: file.name };
   } catch (err) {
-    toast("ورود اکسل انجام نشد: " + err.message);
+    excelError =
+      err.message || "فایل خوانده نشد؛ آن را در اکسل با فرمت xlsx ذخیره کن.";
+    toast("ورود اکسل انجام نشد: " + excelError);
   } finally {
     excelBusy = false;
-    if (tab === "excel") render();
+    if (tab === "excel") {
+      render();
+      if (pendingExcel) {
+        $("#excel-preview")?.scrollIntoView({ block: "center" });
+        $("#excel-preview")?.focus({ preventScroll: true });
+      }
+    }
   }
 }
 function commitExcel() {
   if (!pendingExcel) return;
+  if (
+    !pendingExcel.plans.length &&
+    !pendingExcel.tasks.length &&
+    !pendingExcel.groups.length
+  )
+    return toast(
+      "هیچ دادهٔ معتبری برای ورود پیدا نشد؛ پیام‌های فایل را بررسی کن.",
+    );
   if (state.active)
     return toast("ابتدا فعالیت در حال اجرا را پایان بده؛ سپس فایل را وارد کن.");
   const result = window.RavalExcel.applyReport(state, pendingExcel, {
