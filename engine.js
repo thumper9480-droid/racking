@@ -574,6 +574,70 @@
     startBlock(s, series.queue[series.position], now);
   }
 
+  function normalizeName(value) {
+    return String(value)
+      .normalize("NFKC")
+      .replace(/[يى]/g, "ی")
+      .replace(/ك/g, "ک")
+      .replace(/[\u064b-\u065f\u0670\u0640]/g, "")
+      .replace(/[\u200c\u200d\s]+/g, " ")
+      .trim()
+      .toLocaleLowerCase("fa-IR");
+  }
+  function findActivity(s, name) {
+    const q = normalizeName(name).replace(/ /g, "");
+    return s.activities.find(
+      (a) => normalizeName(a.name).replace(/ /g, "") === q,
+    );
+  }
+  function similarActivities(s, name) {
+    const q = normalizeName(name);
+    if (!q) return s.activities.slice(0, 6);
+    function distance(a, b) {
+      const row = Array.from({ length: b.length + 1 }, (_, i) => i);
+      for (let i = 1; i <= a.length; i++) {
+        let prev = row[0];
+        row[0] = i;
+        for (let j = 1; j <= b.length; j++) {
+          const old = row[j];
+          row[j] = Math.min(
+            row[j] + 1,
+            row[j - 1] + 1,
+            prev + (a[i - 1] === b[j - 1] ? 0 : 1),
+          );
+          prev = old;
+        }
+      }
+      return row[b.length];
+    }
+    return s.activities
+      .filter((a) => {
+        const n = normalizeName(a.name);
+        return (
+          n.includes(q) ||
+          q.includes(n) ||
+          (q.length >= 3 &&
+            Math.abs(q.length - n.length) <= 2 &&
+            distance(q, n) <= (q.length < 7 ? 1 : 2))
+        );
+      })
+      .slice(0, 8);
+  }
+  function ensureActivity(s, name, id, useful = true) {
+    name = String(name).trim();
+    if (!name || name.length > 80 || !normalizeName(name))
+      throw Error("نام کار را بین ۱ تا ۸۰ حرف بنویس");
+    const existing = findActivity(s, name);
+    if (existing) return existing;
+    if (
+      !/^[a-zA-Z0-9_-]{1,80}$/.test(id) ||
+      s.activities.some((a) => a.id === id)
+    )
+      throw Error("شناسه تکراری یا نامعتبر است");
+    const a = { id, name, useful: !!useful, special: false, custom: true };
+    s.activities.push(a);
+    return a;
+  }
   function reminderTime(t) {
     return t.date && t.time
       ? +new Date(t.date + "T" + t.time + ":00") - t.lead * 60000
@@ -608,6 +672,10 @@
     resume,
     startSeries,
     advanceSeries,
+    normalizeName,
+    findActivity,
+    similarActivities,
+    ensureActivity,
     reminderTime,
     interval,
   };

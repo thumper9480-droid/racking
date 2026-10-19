@@ -22,6 +22,44 @@ const assert = require("node:assert/strict");
     page.locator(`[data-action=nav][data-arg=${name}]`).click();
   assert.match(await page.locator("#view").innerText(), /تکنیکال: ۱۵/);
   assert.equal(await page.locator("[data-complete]").count(), 15);
+  // Type, choose a similar activity, and create genuinely new options in both time-entry flows.
+  const activitiesBefore = await page.evaluate(() => state.activities.length);
+  await page.locator("[data-action=activityDialog]").click();
+  await page.locator("#activity-name").fill("تگنیکال");
+  await page.locator("[data-action=pickActivity][data-arg=technical]").click();
+  await page.locator("#form button[type=submit]").click();
+  assert.equal(await page.evaluate(() => state.active.activity), "technical");
+  assert.equal(
+    await page.evaluate(() => state.activities.length),
+    activitiesBefore,
+  );
+  await page.locator("[data-action=stop]").click();
+  await page.locator("[data-action=quick][data-arg=outside]").click();
+  await page.locator("#activity-name").fill("شطرنج");
+  assert.match(
+    await page.locator("#activity-matches").innerText(),
+    /در لیست نیست/,
+  );
+  await page.locator("#form button[type=submit]").click();
+  assert.equal(await page.evaluate(() => state.active.name), "شطرنج");
+  await page.locator("[data-action=stop]").click();
+  await page.reload();
+  assert.equal(
+    await page.evaluate(() => state.activities.length),
+    activitiesBefore + 1,
+  );
+  await page.waitForTimeout(30);
+  await page.locator("[data-action=since]").click();
+  await page.locator("#activity-name").fill("تمرین آواز");
+  await page.locator("#form button[type=submit]").click();
+  assert.equal(
+    await page.evaluate(() => state.entries.at(-1).name),
+    "تمرین آواز",
+  );
+  assert.equal(
+    await page.evaluate(() => state.activities.length),
+    activitiesBefore + 2,
+  );
   // Real user: planned block -> rest -> phone -> resume; no new duplicate timer.
   await page
     .locator("[data-action=block]")
@@ -152,13 +190,11 @@ const assert = require("node:assert/strict");
   assert.ok(exported.plans["2026-10-23"]);
   await nav("settings");
   page.once("dialog", (d) => d.accept());
-  await page
-    .locator("#restore")
-    .setInputFiles({
-      name: "backup.json",
-      mimeType: "application/json",
-      buffer: Buffer.from(JSON.stringify(exported)),
-    });
+  await page.locator("#restore").setInputFiles({
+    name: "backup.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(exported)),
+  });
   await page.waitForTimeout(200);
   assert.match(await page.locator("#toasts").innerText(), /بازیابی کامل شد/);
   // XSS is escaped in custom group and task content.

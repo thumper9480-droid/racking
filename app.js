@@ -236,16 +236,7 @@ function startBlock(key) {
 }
 function quick(id) {
   if (id === "outside") {
-    modal(
-      "کار خارج از برنامه",
-      '<label>نام کار<input class="field" name="note" required maxlength="200"></label>',
-      (f) => {
-        E.interrupt(state, id, Date.now(), f.get("note"));
-        save();
-        closeModal();
-        render();
-      },
-    );
+    activityDialog();
     return;
   }
   E.interrupt(state, id);
@@ -278,22 +269,41 @@ function closeModal() {
   $("#dialog").close();
   dialogSubmit = null;
 }
-function activityOptions() {
-  return state.activities
-    .map((a) => `<option value="${a.id}">${esc(a.name)}</option>`)
-    .join("");
+function activityPicker() {
+  return `<label>چه کاری؟<input class="field" name="activityName" id="activity-name" placeholder="اسم کار را بنویس؛ مثلاً کتاب یا زبان" maxlength="80" autocomplete="off" required></label><div id="activity-matches" class="stack"></div><label><input name="newUseful" type="checkbox" checked> فعالیت جدید در زمان مفید حساب شود</label>`;
+}
+function updateActivityMatches() {
+  const input = $("#activity-name"),
+    box = $("#activity-matches");
+  if (!input || !box) return;
+  const name = input.value.trim(),
+    exact = E.findActivity(state, name),
+    matches = E.similarActivities(state, name);
+  box.innerHTML = `${matches.length ? '<small>از فعالیت‌های موجود انتخاب کن:</small><div class="actions">' + matches.map((a) => button(esc(a.name), "pickActivity", a.id, "small")).join("") + "</div>" : ""}${name && !exact ? '<div class="notice">' + (matches.length ? "نام‌های مشابه بالا را ببین؛ اگر منظورت کار دیگری است، با ذخیره به لیست اضافه می‌شود." : "این کار در لیست نیست؛ با ذخیره، به گزینه‌های بعدی اضافه می‌شود.") + "</div>" : ""}${exact ? "<small>از گزینهٔ موجود استفاده می‌شود؛ تکراری ساخته نمی‌شود.</small>" : ""}`;
+}
+function resolveTypedActivity(f) {
+  const name = f.get("activityName").trim();
+  return E.ensureActivity(
+    state,
+    name,
+    "g-" + crypto.randomUUID(),
+    f.has("newUseful"),
+  );
 }
 function activityDialog() {
   modal(
-    "فعالیت دلخواه",
-    `<label>فعالیت<select class="field" name="activity">${activityOptions()}</select></label><label>یادداشت<input class="field" name="note" maxlength="200"></label>`,
+    "چه کاری انجام می‌دهی؟",
+    activityPicker() +
+      '<label>یادداشت (اختیاری)<input class="field" name="note" maxlength="200"></label>',
     (f) => {
-      E.interrupt(state, f.get("activity"), Date.now(), f.get("note"));
+      const a = resolveTypedActivity(f);
+      E.interrupt(state, a.id, Date.now(), f.get("note"));
       save();
       closeModal();
       render();
     },
   );
+  updateActivityMatches();
 }
 function sinceDialog() {
   if (state.active) return toast("اول فعالیت جاری را پایان بده");
@@ -308,9 +318,9 @@ function sinceDialog() {
     return toast("اول بیداری را ثبت کن یا یک فعالیت را شروع کن");
   modal(
     "ثبت تا همین الان",
-    `<p>${time(last)} تا ${time(end)} • ${fa(Math.round((end - last) / 60000))} دقیقه</p><label>فعالیت<select class="field" name="activity">${activityOptions()}</select></label>`,
+    `<p>${time(last)} تا ${time(end)} • ${fa(Math.round((end - last) / 60000))} دقیقه</p>${activityPicker()}`,
     (f) => {
-      const a = E.activity(state, f.get("activity"));
+      const a = resolveTypedActivity(f);
       state.entries.push({
         activity: a.id,
         name: a.name,
@@ -323,6 +333,7 @@ function sinceDialog() {
       render();
     },
   );
+  updateActivityMatches();
 }
 function dateInput(name, k, required = true) {
   return `<input name="${name}" class="field" placeholder="۱۴۰۵/۰۸/۰۱" value="${k ? label(k) : ""}" inputmode="numeric" ${required ? "required" : ""}>`;
@@ -854,6 +865,10 @@ function seriesDialog(id) {
   );
 }
 const actions = {
+  pickActivity: (id) => {
+    $("#activity-name").value = groupName(id);
+    updateActivityMatches();
+  },
   series: seriesDialog,
   nav: navigate,
   shiftDay: (n) => {
@@ -1023,3 +1038,7 @@ save();
 render();
 tick();
 setInterval(tick, 1000);
+
+document.addEventListener("input", (e) => {
+  if (e.target.id === "activity-name") updateActivityMatches();
+});

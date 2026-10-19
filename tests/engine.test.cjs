@@ -210,3 +210,25 @@ test("interrupt series rest and resume remaining rest, not the full rest", () =>
   assert.equal(E.minutes(s, sample, "phone"), 1);
   E.validate(s);
 });
+test("typed activities normalize Arabic letters and spacing; exact match never duplicates", () => {
+  const s = E.fresh(),
+    length = s.activities.length;
+  assert.equal(E.ensureActivity(s, " كِتاب ", "ignored").id, "book");
+  assert.equal(s.activities.length, length);
+  const a = E.ensureActivity(s, "یادگیری زبان", "language", true);
+  assert.equal(E.ensureActivity(s, "يادگيري  زبان", "ignored").id, a.id);
+  assert.equal(s.activities.length, length + 1);
+  assert.throws(() => E.ensureActivity(s, "  ", "bad"));
+  E.validate(s);
+});
+test("search suggests similar existing activity but does not auto-replace user intent", () => {
+  const s = E.fresh();
+  assert.ok(
+    E.similarActivities(s, "تگنیکال").some((a) => a.id === "technical"),
+  );
+  assert.ok(
+    E.similarActivities(s, "کتاب انگلیسی").some((a) => a.id === "book"),
+  );
+  assert.equal(E.findActivity(s, "کتاب انگلیسی"), undefined);
+  assert.equal(E.similarActivities(s, "شطرنج").length, 0);
+});
