@@ -1061,9 +1061,14 @@ function renderExcel() {
   if (pendingExcel) {
     const p = pendingExcel,
       existing = p.plans.filter((r) => state.plans[r.date]).length;
+    const activePlans = p.plans.filter(
+        (r) =>
+          !r.plan.off && Object.values(r.plan.blocks).some((a) => a.length),
+      ),
+      previewPlans = activePlans.length ? activePlans : p.plans;
     html += card(
       "پیش‌نمایش " + esc(p.fileName),
-      `<div id="excel-preview" tabindex="-1"><p><b>مرحلهٔ آخر: برای اضافه‌شدن برنامه‌ها، دکمهٔ زیر را بزن.</b></p><div class="actions">${p.plans.length || p.tasks.length || p.groups.length ? button("واردکردن برنامه‌ها", "excelCommit", "", "primary") : "هیچ برنامه یا کار معتبری پیدا نشد؛ پیام‌های زیر را بررسی کن."}</div></div><div class="grid"><div><b>${fa(p.plans.length)}</b> روز معتبر</div><div><b>${fa(p.tasks.length)}</b> کار پروژه‌ای</div><div><b>${fa(p.groups.length)}</b> گروه جدید</div></div><p>خطا: ${fa(p.errors.length)} ردیف • خانهٔ ستاره‌دار ارفاقی: ${fa(p.stars)}</p>${p.stars ? '<div class="notice">خانه‌های خالی یا * برای همان فعالیت ارفاقی‌اند؛ دقیقه یا انجام‌شده حساب نمی‌شوند و کل روز را تعطیل نمی‌کنند.</div>' : ""}${p.warnings.map((w) => '<p class="notice">' + esc(w) + "</p>").join("")}${
+      `<div id="excel-preview" tabindex="-1"><p><b>مرحلهٔ آخر: برای اضافه‌شدن برنامه‌ها، دکمهٔ زیر را بزن.</b></p><div class="actions">${p.plans.length || p.tasks.length || p.groups.length ? button("واردکردن برنامه‌ها", "excelCommit", "", "primary") : "هیچ برنامه یا کار معتبری پیدا نشد؛ پیام‌های زیر را بررسی کن."}</div></div><div class="grid"><div><b>${fa(p.plans.length)}</b> روز معتبر • ${fa(activePlans.length)} روز دارای فعالیت</div><div><b>${fa(p.tasks.length)}</b> کار پروژه‌ای</div><div><b>${fa(p.groups.length)}</b> گروه جدید</div></div><p>خطا: ${fa(p.errors.length)} ردیف • خانهٔ ستاره‌دار ارفاقی: ${fa(p.stars)}</p>${p.stars ? '<div class="notice">خانه‌های خالی یا * برای همان فعالیت ارفاقی‌اند؛ دقیقه یا انجام‌شده حساب نمی‌شوند و کل روز را تعطیل نمی‌کنند.</div>' : ""}${p.warnings.map((w) => '<p class="notice">' + esc(w) + "</p>").join("")}${
         p.errors.length
           ? '<div class="notice"><b>ردیف‌های زیر وارد نمی‌شوند؛ می‌توانی فایل را اصلاح و دوباره انتخاب کنی:</b><ul>' +
             p.errors
@@ -1083,7 +1088,7 @@ function renderExcel() {
             (p.errors.length > 20 ? "موارد بیشتری هم وجود دارد." : "") +
             "</div>"
           : ""
-      }<div class="table-wrap"><table><thead><tr><th>تاریخ شمسی</th><th>بیدارباش</th><th>برنامهٔ بخش‌ها (دقیقه)</th></tr></thead><tbody>${p.plans
+      }<div class="table-wrap"><table><thead><tr><th>تاریخ شمسی</th><th>بیدارباش</th><th>برنامهٔ بخش‌ها (دقیقه)</th></tr></thead><tbody>${previewPlans
         .slice(0, 7)
         .map(
           (r) =>
@@ -1105,7 +1110,7 @@ function renderExcel() {
         )
         .join(
           "",
-        )}</tbody></table></div><p class="muted">نمایش چند ردیف اول؛ همهٔ ردیف‌های معتبر با تأیید وارد می‌شوند.</p><label><input id="excel-overwrite" type="checkbox" checked> برنامه‌ها و کارهای موجود با اطلاعات فایل جایگزین شوند</label><small>${fa(existing)} روز در حال حاضر برنامهٔ اختصاصی دارند؛ بدون این انتخاب حفظ می‌شوند. ثبت‌های زمانی و بقیهٔ تاریخ‌ها حذف نمی‌شوند.</small><label class="notice"><input id="excel-replace" type="checkbox"> این فایل مرجع کامل برنامه است؛ برنامه‌های قبلی که در فایل نیستند حذف شوند. زمان‌های واقعی، تیک‌ها و کارهای پروژه حفظ می‌شوند.</label>${p.startDate ? '<label><input id="excel-start" type="checkbox" checked> شروع شماره‌روز از ' + label(p.startDate) + "، مطابق جدول اکسل</label>" : ""}<div class="actions" style="margin-top:16px">${button(p.errors.length ? "ورود ردیف‌های معتبر" : "تأیید و ورود اطلاعات", "excelCommit", "", "primary")}${button("انصراف", "excelClear")}</div>`,
+        )}</tbody></table></div><p class="muted">نمایش اولین روزهای دارای فعالیت؛ همهٔ روزهای معتبر با تأیید وارد می‌شوند.</p><label><input id="excel-overwrite" type="checkbox" checked> برنامه‌ها و کارهای موجود با اطلاعات فایل جایگزین شوند</label><small>${fa(existing)} روز در حال حاضر برنامهٔ اختصاصی دارند؛ بدون این انتخاب حفظ می‌شوند. ثبت‌های زمانی و بقیهٔ تاریخ‌ها حذف نمی‌شوند.</small><label class="notice"><input id="excel-replace" type="checkbox"> این فایل مرجع کامل برنامه است؛ برنامه‌های قبلی که در فایل نیستند حذف شوند. زمان‌های واقعی، تیک‌ها و کارهای پروژه حفظ می‌شوند.</label>${p.startDate ? '<label><input id="excel-start" type="checkbox" checked> شروع شماره‌روز از ' + label(p.startDate) + "، مطابق جدول اکسل</label>" : ""}<div class="actions" style="margin-top:16px">${button(p.errors.length ? "ورود ردیف‌های معتبر" : "تأیید و ورود اطلاعات", "excelCommit", "", "primary")}${button("انصراف", "excelClear")}</div>`,
     );
   }
   $("#view").innerHTML = html + templateCard;
@@ -1182,7 +1187,13 @@ function commitExcel() {
   };
   const dates = pendingExcel.plans.map((r) => r.date);
   pendingExcel = null;
-  selected = dates.includes(todayKey()) ? todayKey() : dates[0] || todayKey();
+  const workingDates = dates.filter((k) => E.blocks(state, k).length);
+  selected = workingDates.includes(todayKey())
+    ? todayKey()
+    : workingDates.find((k) => k >= todayKey()) ||
+      workingDates[0] ||
+      dates[0] ||
+      todayKey();
   calendar = E.persian(selected);
   save();
   tab = "today";

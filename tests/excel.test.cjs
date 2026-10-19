@@ -252,3 +252,37 @@ test("blank and starred cells are activity-specific grace, never automatically a
   );
   assert.equal(next.plans["2026-09-29"].off, false);
 });
+test("uncached arithmetic, references and SUM import daily blocks without losing late-year activity", () => {
+  const { w, s } = simple();
+  s.addRow([1, "شنبه", 25, "مهر", 1405, "", "", ""]);
+  s.addRow([2, "سه‌شنبه", 28, "مهر", 1405, 8.3, 10, { formula: "G3/2" }]);
+  s.addRow([
+    3,
+    "چهارشنبه",
+    29,
+    "مهر",
+    1405,
+    8.15,
+    { formula: "G3+5" },
+    { formula: "SUM(G3:G4)/5" },
+  ]);
+  s.getCell("I1").value = "روز خالی";
+  s.getCell("I4").value = 5;
+  const r = X.readWorkbook(w, E.fresh(), id);
+  assert.equal(r.errors.length, 0);
+  assert.equal(r.plans.length, 3);
+  assert.deepEqual(r.plans[1].plan.blocks.technical, [5]);
+  assert.deepEqual(r.plans[2].plan.blocks.book, [15]);
+  assert.deepEqual(r.plans[2].plan.blocks.technical, [5]);
+  assert.equal(r.plans[2].plan.off, false);
+  assert.ok(r.warnings.some((w) => w.includes("روز خالی")));
+});
+test("uncached cyclic and executable formulas are rejected as data", () => {
+  const { w, s } = simple();
+  s.addRow([1, "شنبه", 28, "مهر", 1405, 8, 10, { formula: "H2+5" }]);
+  s.addRow([2, "یکشنبه", 29, "مهر", 1405, 8, 10, { formula: "alert(1)" }]);
+  s.addRow([3,"دوشنبه",30,"مهر",1405,8,10,5]);
+  const r = X.readWorkbook(w, E.fresh(), id);
+  assert.equal(r.plans.length, 1);
+  assert.equal(r.errors.length, 2);
+});

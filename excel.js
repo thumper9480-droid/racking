@@ -105,17 +105,105 @@
     a.special = true;
     return a;
   }
-  function parts(cell, report, location) {
-    const v = raw(cell);
+  // Evaluate only arithmetic and same-sheet cell references, never JavaScript or external links.
+  function numericCell(cell, seen = new Set()) {
+    const v = raw(cell),
+      f =
+        cell.value?.formula || (cell.value?.sharedFormula ? cell.formula : "");
     if (
-      cell.value &&
-      typeof cell.value === "object" &&
-      cell.value.formula &&
-      !("result" in cell.value)
+      !f ||
+      ("result" in cell.value &&
+        cell.value.result !== undefined &&
+        cell.value.result !== null)
     )
-      throw Error(
-        location + ": فرمول بدون نتیجهٔ ذخیره‌شده؛ فایل را در اکسل ذخیره کن",
-      );
+      return v;
+    const address = cell.address;
+    if (seen.has(address) || seen.size > 100)
+      throw Error("ارجاع دوری یا زنجیرهٔ بیش از حد طولانی در فرمول");
+    const next = new Set(seen);
+    next.add(address);
+    const number = (c) => {
+      const value = numericCell(c, next);
+      if (value === "") return 0;
+      const n = Number(E.digits(value));
+      if (!Number.isFinite(n)) throw Error("ارجاع فرمول به خانهٔ غیرعددی");
+      return n;
+    };
+    let expression = String(f)
+      .replace(/^=/, "")
+      .replace(
+        /SUM\(\$?([A-Z]+)\$?(\d+):\$?([A-Z]+)\$?(\d+)\)/gi,
+        (_, a, r, b, t) => {
+          const start = colNumber(a),
+            end = colNumber(b),
+            top = +r,
+            bottom = +t;
+          if (
+            end < start ||
+            bottom < top ||
+            (end - start + 1) * (bottom - top + 1) > 1000
+          )
+            throw Error("محدودهٔ فرمول پشتیبانی نمی‌شود");
+          let total = 0;
+          for (let y = top; y <= bottom; y++)
+            for (let x = start; x <= end; x++)
+              total += number(cell.worksheet.getCell(y, x));
+          return String(total);
+        },
+      )
+      .replace(
+        /\$?([A-Z]+)\$?(\d+)/gi,
+        (_, c, r) =>
+          "(" + number(cell.worksheet.getCell(+r, colNumber(c))) + ")",
+      )
+      .replace(/\s/g, "");
+    if (!/^[0-9.+*/()\-]+$/.test(expression))
+      throw Error("فرمول پشتیبانی نمی‌شود؛ فایل را در اکسل باز و ذخیره کن");
+    const tokens = expression.match(/(?:\d+(?:\.\d*)?|\.\d+)|[()+*/-]/g) || [];
+    let i = 0;
+    function primary() {
+      const token = tokens[i++];
+      if (token === "+" || token === "-")
+        return (token === "-" ? -1 : 1) * primary();
+      if (token === "(") {
+        const n = sum();
+        if (tokens[i++] !== ")") throw Error("فرمول نامعتبر است");
+        return n;
+      }
+      if (token === undefined || !/^\d|^\./.test(token))
+        throw Error("فرمول نامعتبر است");
+      return Number(token);
+    }
+    function product() {
+      let n = primary();
+      while (tokens[i] === "*" || tokens[i] === "/") {
+        const op = tokens[i++],
+          v = primary();
+        n = op === "*" ? n * v : n / v;
+      }
+      return n;
+    }
+    function sum() {
+      let n = product();
+      while (tokens[i] === "+" || tokens[i] === "-") {
+        const op = tokens[i++],
+          v = product();
+        n = op === "+" ? n + v : n - v;
+      }
+      return n;
+    }
+    const result = sum();
+    if (i !== tokens.length || !Number.isFinite(result))
+      throw Error("نتیجهٔ فرمول نامعتبر است");
+    return result;
+  }
+  function parts(cell, report, location) {
+    let v;
+    try {
+      v = numericCell(cell);
+    } catch (error) {
+      throw Error(location + ": " + error.message);
+    }
     if (v === "" || v === null || v === 0 || String(v).trim() === "0")
       return [];
     if (String(v).trim() === "*") {
@@ -338,7 +426,15 @@
             if (p.blocks[g.id]) p.blocks[g.id].push(...list);
             else p.blocks[g.id] = list;
           }
-          p.off = h.get("روز خالی") ? truth(value("روز خالی")) : false;
+          if (h.get("روز خالی")) {
+            try {
+              p.off = truth(value("روز خالی"));
+            } catch (error) {
+              report.warnings.push(
+                `${sheet.name}، ردیف ${r}: مقدار ستون «روز خالی» شناخته نشد؛ برنامهٔ فعالیت‌ها حفظ شد. برای استراحت کامل «بله» بنویس.`,
+              );
+            }
+          }
           const probe = { ...draft, plans: {} };
           E.setPlan(probe, k, p);
           dateSeen.add(k);
