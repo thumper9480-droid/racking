@@ -3,3 +3,7 @@
 local.properties
 *.iml
 .idea/
+
+# Personal schedule seed generated for an explicitly requested installation
+app/src/main/web/initial-plan.js
+app/src/main/assets/initial-plan.js

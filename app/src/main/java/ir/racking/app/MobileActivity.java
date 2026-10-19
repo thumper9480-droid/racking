@@ -27,9 +27,21 @@ public class MobileActivity extends Activity {
     web = new WebView(this);
     web.setBackgroundColor(0xfff5f8f9);
     web.setPadding(0, 0, 0, 0);
-    setContentView(web);
-    web.setOnApplyWindowInsetsListener(
+    // Resize the WebView's viewport itself. WebView padding does not move CSS fixed menus.
+    android.widget.FrameLayout content = new android.widget.FrameLayout(this);
+    content.setBackgroundColor(0xfff5f8f9);
+    content.addView(web, new android.widget.FrameLayout.LayoutParams(-1, -1));
+    content.setOnApplyWindowInsetsListener(
         (v, insets) -> {
+          if (Build.VERSION.SDK_INT >= 30) {
+            android.graphics.Insets safe =
+                insets.getInsets(
+                    android.view.WindowInsets.Type.systemBars()
+                        | android.view.WindowInsets.Type.displayCutout()
+                        | android.view.WindowInsets.Type.ime());
+            v.setPadding(safe.left, safe.top, safe.right, safe.bottom);
+            return android.view.WindowInsets.CONSUMED;
+          }
           v.setPadding(
               insets.getSystemWindowInsetLeft(),
               insets.getSystemWindowInsetTop(),
@@ -37,6 +49,8 @@ public class MobileActivity extends Activity {
               insets.getSystemWindowInsetBottom());
           return insets.consumeSystemWindowInsets();
         });
+    setContentView(content);
+    content.requestApplyInsets();
     WebSettings settings = web.getSettings();
     settings.setJavaScriptEnabled(true);
     settings.setDomStorageEnabled(true);

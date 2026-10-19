@@ -15,6 +15,9 @@ function mobileSync(){
 function mobileDecorate(){
  if(!window.AndroidNative)return;
  if(tab==='today'){
+  const capture=document.querySelector('.quick-capture');if(capture)capture.insertAdjacentHTML('afterbegin',`<div class="mobile-capture-actions">${button('☀ الان بیدار شدم','wake','','secondary')}${button('تا الان چه کار می‌کردم؟','mobileSince','','primary')}</div>`);
+  document.querySelectorAll('[data-action=since]').forEach(el=>el.remove());
+  if(capture)capture.querySelectorAll('[data-action=wake]').forEach((el,i)=>{if(i>0)el.remove();});
   const panel=document.querySelector('.focus-panel .focus-buttons');
   if(panel&&state.active)panel.insertAdjacentHTML('afterend',`<div class="actions mobile-interrupt">${button('⏸ کار پیش آمد؛ وقفه','mobileInterrupt','','secondary')}${state.paused?button('↩ برگشت به '+esc(state.paused.name),'resume','','primary'):''}</div>`);
   if(state.mobileAwaiting)document.querySelector('.focus-panel').insertAdjacentHTML('afterbegin',`<div class="notice">مرحله تمام شده؛ زمان تازه‌ای ثبت نمی‌شود.${button('انتخاب مرحلهٔ بعد','mobileStage','','primary')}</div>`);
@@ -72,7 +75,27 @@ function mobileCommand(command){
 document.addEventListener('click',e=>{const el=e.target.closest('[data-action]');if(!el)return;
  const action=el.dataset.action;
  if(!action.startsWith('mobile'))return;
- try{if(action==='mobileInterrupt')mobileInterrupt();if(action==='mobileStage')mobileStage();if(action==='mobileChoice')mobileChoice(el.dataset.arg);if(action==='mobilePermissions')AndroidNative.permissions();if(action==='mobileReason'){const id=el.dataset.arg;closeModal();if(id==='other')activityDialog();else{E.interrupt(state,id,Date.now(),'وقفه');save();render();}}
+ try{if(action==='mobileSince')mobileSince();if(action==='mobileInterrupt')mobileInterrupt();if(action==='mobileStage')mobileStage();if(action==='mobileChoice')mobileChoice(el.dataset.arg);if(action==='mobilePermissions')AndroidNative.permissions();if(action==='mobileReason'){const id=el.dataset.arg;closeModal();if(id==='other')activityDialog();else{E.interrupt(state,id,Date.now(),'وقفه');save();render();}}
  if(action==='mobileSettings'){const n=+document.querySelector('#mobile-rest').value;if(!Number.isInteger(n)||n<1||n>180)throw Error('استراحت باید ۱ تا ۱۸۰ دقیقه باشد');state.mobileWakeEnabled=document.querySelector('#mobile-wake').checked;state.mobileRestMinutes=n;save();toast('تنظیمات گوشی ذخیره شد');}
  }catch(error){toast(error.message);}
 });
+
+function mobileSeed(){
+ const seed=window.RavalInitialPlan;if(!seed||state.mobileSeedVersion===seed.version)return;
+ for(const a of seed.activities)if(!E.activity(state,a.id))state.activities.push(a);
+ for(const [date,plan] of Object.entries(seed.plans)){
+  if(!state.plans[date]||(!E.blocks(state,date).length&&Object.values(plan.blocks).some(parts=>parts.length)))E.setPlan(state,date,structuredClone(plan));
+ }
+ if(!source)state.startDate=seed.startDate;
+ state.mobileSeedVersion=seed.version;
+}
+function mobileSince(){
+ if(state.active)return toast('فعالیتی در حال ثبت است؛ ابتدا پایان و ثبت را بزن تا دوباره‌شماری نشود.');
+ const now=Date.now(),midnight=E.interval(todayKey())[0],last=Math.max(midnight,state.woke||0,...state.entries.filter(e=>e.end<=now).map(e=>e.end));
+ if(last<=midnight||last>=now){
+  modal('از چه ساعتی بیدار بودی؟',`<p>برای اولین ثبت، ساعت بیدارشدن امروز را مشخص کن.</p><label>ساعت بیداری<input class="field" name="wake" type="time" required></label>`,f=>{const start=+new Date(todayKey()+'T'+f.get('wake')+':00');if(!Number.isFinite(start)||start>=Date.now())throw Error('ساعت بیداری باید قبل از الان باشد');state.woke=start;save();closeModal();mobileSince();});return;
+ }
+ const end=Date.now();
+ modal('تا الان چه کار می‌کردی؟',`<div class="notice"><b>${time(last)} تا ${time(end)}</b> • ${fa(Math.floor((end-last)/60000))} دقیقه</div><p>فعالیت را انتخاب کن یا بنویس؛ زمان این بازه به همان فعالیت اضافه می‌شود.</p>${activityPicker()}<label>یادداشت (اختیاری)<input class="field" name="note" maxlength="200"></label>`,f=>{const activity=resolveTypedActivity(f);state.entries.push({activity:activity.id,name:activity.name,note:f.get('note')||'ثبت تا الان',start:last,end});save();closeModal();render();toast(fa(Math.floor((end-last)/60000))+' دقیقه '+activity.name+' ثبت شد؛ ثبت بعدی از همین ساعت آغاز می‌شود.');});
+ updateActivityMatches();
+}

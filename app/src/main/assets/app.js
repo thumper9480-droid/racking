@@ -53,6 +53,7 @@ let source = null;
 try {
   source = localStorage.getItem(storageKey);
   state = source ? E.migrate(JSON.parse(source)) : E.fresh();
+  mobileSeed();
   if (
     source &&
     JSON.parse(source).version === 1 &&
