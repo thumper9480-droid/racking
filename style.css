@@ -485,3 +485,12 @@ button.icon {
     font-size: 10px;
   }
 }
+
+.grace-card {
+  background: #f4f8ff;
+  border-color: #cfdeed;
+}
+.grace-card .badge {
+  background: #dce8f6;
+  color: #365e89;
+}

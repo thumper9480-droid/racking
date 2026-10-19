@@ -175,7 +175,7 @@ test("numeric zero and empty cells mean no target; text instructions are not com
   const state = E.fresh(),
     r = X.readWorkbook(w, state, id);
   assert.deepEqual(r.plans[0].plan.blocks.book, []);
-  assert.equal(r.plans[0].plan.off, true);
+  assert.equal(r.plans[0].plan.off, false);
   assert.equal(r.errors.length, 0);
   assert.equal(state.projects.length, 6);
 });
@@ -232,4 +232,23 @@ test("TRACK layout is continuous with one header, original group positions and s
     report.plans.find((p) => p.date === k).plan.blocks.technical,
     [],
   );
+});
+test("blank and starred cells are activity-specific grace, never automatically a whole-day holiday", () => {
+  const { w, s } = simple();
+  s.addRow([1, "", 6, "مهر", 1405, 8, 30, "*"]);
+  s.addRow([2, "", 7, "مهر", 1405, 8.15, "", ""]);
+  s.addRow([3, "", 8, "مهر", 1405, 8.3, 10, 5]);
+  const report = X.readWorkbook(w, E.fresh(), id),
+    next = X.applyReport(E.fresh(), report).state;
+  assert.equal(report.errors.length, 0);
+  assert.equal(report.plans[0].plan.wake, "08:00");
+  assert.equal(report.plans[1].plan.wake, "08:15");
+  assert.equal(report.plans[2].plan.wake, "08:30");
+  assert.ok(
+    E.graceActivities(next, "2026-09-28").some((a) => a.id === "technical"),
+  );
+  assert.ok(
+    !E.graceActivities(next, "2026-09-28").some((a) => a.id === "book"),
+  );
+  assert.equal(next.plans["2026-09-29"].off, false);
 });

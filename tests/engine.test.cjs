@@ -232,3 +232,35 @@ test("search suggests similar existing activity but does not auto-replace user i
   assert.equal(E.findActivity(s, "کتاب انگلیسی"), undefined);
   assert.equal(E.similarActivities(s, "شطرنج").length, 0);
 });
+test("empty group is grace for that activity only, and its prior backlog remains assigned to the original day", () => {
+  const s = E.fresh(),
+    today = "2026-10-19",
+    yesterday = E.add(today, -1);
+  s.startDate = yesterday;
+  E.setPlan(s, today, {
+    wake: "08:30",
+    off: false,
+    blocks: { book: [30], technical: [], platform: [5] },
+  });
+  assert.ok(E.graceActivities(s, today).some((a) => a.id === "technical"));
+  assert.ok(!E.graceActivities(s, today).some((a) => a.id === "book"));
+  const pending = E.backlog(s, today, "technical");
+  assert.equal(pending.length, 3);
+  assert.equal(pending[0].date, yesterday);
+  const t = +new Date(today + "T12:00:00");
+  E.startBlock(s, pending[0], t);
+  E.settle(s, t + 300000);
+  assert.equal(E.backlog(s, today, "technical").length, 2);
+  assert.equal(E.stats(s, today, today).done, 0);
+  assert.equal(E.stats(s, today, today).actual, 5);
+  assert.equal(E.stats(s, yesterday, yesterday).done, 1);
+  assert.deepEqual(E.parseParts("*"), []);
+});
+test("an explicitly resting day stays distinct from group-specific grace", () => {
+  const s = E.fresh(),
+    k = "2026-10-19",
+    p = structuredClone(E.plan(s, k));
+  p.off = true;
+  E.setPlan(s, k, p);
+  assert.deepEqual(E.graceActivities(s, k), []);
+});

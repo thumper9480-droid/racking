@@ -76,7 +76,7 @@
   };
   function parseParts(s) {
     s = digits(s).trim();
-    if (!s || s === "-") return [];
+    if (!s || s === "-" || s === "*") return [];
     const p = s
       .split(/[ ,،+\n]+/)
       .filter(Boolean)
@@ -638,6 +638,26 @@
     s.activities.push(a);
     return a;
   }
+  function graceActivities(s, k) {
+    if (plan(s, k).off) return [];
+    return s.activities.filter(
+      (a) =>
+        (a.custom ||
+          ["walk", "book", "technical", "platform", "chart"].includes(a.id)) &&
+        !(plan(s, k).blocks[a.id] || []).length,
+    );
+  }
+  function backlog(s, k, id) {
+    date(k);
+    let from = s.startDate;
+    for (const day of Object.keys(s.plans)) if (day < from) from = day;
+    const pending = [];
+    for (let day = from; day < k; day = add(day, 1)) {
+      for (const b of blocks(s, day))
+        if (b.id === id && !s.completions[b.key]) pending.push(b);
+    }
+    return pending;
+  }
   function reminderTime(t) {
     return t.date && t.time
       ? +new Date(t.date + "T" + t.time + ":00") - t.lead * 60000
@@ -676,6 +696,8 @@
     findActivity,
     similarActivities,
     ensureActivity,
+    graceActivities,
+    backlog,
     reminderTime,
     interval,
   };

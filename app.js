@@ -31,6 +31,7 @@ const storageKey = "raval-desktop-v1",
     "اسفند",
   ],
   week = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"];
+const graceExpanded = new Set();
 let pendingExcel = null,
   excelBusy = false,
   excelLoader = null;
@@ -142,7 +143,7 @@ function renderToday() {
     dayControl() +
     card(
       selected === now ? "برنامهٔ امروز" : "برنامهٔ " + label(selected),
-      `<div class="row"><div><small>انجام برنامه</small><div class="big">${fa(stats.percent)}٪</div><small>${fa(stats.done)} از ${fa(stats.count)} بخش</small></div><div><small>زمان مفید ثبت‌شدهٔ این روز</small><div class="stat">${fa(Math.round(stats.actual))} دقیقه</div></div><div><small>بیدارباش برنامه</small><div class="stat numeric">${esc(p.wake)}</div>${state.woke && E.key(new Date(state.woke)) === selected ? "<small>بیداری واقعی: " + time(state.woke) + "</small>" : ""}</div></div><progress value="${stats.completed}" max="${stats.planned || 1}"></progress>`,
+      `<div class="row"><div><small>انجام برنامه</small><div class="big">${stats.planned ? fa(stats.percent) + "٪" : p.off ? "استراحت" : "ارفاقی"}</div><small>${fa(stats.done)} از ${fa(stats.count)} بخش</small></div><div><small>زمان مفید ثبت‌شدهٔ این روز</small><div class="stat">${fa(Math.round(stats.actual))} دقیقه</div></div><div><small>بیدارباش برنامه</small><div class="stat numeric">${esc(p.wake)}</div>${state.woke && E.key(new Date(state.woke)) === selected ? "<small>بیداری واقعی: " + time(state.woke) + "</small>" : ""}</div></div><progress value="${stats.completed}" max="${stats.planned || 1}"></progress>`,
       "hero",
     );
   if (selected !== now)
@@ -156,12 +157,15 @@ function renderToday() {
   html += '<h2 class="section-title">فعالیت‌های برنامه</h2><div class="grid">';
   if (!bs.length)
     html += card(
-      p.off ? "روز خالی / استراحت" : "هنوز برنامه‌ای تعیین نشده",
+      p.off ? "روز خالی / استراحت" : "امروز فرصت جبران فعالیت‌هاست",
       button("تنظیم این روز", "editDay", selected),
     );
   for (const activity of planActivities()) {
     const list = bs.filter((b) => b.id === activity.id);
-    if (!list.length) continue;
+    if (!list.length) {
+      if (!p.off) html += graceCard(activity);
+      continue;
+    }
     const sum = list.reduce((n, b) => n + b.minutes, 0);
     html += card(
       `<span class="activity-heading">${esc(activity.name)}: ${fa(sum)} <span class="arrow">←</span></span>`,
@@ -202,6 +206,16 @@ function renderToday() {
     '<h2 class="section-title">خط زمانی واقعی این روز</h2>' +
     timeline(selected);
   $("#view").innerHTML = html;
+}
+function graceCard(activity) {
+  const pending = E.backlog(state, selected, activity.id),
+    expanded = graceExpanded.has(activity.id),
+    visible = expanded ? pending : pending.slice(0, 4);
+  return card(
+    esc(activity.name) + ' <span class="badge">ارفاقی</span>',
+    `<p class="muted">امروز برای این فعالیت هدف زمانی جدید نداری؛ می‌توانی عقب‌ماندگی همین گروه را جبران کنی.</p>${pending.length ? "<small>" + fa(pending.length) + ' بخش انجام‌نشده از روزهای قبل</small><div class="stack" style="margin-top:12px">' + visible.map((b) => '<div class="row"><label><input type="checkbox" data-complete="' + esc(b.key) + '" aria-label="جبران ' + esc(activity.name) + " " + label(b.date) + '"> ' + fa(b.minutes) + " دقیقه • " + label(b.date) + "</label>" + button("شروع جبران", "block", b.key, "small") + "</div>").join("") + "</div>" : '<p class="muted">کار عقب‌افتاده‌ای در این گروه ثبت نشده.</p>'}${pending.length > 4 ? button(expanded ? "نمایش کمتر" : "همهٔ عقب‌ماندگی‌ها", "graceExpand", activity.id, "small") : ""}<div style="margin-top:12px">${button("شروع آزاد " + esc(activity.name), "quick", activity.id, "small")}</div>`,
+    "grace-card",
+  );
 }
 function timeline(k) {
   const [lo, hi] = E.interval(k),
@@ -357,7 +371,7 @@ function renderPlanner() {
     rows += `<tr class="${p.off ? "off" : k === todayKey() ? "current" : ""}"><td>${n > 0 ? fa(n) : "—"}</td><td>${fa(d)} ${months[m - 1]}<br><small>${week[E.date(k).getDay()]}</small></td><td><input aria-label="بیدارباش ${label(k)}" data-day="${k}" data-field="wake" class="table-input wake" type="time" value="${p.wake}"></td>${activities.map((a) => `<td><input aria-label="${esc(a.name)} ${label(k)}" class="table-input" data-day="${k}" data-field="${a.id}" placeholder="۵ ۵ ۵" value="${p.off ? "" : (p.blocks[a.id] || []).join(" ")}"></td>`).join("")}<td>${fa(sum)} دقیقه</td><td><label><input type="checkbox" data-off="${k}" ${p.off ? "checked" : ""}> خالی</label></td><td>${button("برنامهٔ روز", "openDay", k, "small")}${button("ویرایش", "editDay", k, "small")}</td></tr>`;
   }
   $("#view").innerHTML =
-    `<div class="row"><div><h2>برنامهٔ کلی تا پایان سال</h2><p class="muted">اینجا برنامه را بچین؛ در «امروز» فقط بخش‌ها و کارهای همان روز را ببین.</p></div>${button("＋ گروه / فعالیت", "addGroup", "", "primary")}</div><div class="card"><div class="actions"><label>سال شمسی<input id="planner-year" type="number" min="1300" max="1599" value="${y}" style="width:110px"></label><label>ماه<select id="planner-month">${months.map((n, i) => `<option value="${i + 1}" ${m === i + 1 ? "selected" : ""}>${n}</option>`).join("")}</select></label>${button("نمایش", "chooseMonth")}${button("ماه قبل", "shiftMonth", "-1")}${button("ماه بعد", "shiftMonth", "1")}${button("تعیین برنامهٔ یک بازه / ماه / سال", "bulk", "", "primary")}${button("ورود / خروجی اکسل", "nav", "excel")}</div><div class="notice">هر خانه، بخش‌های دقیقه‌ای است: <b dir="ltr">5 5 5</b> یعنی سه بخش پنج‌دقیقه‌ای؛ <b dir="ltr">3×5</b> هم همین معنی را دارد. تغییر هر خانه خودکار ذخیره می‌شود. «خالی» یعنی بدون برنامهٔ روتین؛ کارهای پروژه‌ای آن روز باقی می‌مانند.</div></div><div class="table-wrap"><table><thead><tr><th>شماره روز</th><th>تاریخ / روز</th><th>بیدارباش</th>${activities.map((a) => `<th>${esc(a.name)}</th>`).join("")}<th>جمع برنامه</th><th>روز خالی</th><th>نمای روز</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    `<div class="row"><div><h2>برنامهٔ کلی تا پایان سال</h2><p class="muted">اینجا برنامه را بچین؛ در «امروز» فقط بخش‌ها و کارهای همان روز را ببین.</p></div>${button("＋ گروه / فعالیت", "addGroup", "", "primary")}</div><div class="card"><div class="actions"><label>سال شمسی<input id="planner-year" type="number" min="1300" max="1599" value="${y}" style="width:110px"></label><label>ماه<select id="planner-month">${months.map((n, i) => `<option value="${i + 1}" ${m === i + 1 ? "selected" : ""}>${n}</option>`).join("")}</select></label>${button("نمایش", "chooseMonth")}${button("ماه قبل", "shiftMonth", "-1")}${button("ماه بعد", "shiftMonth", "1")}${button("تعیین برنامهٔ یک بازه / ماه / سال", "bulk", "", "primary")}${button("ورود / خروجی اکسل", "nav", "excel")}</div><div class="notice">هر خانه، بخش‌های دقیقه‌ای است: <b dir="ltr">5 5 5</b> یعنی سه بخش پنج‌دقیقه‌ای؛ <b dir="ltr">3×5</b> هم همین معنی را دارد. تغییر هر خانه خودکار ذخیره می‌شود. خالی‌بودن خانهٔ هر فعالیت یعنی ارفاقی همان فعالیت. گزینهٔ «روز خالی» فقط برای استراحت کل روز است؛ کارهای پروژه‌ای باقی می‌مانند.</div></div><div class="table-wrap"><table><thead><tr><th>شماره روز</th><th>تاریخ / روز</th><th>بیدارباش</th>${activities.map((a) => `<th>${esc(a.name)}</th>`).join("")}<th>جمع برنامه</th><th>روز خالی</th><th>نمای روز</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function changePlanInput(input) {
   const k = input.dataset.day,
@@ -870,6 +884,11 @@ function seriesDialog(id) {
   );
 }
 const actions = {
+  graceExpand: (id) => {
+    if (graceExpanded.has(id)) graceExpanded.delete(id);
+    else graceExpanded.add(id);
+    render();
+  },
   excelCommit: commitExcel,
   excelMonth: () => exportExcel(false),
   excelYear: () => exportExcel(true),
@@ -1079,14 +1098,14 @@ function renderExcel() {
   );
   html += card(
     "جدول اکسل قابل ویرایش",
-    `<p>برنامهٔ ماه ${months[calendar.m - 1]} ${fa(calendar.y)} یا کل سال را بگیر، در جدول پیوسته به سبک TRACK ویرایش کن و دوباره وارد کن. ماه و سال را از «برنامهٔ کلی» انتخاب کن.</p><div class="actions">${button("دریافت اکسل این ماه", "excelMonth", "", "primary")}${button("دریافت اکسل سال به سبک TRACK", "excelYear")}${button("نسخهٔ ماهانهٔ فشرده", "excelCompact")}</div><p><a href="raval-template.xlsx?v=2.3.0" download>دانلود قالب خام برنامه و کارها</a></p><small>شیت برنامهٔ روزانه: جدول پیوسته با بخش‌های زمانی، جمع‌های مشکی و خانه‌های نامشخص سبز؛ شیت «کارها»: پروژه، عنوان، برچسب، تاریخ و ساعت؛ شیت «گروه‌ها»: گروه‌های دلخواه.</small>`,
+    `<p>برنامهٔ ماه ${months[calendar.m - 1]} ${fa(calendar.y)} یا کل سال را بگیر، در جدول پیوسته به سبک TRACK ویرایش کن و دوباره وارد کن. ماه و سال را از «برنامهٔ کلی» انتخاب کن.</p><div class="actions">${button("دریافت اکسل این ماه", "excelMonth", "", "primary")}${button("دریافت اکسل سال به سبک TRACK", "excelYear")}${button("نسخهٔ ماهانهٔ فشرده", "excelCompact")}</div><p><a href="raval-template.xlsx?v=2.4.0" download>دانلود قالب خام برنامه و کارها</a></p><small>شیت برنامهٔ روزانه: جدول پیوسته با بخش‌های زمانی، جمع‌های مشکی و خانه‌های ارفاقی سبز؛ شیت «کارها»: پروژه، عنوان، برچسب، تاریخ و ساعت؛ شیت «گروه‌ها»: گروه‌های دلخواه.</small>`,
   );
   if (pendingExcel) {
     const p = pendingExcel,
       existing = p.plans.filter((r) => state.plans[r.date]).length;
     html += card(
       "پیش‌نمایش " + esc(p.fileName),
-      `<div class="grid"><div><b>${fa(p.plans.length)}</b> روز معتبر</div><div><b>${fa(p.tasks.length)}</b> کار پروژه‌ای</div><div><b>${fa(p.groups.length)}</b> گروه جدید</div></div><p>خطا: ${fa(p.errors.length)} ردیف • خانهٔ ستاره‌دار بدون زمان مشخص: ${fa(p.stars)}</p>${p.stars ? '<div class="notice">علامت‌های * به دقیقه یا انجام‌شده تبدیل نمی‌شوند؛ بخش‌های بدون زمان در برنامه خالی می‌مانند.</div>' : ""}${p.warnings.map((w) => '<p class="notice">' + esc(w) + "</p>").join("")}${
+      `<div class="grid"><div><b>${fa(p.plans.length)}</b> روز معتبر</div><div><b>${fa(p.tasks.length)}</b> کار پروژه‌ای</div><div><b>${fa(p.groups.length)}</b> گروه جدید</div></div><p>خطا: ${fa(p.errors.length)} ردیف • خانهٔ ستاره‌دار ارفاقی: ${fa(p.stars)}</p>${p.stars ? '<div class="notice">خانه‌های خالی یا * برای همان فعالیت ارفاقی‌اند؛ دقیقه یا انجام‌شده حساب نمی‌شوند و کل روز را تعطیل نمی‌کنند.</div>' : ""}${p.warnings.map((w) => '<p class="notice">' + esc(w) + "</p>").join("")}${
         p.errors.length
           ? '<div class="notice"><b>ردیف‌های زیر وارد نمی‌شوند؛ می‌توانی فایل را اصلاح و دوباره انتخاب کنی:</b><ul>' +
             p.errors
