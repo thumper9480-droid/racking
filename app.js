@@ -31,6 +31,9 @@ const storageKey = "raval-desktop-v1",
     "اسفند",
   ],
   week = ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"];
+let pendingExcel = null,
+  excelBusy = false,
+  excelLoader = null;
 let state,
   tab = "today",
   selected = todayKey(),
@@ -111,6 +114,7 @@ function render() {
     ["projects", "پروژه‌ها"],
     ["reports", "گزارش‌ها"],
     ["settings", "تنظیمات"],
+    ["excel", "اکسل"],
   ]
     .map(([id, name]) => button(name, "nav", id, tab === id ? "on" : ""))
     .join("");
@@ -120,6 +124,7 @@ function render() {
     projects: renderProjects,
     reports: renderReports,
     settings: renderSettings,
+    excel: renderExcel,
   }[tab];
   fn();
   updateClock();
@@ -352,7 +357,7 @@ function renderPlanner() {
     rows += `<tr class="${p.off ? "off" : k === todayKey() ? "current" : ""}"><td>${n > 0 ? fa(n) : "—"}</td><td>${fa(d)} ${months[m - 1]}<br><small>${week[E.date(k).getDay()]}</small></td><td><input aria-label="بیدارباش ${label(k)}" data-day="${k}" data-field="wake" class="table-input wake" type="time" value="${p.wake}"></td>${activities.map((a) => `<td><input aria-label="${esc(a.name)} ${label(k)}" class="table-input" data-day="${k}" data-field="${a.id}" placeholder="۵ ۵ ۵" value="${p.off ? "" : (p.blocks[a.id] || []).join(" ")}"></td>`).join("")}<td>${fa(sum)} دقیقه</td><td><label><input type="checkbox" data-off="${k}" ${p.off ? "checked" : ""}> خالی</label></td><td>${button("برنامهٔ روز", "openDay", k, "small")}${button("ویرایش", "editDay", k, "small")}</td></tr>`;
   }
   $("#view").innerHTML =
-    `<div class="row"><div><h2>برنامهٔ کلی تا پایان سال</h2><p class="muted">اینجا برنامه را بچین؛ در «امروز» فقط بخش‌ها و کارهای همان روز را ببین.</p></div>${button("＋ گروه / فعالیت", "addGroup", "", "primary")}</div><div class="card"><div class="actions"><label>سال شمسی<input id="planner-year" type="number" min="1300" max="1599" value="${y}" style="width:110px"></label><label>ماه<select id="planner-month">${months.map((n, i) => `<option value="${i + 1}" ${m === i + 1 ? "selected" : ""}>${n}</option>`).join("")}</select></label>${button("نمایش", "chooseMonth")}${button("ماه قبل", "shiftMonth", "-1")}${button("ماه بعد", "shiftMonth", "1")}${button("تعیین برنامهٔ یک بازه / ماه / سال", "bulk", "", "primary")}</div><div class="notice">هر خانه، بخش‌های دقیقه‌ای است: <b dir="ltr">5 5 5</b> یعنی سه بخش پنج‌دقیقه‌ای؛ <b dir="ltr">3×5</b> هم همین معنی را دارد. تغییر هر خانه خودکار ذخیره می‌شود. «خالی» یعنی بدون برنامهٔ روتین؛ کارهای پروژه‌ای آن روز باقی می‌مانند.</div></div><div class="table-wrap"><table><thead><tr><th>شماره روز</th><th>تاریخ / روز</th><th>بیدارباش</th>${activities.map((a) => `<th>${esc(a.name)}</th>`).join("")}<th>جمع برنامه</th><th>روز خالی</th><th>نمای روز</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    `<div class="row"><div><h2>برنامهٔ کلی تا پایان سال</h2><p class="muted">اینجا برنامه را بچین؛ در «امروز» فقط بخش‌ها و کارهای همان روز را ببین.</p></div>${button("＋ گروه / فعالیت", "addGroup", "", "primary")}</div><div class="card"><div class="actions"><label>سال شمسی<input id="planner-year" type="number" min="1300" max="1599" value="${y}" style="width:110px"></label><label>ماه<select id="planner-month">${months.map((n, i) => `<option value="${i + 1}" ${m === i + 1 ? "selected" : ""}>${n}</option>`).join("")}</select></label>${button("نمایش", "chooseMonth")}${button("ماه قبل", "shiftMonth", "-1")}${button("ماه بعد", "shiftMonth", "1")}${button("تعیین برنامهٔ یک بازه / ماه / سال", "bulk", "", "primary")}${button("ورود / خروجی اکسل", "nav", "excel")}</div><div class="notice">هر خانه، بخش‌های دقیقه‌ای است: <b dir="ltr">5 5 5</b> یعنی سه بخش پنج‌دقیقه‌ای؛ <b dir="ltr">3×5</b> هم همین معنی را دارد. تغییر هر خانه خودکار ذخیره می‌شود. «خالی» یعنی بدون برنامهٔ روتین؛ کارهای پروژه‌ای آن روز باقی می‌مانند.</div></div><div class="table-wrap"><table><thead><tr><th>شماره روز</th><th>تاریخ / روز</th><th>بیدارباش</th>${activities.map((a) => `<th>${esc(a.name)}</th>`).join("")}<th>جمع برنامه</th><th>روز خالی</th><th>نمای روز</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 function changePlanInput(input) {
   const k = input.dataset.day,
@@ -865,6 +870,13 @@ function seriesDialog(id) {
   );
 }
 const actions = {
+  excelCommit: commitExcel,
+  excelMonth: () => exportExcel(false),
+  excelYear: () => exportExcel(true),
+  excelClear: () => {
+    pendingExcel = null;
+    render();
+  },
   pickActivity: (id) => {
     $("#activity-name").value = groupName(id);
     updateActivityMatches();
@@ -1012,6 +1024,7 @@ document.addEventListener("change", (e) => {
       render();
     }
     if (el.id === "restore") restore(el.files[0]);
+    if (el.id === "excel-file") importExcel(el.files[0]);
   } catch (err) {
     toast(err.message);
   }
@@ -1042,3 +1055,150 @@ setInterval(tick, 1000);
 document.addEventListener("input", (e) => {
   if (e.target.id === "activity-name") updateActivityMatches();
 });
+
+function loadExcelJS() {
+  if (window.ExcelJS) return Promise.resolve(window.ExcelJS);
+  if (excelLoader) return excelLoader;
+  excelLoader = new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "vendor/exceljs.min.js?v=4.4.0";
+    script.onload = () => resolve(window.ExcelJS);
+    script.onerror = () => {
+      excelLoader = null;
+      reject(Error("ابزار اکسل بارگذاری نشد؛ صفحه را تازه کن."));
+    };
+    document.head.append(script);
+  });
+  return excelLoader;
+}
+function renderExcel() {
+  let html = card(
+    "برنامه و کارها را از اکسل وارد کن",
+    `<p>فایل TRACK.xlsx و قالب خود روال پشتیبانی می‌شوند. برنامهٔ روزانه، گروه‌ها و کارهای پروژه هرکدام در بخش مربوط وارد می‌شوند.</p><label>انتخاب فایل Excel (.xlsx)<input class="field" id="excel-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ${excelBusy ? "disabled" : ""}></label>${excelBusy ? "<p>در حال خواندن فایل…</p>" : ""}<div class="notice">فایل فقط در مرورگر خودت خوانده می‌شود. قبل از ورود، پیش‌نمایش را ببین؛ ورود اکسل، زمان واقعی یا تیک انجام فعالیت‌ها ایجاد نمی‌کند.</div>`,
+  );
+  html += card(
+    "جدول اکسل قابل ویرایش",
+    `<p>برنامهٔ ماه ${months[calendar.m - 1]} ${fa(calendar.y)} یا کل سال را بگیر، در اکسل ویرایش کن و دوباره وارد کن. ماه و سال را از «برنامهٔ کلی» انتخاب کن.</p><div class="actions">${button("دریافت اکسل این ماه", "excelMonth", "", "primary")}${button("دریافت اکسل کل سال", "excelYear")}</div><p><a href="raval-template.xlsx" download>دانلود قالب خام برنامه و کارها</a></p><small>شیت «برنامه روزانه»: تاریخ، بیدارباش و بخش‌های دقیقه‌ای؛ شیت «کارها»: پروژه، عنوان، برچسب، تاریخ و ساعت؛ شیت «گروه‌ها»: گروه‌های دلخواه.</small>`,
+  );
+  if (pendingExcel) {
+    const p = pendingExcel,
+      existing = p.plans.filter((r) => state.plans[r.date]).length;
+    html += card(
+      "پیش‌نمایش " + esc(p.fileName),
+      `<div class="grid"><div><b>${fa(p.plans.length)}</b> روز معتبر</div><div><b>${fa(p.tasks.length)}</b> کار پروژه‌ای</div><div><b>${fa(p.groups.length)}</b> گروه جدید</div></div><p>خطا: ${fa(p.errors.length)} ردیف • خانهٔ ستاره‌دار بدون زمان مشخص: ${fa(p.stars)}</p>${p.stars ? '<div class="notice">علامت‌های * به دقیقه یا انجام‌شده تبدیل نمی‌شوند؛ بخش‌های بدون زمان در برنامه خالی می‌مانند.</div>' : ""}${p.warnings.map((w) => '<p class="notice">' + esc(w) + "</p>").join("")}${
+        p.errors.length
+          ? '<div class="notice"><b>ردیف‌های زیر وارد نمی‌شوند؛ می‌توانی فایل را اصلاح و دوباره انتخاب کنی:</b><ul>' +
+            p.errors
+              .slice(0, 20)
+              .map(
+                (e) =>
+                  "<li>" +
+                  esc(e.sheet) +
+                  "، ردیف " +
+                  fa(e.row) +
+                  ": " +
+                  esc(e.message) +
+                  "</li>",
+              )
+              .join("") +
+            "</ul>" +
+            (p.errors.length > 20 ? "موارد بیشتری هم وجود دارد." : "") +
+            "</div>"
+          : ""
+      }<div class="table-wrap"><table><thead><tr><th>تاریخ شمسی</th><th>بیدارباش</th><th>برنامهٔ بخش‌ها (دقیقه)</th></tr></thead><tbody>${p.plans
+        .slice(0, 7)
+        .map(
+          (r) =>
+            "<tr><td>" +
+            label(r.date) +
+            "</td><td>" +
+            r.plan.wake +
+            "</td><td>" +
+            Object.entries(r.plan.blocks)
+              .filter(([, list]) => list.length)
+              .map(
+                ([id, list]) =>
+                  esc(E.activity(p.draft, id).name) +
+                  ": " +
+                  list.map(fa).join(" + "),
+              )
+              .join(" • ") +
+            "</td></tr>",
+        )
+        .join(
+          "",
+        )}</tbody></table></div><p class="muted">نمایش چند ردیف اول؛ همهٔ ردیف‌های معتبر با تأیید وارد می‌شوند.</p><label><input id="excel-overwrite" type="checkbox"> برنامه‌ها و کارهای موجود با اطلاعات فایل جایگزین شوند</label><small>${fa(existing)} روز در حال حاضر برنامهٔ اختصاصی دارند؛ بدون این انتخاب حفظ می‌شوند. ثبت‌های زمانی و بقیهٔ تاریخ‌ها حذف نمی‌شوند.</small>${p.startDate ? '<label><input id="excel-start" type="checkbox" checked> شروع شماره‌روز از ' + label(p.startDate) + "، مطابق جدول اکسل</label>" : ""}<div class="actions" style="margin-top:16px">${button(p.errors.length ? "ورود ردیف‌های معتبر" : "تأیید و ورود اطلاعات", "excelCommit", "", "primary")}${button("انصراف", "excelClear")}</div>`,
+    );
+  }
+  $("#view").innerHTML = html;
+}
+async function importExcel(file) {
+  if (!file || excelBusy) return;
+  if (!/\.xlsx$/i.test(file.name))
+    return toast("فایل را با پسوند xlsx ذخیره کن.");
+  if (file.size > 8 * 1024 * 1024)
+    return toast("حداکثر اندازهٔ فایل ۸ مگابایت است.");
+  excelBusy = true;
+  pendingExcel = null;
+  render();
+  try {
+    const ExcelJS = await loadExcelJS(),
+      workbook = new ExcelJS.Workbook();
+    await workbook.xlsx.load(await file.arrayBuffer(), {
+      ignoreNodes: [
+        "dataValidations",
+        "conditionalFormatting",
+        "drawing",
+        "picture",
+      ],
+    });
+    const report = window.RavalExcel.readWorkbook(
+      workbook,
+      state,
+      () => "g-" + crypto.randomUUID(),
+    );
+    pendingExcel = { ...report, fileName: file.name };
+  } catch (err) {
+    toast("ورود اکسل انجام نشد: " + err.message);
+  } finally {
+    excelBusy = false;
+    if (tab === "excel") render();
+  }
+}
+function commitExcel() {
+  if (!pendingExcel) return;
+  if (state.active)
+    return toast("ابتدا فعالیت در حال اجرا را پایان بده؛ سپس فایل را وارد کن.");
+  const result = window.RavalExcel.applyReport(state, pendingExcel, {
+    overwrite: $("#excel-overwrite").checked,
+    setStart: !!$("#excel-start")?.checked,
+  });
+  state = result.state;
+  const dates = pendingExcel.plans.map((r) => r.date);
+  pendingExcel = null;
+  selected = dates.includes(todayKey()) ? todayKey() : dates[0] || todayKey();
+  calendar = E.persian(selected);
+  save();
+  tab = "today";
+  render();
+  toast(
+    `${fa(result.plans)} روز و ${fa(result.tasks)} کار وارد شد؛ ${fa(result.skipped)} مورد موجود حفظ شد.`,
+  );
+}
+async function exportExcel(fullYear) {
+  try {
+    const ExcelJS = await loadExcelJS(),
+      workbook = window.RavalExcel.buildWorkbook(ExcelJS, state, {
+        year: calendar.y,
+        month: fullYear ? null : calendar.m,
+      });
+    const data = await workbook.xlsx.writeBuffer();
+    exportFile(
+      data,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      `raval-${calendar.y}${fullYear ? "" : "-" + calendar.m}.xlsx`,
+    );
+  } catch (err) {
+    toast("ساخت فایل اکسل ناموفق بود: " + err.message);
+  }
+}
