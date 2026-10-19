@@ -431,7 +431,13 @@
     E.validate(next);
     return { state: next, plans, tasks, skipped };
   }
-  function buildWorkbook(ExcelJS, state, { year, month = null }) {
+  function buildWorkbook(
+    ExcelJS,
+    state,
+    { year, month = null, layout = "track" },
+  ) {
+    const track = layout !== "monthly",
+      headerRows = track ? 1 : 2;
     const w = new ExcelJS.Workbook();
     w.creator = "Raval";
     w.calcProperties.fullCalcOnLoad = true;
@@ -448,7 +454,7 @@
     const dark = {
       type: "pattern",
       pattern: "solid",
-      fgColor: { argb: "FF173D38" },
+      fgColor: { argb: track ? "FF000000" : "FF173D38" },
     };
     const fill = (color) => ({
       type: "pattern",
@@ -465,41 +471,48 @@
       return s;
     };
     const scheduleSheets = [];
-    for (const m of requestedMonths) {
-      const keys = E.range(
-        E.fromPersian(year, m, 1),
-        E.fromPersian(year, m, E.monthLength(year, m)),
+    const batches = track ? [requestedMonths] : requestedMonths.map((m) => [m]);
+    for (const batch of batches) {
+      const m = batch[0];
+      const keys = batch.flatMap((m) =>
+        E.range(
+          E.fromPersian(year, m, 1),
+          E.fromPersian(year, m, E.monthLength(year, m)),
+        ),
       );
-      const s = w.addWorksheet(`${monthNames[m - 1]} ${year}`, {
-        views: [
-          {
-            rightToLeft: true,
-            state: "frozen",
-            ySplit: 2,
-            topLeftCell: "A3",
-            activeCell: "A3",
-            showGridLines: false,
-            zoomScale: 90,
+      const s = w.addWorksheet(
+        track ? "برنامه روزانه" : `${monthNames[m - 1]} ${year}`,
+        {
+          views: [
+            {
+              rightToLeft: true,
+              state: "frozen",
+              ySplit: headerRows,
+              topLeftCell: `A${headerRows + 1}`,
+              activeCell: `A${headerRows + 1}`,
+              showGridLines: false,
+              zoomScale: 90,
+            },
+          ],
+          pageSetup: {
+            paperSize: 9,
+            orientation: "landscape",
+            fitToPage: true,
+            fitToWidth: 1,
+            fitToHeight: track ? 0 : 1,
+            printTitlesRow: `1:${headerRows}`,
+            margins: {
+              left: 0.2,
+              right: 0.2,
+              top: 0.35,
+              bottom: 0.3,
+              header: 0.1,
+              footer: 0.1,
+            },
+            horizontalCentered: true,
           },
-        ],
-        pageSetup: {
-          paperSize: 9,
-          orientation: "landscape",
-          fitToPage: true,
-          fitToWidth: 1,
-          fitToHeight: 1,
-          printTitlesRow: "1:2",
-          margins: {
-            left: 0.2,
-            right: 0.2,
-            top: 0.35,
-            bottom: 0.3,
-            header: 0.1,
-            footer: 0.1,
-          },
-          horizontalCentered: true,
         },
-      });
+      );
       scheduleSheets.push(s);
       const metadata = [
         ["شماره روز", 4.8],
@@ -513,7 +526,7 @@
       metadata.forEach(([name, width], i) => {
         s.getCell(1, i + 1).value = name;
         s.getColumn(i + 1).width = width;
-        s.mergeCells(1, i + 1, 2, i + 1);
+        if (!track) s.mergeCells(1, i + 1, 2, i + 1);
       });
       let c = 8;
       const columns = [];
@@ -524,19 +537,25 @@
         );
         if (max === 1) {
           s.getCell(1, c).value = a.name;
-          s.mergeCells(1, c, 2, c);
+          if (!track) s.mergeCells(1, c, 2, c);
           s.getColumn(c).width = a.id === "walk" ? 9 : a.id === "book" ? 6 : 10;
           columns.push({ id: a.id, start: c, width: 1, total: null });
           c++;
         } else {
           const total = c++;
-          s.getCell(1, total).value = "جمع " + a.name;
-          s.mergeCells(1, total, 2, total);
+          const name = a.id === "technical" ? "مطالعه تکنیکال" : a.name;
+          s.getCell(1, total).value = "جمع " + name;
+          if (!track) s.mergeCells(1, total, 2, total);
           s.getColumn(total).width = 5;
-          s.getCell(1, c).value = a.name;
-          s.mergeCells(1, c, 1, c + max - 1);
+          if (track && a.id === "chart") {
+            s.getCell(1, total).value = name;
+            s.mergeCells(1, total, 1, c + max - 1);
+          } else {
+            s.getCell(1, c).value = name;
+            s.mergeCells(1, c, 1, c + max - 1);
+          }
           for (let j = 0; j < max; j++) {
-            s.getCell(2, c + j).value = j + 1;
+            if (!track) s.getCell(2, c + j).value = j + 1;
             s.getColumn(c + j).width = 2.7;
           }
           columns.push({ id: a.id, start: c, width: max, total });
@@ -545,31 +564,32 @@
       }
       const offColumn = c;
       s.getCell(1, c).value = "روز خالی";
-      s.mergeCells(1, c, 2, c);
+      if (!track) s.mergeCells(1, c, 2, c);
       s.getColumn(c).width = 5;
-      for (let r = 1; r <= keys.length + 2; r++) {
+      s.getColumn(c).hidden = track;
+      for (let r = 1; r <= keys.length + headerRows; r++) {
         const row = s.getRow(r);
-        row.height = r <= 2 ? 20 : 14.5;
+        row.height = r <= headerRows ? (track ? 45 : 20) : 14.5;
         for (let n = 1; n <= c; n++) {
           const cell = row.getCell(n);
           cell.font = {
             name: "Tahoma",
-            size: r <= 2 ? 8 : 9,
-            color: { argb: r <= 2 ? "FFFFFFFF" : "FF182822" },
-            bold: r <= 2,
+            size: r <= headerRows ? 8 : 9,
+            color: { argb: r <= headerRows ? "FFFFFFFF" : "FF182822" },
+            bold: r <= headerRows,
           };
           cell.border = grid;
           cell.alignment = {
             horizontal: "center",
             vertical: "middle",
-            wrapText: r <= 2,
-            shrinkToFit: r > 2,
+            wrapText: r <= headerRows,
+            shrinkToFit: r > headerRows,
           };
-          cell.fill = r <= 2 ? dark : fill("FFFFFFFF");
+          cell.fill = r <= headerRows ? dark : fill("FFFFFFFF");
         }
       }
       keys.forEach((k, i) => {
-        const r = i + 3,
+        const r = i + headerRows + 1,
           p = E.plan(state, k),
           j = E.persian(k),
           num =
@@ -623,6 +643,15 @@
         const weekend = [0, 6].includes(E.date(k).getDay());
         if (p.off || weekend)
           for (let n = 1; n <= c; n++) s.getCell(r, n).fill = fill("FFFFE078");
+        if (track && !p.off && !weekend)
+          for (const g of columns) {
+            if (g.width > 1 && !(p.blocks[g.id] || []).length)
+              for (let j = 0; j < g.width; j++) {
+                const cell = s.getCell(r, g.start + j);
+                cell.value = "*";
+                cell.fill = fill("FF99FF99");
+              }
+          }
         for (const n of [6, ...columns.map((g) => g.total).filter(Boolean)]) {
           const cell = s.getCell(r, n);
           cell.fill = dark;
@@ -634,6 +663,37 @@
           };
         }
       });
+      if (track) {
+        for (let n = 1; n <= c; n++) {
+          const cell = s.getCell(1, n);
+          cell.fill = fill("FFD9D9D9");
+          cell.font = {
+            name: "Tahoma",
+            size: 9,
+            bold: true,
+            color: { argb: "FF0000FF" },
+          };
+        }
+        for (const g of columns) {
+          if (g.total) {
+            const cell = s.getCell(1, g.total);
+            cell.fill = dark;
+            cell.font = {
+              name: "Tahoma",
+              size: 8,
+              bold: true,
+              color: { argb: "FFFFFFFF" },
+            };
+          }
+        }
+        s.getCell(1, 6).fill = dark;
+        s.getCell(1, 6).font = {
+          name: "Tahoma",
+          size: 9,
+          bold: true,
+          color: { argb: "FFFFFFFF" },
+        };
+      }
       const estimatedPixels = s.columns.reduce(
         (n, col) => n + (col.width || 8) * 7 + 5,
         0,
@@ -642,8 +702,12 @@
         55,
         Math.min(90, Math.floor((1250 / estimatedPixels) * 100)),
       );
-      s.pageSetup.printArea = `A1:${letter(c)}${keys.length + 2}`;
-      s.headerFooter.oddHeader = "&Cروال • " + monthNames[m - 1] + " " + year;
+      s.pageSetup.printArea = `A1:${letter(c)}${keys.length + headerRows}`;
+      s.headerFooter.oddHeader =
+        "&Cروال • " +
+        (track && !month ? "برنامه سالانه" : monthNames[m - 1]) +
+        " " +
+        year;
       s.headerFooter.oddFooter = "&C&P / &N";
       s.properties.defaultRowHeight = 14.5;
       s.properties.tabColor = { argb: m % 2 ? "FF087F69" : "FFE4B85A" };
@@ -696,9 +760,11 @@
       views: [{ rightToLeft: true, zoomScale: 90 }],
     });
     [
-      "هر ماه در یک شیت جداست؛ برای دیدن ماه دیگر از زبانه‌های پایین اکسل استفاده کن.",
+      track
+        ? "این قالب به سبک TRACK است: روزها پیوسته در یک شیت، با یک ردیف عنوان و گروه‌های زمانی کنار هم."
+        : "هر ماه در یک شیت جداست؛ برای دیدن ماه دیگر از زبانه‌های پایین اکسل استفاده کن.",
       "جدول فشرده، راست‌به‌چپ و خط‌کشی‌شده است؛ سرستون‌ها هنگام حرکت ثابت می‌مانند.",
-      "هر ردیف یک روز شمسی است؛ دقیقه‌های هر بخش را در خانه‌های کوچک زیر گروه بنویس.",
+      "هر ردیف یک روز شمسی است؛ دقیقه‌های هر بخش را در خانه‌های کوچک زیر گروه بنویس. خانهٔ * یعنی هنوز زمان آن بخش تعیین نشده است.",
       "جمع هر گروه و ساعت مفید روز با فرمول محاسبه می‌شود؛ خانه‌های تیره را ویرایش نکن.",
       "ساعت را مثل 08:30 بنویس؛ در فایل قدیمی 8.5 یعنی 08:30 و 8.45 یعنی 08:45.",
       "ستون روز خالی: بله یعنی آن روز بدون برنامهٔ روتین است. شنبه و یکشنبه برای خوانایی زرد هستند؛ رنگ زرد به‌تنهایی روز را خالی نمی‌کند.",
@@ -736,7 +802,7 @@
     const now = E.persian(E.key(new Date()));
     w.views = [
       {
-        activeTab: !month && now.y === year ? now.m - 1 : 0,
+        activeTab: !track && !month && now.y === year ? now.m - 1 : 0,
         firstSheet: 0,
         visibility: "visible",
       },

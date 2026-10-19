@@ -80,7 +80,7 @@ test("all-year template and export are valid editable XLSX, preserving plans and
     done: false,
     completedAt: null,
   });
-  const w = X.buildWorkbook(ExcelJS, s, { year: 1405 });
+  const w = X.buildWorkbook(ExcelJS, s, { year: 1405, layout: "monthly" });
   const bytes = await w.xlsx.writeBuffer(),
     read = new ExcelJS.Workbook();
   await read.xlsx.load(bytes);
@@ -196,3 +196,40 @@ test(
     assert.equal(X.applyReport(E.fresh(), r).plans, 203);
   },
 );
+test("TRACK layout is continuous with one header, original group positions and source colors", async () => {
+  const s = E.fresh(),
+    k = E.parsePersian("1405/7/27");
+  E.setPlan(s, k, {
+    wake: "06:30",
+    off: false,
+    blocks: { walk: [35], book: [40], technical: [], platform: [], chart: [] },
+  });
+  const w = X.buildWorkbook(ExcelJS, s, { year: 1405 });
+  assert.equal(w.worksheets.length, 4);
+  const table = w.getWorksheet("برنامه روزانه");
+  assert.equal(table.rowCount, 366);
+  assert.equal(table.views[0].topLeftCell, "A2");
+  assert.equal(table.views[0].ySplit, 1);
+  assert.equal(table.getCell("A1").value, "شماره روز");
+  assert.equal(table.getCell("J1").value, "جمع مطالعه تکنیکال");
+  assert.equal(table.getCell("W1").value, "جمع پلتفرم");
+  assert.equal(table.getCell("AJ1").value, "تحلیل چارت");
+  assert.ok(table.model.merges.includes("K1:V1"));
+  assert.ok(table.model.merges.includes("X1:AI1"));
+  assert.ok(table.model.merges.includes("AJ1:AZ1"));
+  assert.equal(table.getColumn(53).hidden, true);
+  const r = E.range(E.first(1405), k).length + 1;
+  assert.equal(table.getCell(r, 11).value, "*");
+  assert.equal(table.getCell(r, 11).fill.fgColor.argb, "FF99FF99");
+  assert.equal(table.getCell(r, 6).fill.fgColor.argb, "FF000000");
+  const read = new ExcelJS.Workbook();
+  await read.xlsx.load(await w.xlsx.writeBuffer());
+  const report = X.readWorkbook(read, E.fresh(), id);
+  assert.equal(report.errors.length, 0);
+  assert.equal(report.plans.length, 365);
+  assert.equal(report.plans.find((p) => p.date === k).plan.wake, "06:30");
+  assert.deepEqual(
+    report.plans.find((p) => p.date === k).plan.blocks.technical,
+    [],
+  );
+});

@@ -873,6 +873,7 @@ const actions = {
   excelCommit: commitExcel,
   excelMonth: () => exportExcel(false),
   excelYear: () => exportExcel(true),
+  excelCompact: () => exportExcel(true, "monthly"),
   excelClear: () => {
     pendingExcel = null;
     render();
@@ -1078,7 +1079,7 @@ function renderExcel() {
   );
   html += card(
     "جدول اکسل قابل ویرایش",
-    `<p>برنامهٔ ماه ${months[calendar.m - 1]} ${fa(calendar.y)} یا کل سال را بگیر، در جدول‌های ماهانهٔ کم‌عرض اکسل ویرایش کن و دوباره وارد کن. ماه و سال را از «برنامهٔ کلی» انتخاب کن.</p><div class="actions">${button("دریافت اکسل این ماه", "excelMonth", "", "primary")}${button("دریافت اکسل سال (۱۲ شیت ماهانه)", "excelYear")}</div><p><a href="raval-template.xlsx?v=2.2.1" download>دانلود قالب خام برنامه و کارها</a></p><small>شیت جدا برای هر ماه: تاریخ، بیدارباش و بخش‌های دقیقه‌ای در جدول فشرده؛ شیت «کارها»: پروژه، عنوان، برچسب، تاریخ و ساعت؛ شیت «گروه‌ها»: گروه‌های دلخواه.</small>`,
+    `<p>برنامهٔ ماه ${months[calendar.m - 1]} ${fa(calendar.y)} یا کل سال را بگیر، در جدول پیوسته به سبک TRACK ویرایش کن و دوباره وارد کن. ماه و سال را از «برنامهٔ کلی» انتخاب کن.</p><div class="actions">${button("دریافت اکسل این ماه", "excelMonth", "", "primary")}${button("دریافت اکسل سال به سبک TRACK", "excelYear")}${button("نسخهٔ ماهانهٔ فشرده", "excelCompact")}</div><p><a href="raval-template.xlsx?v=2.3.0" download>دانلود قالب خام برنامه و کارها</a></p><small>شیت برنامهٔ روزانه: جدول پیوسته با بخش‌های زمانی، جمع‌های مشکی و خانه‌های نامشخص سبز؛ شیت «کارها»: پروژه، عنوان، برچسب، تاریخ و ساعت؛ شیت «گروه‌ها»: گروه‌های دلخواه.</small>`,
   );
   if (pendingExcel) {
     const p = pendingExcel,
@@ -1185,12 +1186,13 @@ function commitExcel() {
     `${fa(result.plans)} روز و ${fa(result.tasks)} کار وارد شد؛ ${fa(result.skipped)} مورد موجود حفظ شد.`,
   );
 }
-async function exportExcel(fullYear) {
+async function exportExcel(fullYear, layout = "track") {
   try {
     const ExcelJS = await loadExcelJS(),
       workbook = window.RavalExcel.buildWorkbook(ExcelJS, state, {
         year: calendar.y,
         month: fullYear ? null : calendar.m,
+        layout,
       });
     const data = await workbook.xlsx.writeBuffer();
     exportFile(

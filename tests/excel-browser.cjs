@@ -47,7 +47,7 @@ const { chromium } = require("playwright"),
     file = await downloaded.path(),
     book = new ExcelJS.Workbook();
   await book.xlsx.load(fs.readFileSync(file));
-  assert.ok(book.worksheets.some((s) => /^.+ 14\d\d$/.test(s.name)));
+  assert.ok(book.getWorksheet("برنامه روزانه"));
   assert.ok(book.getWorksheet("کارها"));
   assert.ok(book.getWorksheet("گروه‌ها"));
   await page.locator("#excel-file").setInputFiles({
