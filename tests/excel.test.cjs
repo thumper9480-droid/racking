@@ -84,6 +84,19 @@ test("all-year template and export are valid editable XLSX, preserving plans and
   const bytes = await w.xlsx.writeBuffer(),
     read = new ExcelJS.Workbook();
   await read.xlsx.load(bytes);
+  const monthlySheets = read.worksheets.filter((sheet) =>
+    /^.+ 1405$/.test(sheet.name),
+  );
+  assert.equal(monthlySheets.length, 12);
+  for (const sheet of monthlySheets) {
+    assert.ok(sheet.rowCount <= 33);
+    assert.equal(sheet.views[0].topLeftCell, "A3");
+    assert.ok(!sheet.views[0].xSplit);
+    assert.ok(sheet.views[0].zoomScale <= 90);
+    assert.ok(sheet.getColumn(11).width <= 3);
+    assert.equal(sheet.getCell("A3").border.top.style, "thin");
+    assert.equal(sheet.pageSetup.fitToWidth, 1);
+  }
   const report = X.readWorkbook(read, E.fresh(), id);
   assert.equal(report.errors.length, 0);
   assert.equal(report.plans.length, 365);

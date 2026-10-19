@@ -47,17 +47,15 @@ const { chromium } = require("playwright"),
     file = await downloaded.path(),
     book = new ExcelJS.Workbook();
   await book.xlsx.load(fs.readFileSync(file));
-  assert.ok(book.getWorksheet("برنامه روزانه"));
+  assert.ok(book.worksheets.some((s) => /^.+ 14\d\d$/.test(s.name)));
   assert.ok(book.getWorksheet("کارها"));
   assert.ok(book.getWorksheet("گروه‌ها"));
-  await page
-    .locator("#excel-file")
-    .setInputFiles({
-      name: "roundtrip.xlsx",
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      buffer: fs.readFileSync(file),
-    });
+  await page.locator("#excel-file").setInputFiles({
+    name: "roundtrip.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: fs.readFileSync(file),
+  });
   await page.waitForFunction(() => pendingExcel?.plans.length > 0);
   assert.equal(await page.evaluate(() => pendingExcel.errors.length), 0);
   // Add a task and a new group through the Excel input, not only the existing planner format.
@@ -84,14 +82,12 @@ const { chromium } = require("playwright"),
   const groups = w.addWorksheet("گروه‌ها");
   groups.addRow(["نام فعالیت", "تخصصی", "زمان مفید"]);
   groups.addRow(["تحقیق جدید", "بله", "بله"]);
-  await page
-    .locator("#excel-file")
-    .setInputFiles({
-      name: "tasks.xlsx",
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      buffer: Buffer.from(await w.xlsx.writeBuffer()),
-    });
+  await page.locator("#excel-file").setInputFiles({
+    name: "tasks.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from(await w.xlsx.writeBuffer()),
+  });
   await page.waitForFunction(() => pendingExcel?.tasks.length === 1);
   await page.locator("[data-action=excelCommit]").click();
   assert.equal(await page.evaluate(() => state.tasks[0].project), "پروژه اکسل");
@@ -106,14 +102,12 @@ const { chromium } = require("playwright"),
   // A corrupt file cannot mutate the current state.
   const before = await page.evaluate(() => JSON.stringify(state));
   await page.locator("[data-action=nav][data-arg=excel]").click();
-  await page
-    .locator("#excel-file")
-    .setInputFiles({
-      name: "broken.xlsx",
-      mimeType:
-        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      buffer: Buffer.from("not an excel file"),
-    });
+  await page.locator("#excel-file").setInputFiles({
+    name: "broken.xlsx",
+    mimeType:
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    buffer: Buffer.from("not an excel file"),
+  });
   await page.waitForFunction(() => !excelBusy);
   assert.equal(await page.evaluate(() => JSON.stringify(state)), before);
   assert.equal(await page.evaluate(() => pendingExcel), null);

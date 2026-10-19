@@ -309,6 +309,12 @@
           y0 = value("سال"),
           m0 = value("ماه"),
           d0 = value("تاریخ", "روز ماه");
+        if (
+          norm(y0) === "سال" &&
+          norm(m0) === "ماه" &&
+          ["تاریخ", "روزماه"].includes(norm(d0))
+        )
+          continue;
         if (y0 === "" && m0 === "" && d0 === "") continue;
         try {
           const y = Number(E.digits(y0)),
@@ -428,78 +434,230 @@
   function buildWorkbook(ExcelJS, state, { year, month = null }) {
     const w = new ExcelJS.Workbook();
     w.creator = "Raval";
-    const s = w.addWorksheet("برنامه روزانه", {
-        views: [{ rightToLeft: true, state: "frozen", ySplit: 2, xSplit: 2 }],
-      }),
-      activities = state.activities.filter(
-        (a) =>
-          a.custom ||
-          ["walk", "book", "platform", "technical", "chart"].includes(a.id),
-      ),
-      keys = month
-        ? E.range(
-            E.fromPersian(year, month, 1),
-            E.fromPersian(year, month, E.monthLength(year, month)),
-          )
-        : E.range(E.first(year), E.add(E.first(year + 1), -1));
-    const names = [
-      "شماره روز",
-      "روز",
-      "تاریخ",
-      "ماه",
-      "سال",
-      "بیدار باش",
-      "روز خالی",
+    w.calcProperties.fullCalcOnLoad = true;
+    const ordered = ["walk", "book", "technical", "platform", "chart"];
+    const activities = [
+      ...ordered.map((id) => E.activity(state, id)).filter(Boolean),
+      ...state.activities.filter((a) => a.custom && !ordered.includes(a.id)),
     ];
-    names.forEach((n, i) => (s.getCell(1, i + 1).value = n));
-    const columns = [];
-    let c = 8;
-    for (const a of activities) {
-      const max = Math.max(
-        a.special ? (a.id === "chart" ? 16 : 12) : 1,
-        ...keys.map((k) => (E.plan(state, k).blocks[a.id] || []).length),
-      );
-      s.getCell(1, c).value = a.name;
-      if (max > 1) s.mergeCells(1, c, 1, c + max - 1);
-      for (let j = 0; j < max; j++)
-        s.getCell(2, c + j).value = "بخش " + (j + 1);
-      columns.push({ id: a.id, start: c, width: max });
-      c += max;
-    }
-    s.getCell(1, c).value = "جمع مفید";
-    keys.forEach((k, i) => {
-      const r = i + 3,
-        p = E.plan(state, k),
-        j = E.persian(k),
-        num = Math.round((E.date(k) - E.date(state.startDate)) / 86400000) + 1;
-      [
-        num,
-        ["یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنجشنبه", "جمعه", "شنبه"][
-          E.date(k).getDay()
-        ],
-        j.d,
-        monthNames[j.m - 1],
-        j.y,
-        p.wake,
-        p.off ? "بله" : "خیر",
-      ].forEach((v, n) => (s.getCell(r, n + 1).value = v));
-      for (const g of columns) {
-        const list = p.blocks[g.id] || [];
-        list.forEach((n, index) => (s.getCell(r, g.start + index).value = n));
-      }
-      s.getCell(r, c).value = E.blocks(state, k)
-        .filter((b) => E.activity(state, b.id).useful)
-        .reduce((n, b) => n + b.minutes, 0);
-      if (p.off)
-        s.getRow(r).fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FFFFEDB5" },
-        };
+    const requestedMonths = month
+      ? [month]
+      : Array.from({ length: 12 }, (_, i) => i + 1);
+    const border = { style: "thin", color: { argb: "FF6F7B75" } };
+    const grid = { top: border, left: border, bottom: border, right: border };
+    const dark = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF173D38" },
+    };
+    const fill = (color) => ({
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: color },
     });
-    for (let n = 1; n <= c; n++) s.getColumn(n).width = n <= 7 ? 15 : 10;
+    const letter = (n) => {
+      let s = "";
+      while (n) {
+        n--;
+        s = String.fromCharCode(65 + (n % 26)) + s;
+        n = Math.floor(n / 26);
+      }
+      return s;
+    };
+    const scheduleSheets = [];
+    for (const m of requestedMonths) {
+      const keys = E.range(
+        E.fromPersian(year, m, 1),
+        E.fromPersian(year, m, E.monthLength(year, m)),
+      );
+      const s = w.addWorksheet(`${monthNames[m - 1]} ${year}`, {
+        views: [
+          {
+            rightToLeft: true,
+            state: "frozen",
+            ySplit: 2,
+            topLeftCell: "A3",
+            activeCell: "A3",
+            showGridLines: false,
+            zoomScale: 90,
+          },
+        ],
+        pageSetup: {
+          paperSize: 9,
+          orientation: "landscape",
+          fitToPage: true,
+          fitToWidth: 1,
+          fitToHeight: 1,
+          printTitlesRow: "1:2",
+          margins: {
+            left: 0.2,
+            right: 0.2,
+            top: 0.35,
+            bottom: 0.3,
+            header: 0.1,
+            footer: 0.1,
+          },
+          horizontalCentered: true,
+        },
+      });
+      scheduleSheets.push(s);
+      const metadata = [
+        ["شماره روز", 4.8],
+        ["روز", 8],
+        ["تاریخ", 4],
+        ["ماه", 5.5],
+        ["سال", 5],
+        ["مفید", 6],
+        ["بیدار باش", 7],
+      ];
+      metadata.forEach(([name, width], i) => {
+        s.getCell(1, i + 1).value = name;
+        s.getColumn(i + 1).width = width;
+        s.mergeCells(1, i + 1, 2, i + 1);
+      });
+      let c = 8;
+      const columns = [];
+      for (const a of activities) {
+        const max = Math.max(
+          a.special ? (a.id === "chart" ? 16 : 12) : 1,
+          ...keys.map((k) => (E.plan(state, k).blocks[a.id] || []).length),
+        );
+        if (max === 1) {
+          s.getCell(1, c).value = a.name;
+          s.mergeCells(1, c, 2, c);
+          s.getColumn(c).width = a.id === "walk" ? 9 : a.id === "book" ? 6 : 10;
+          columns.push({ id: a.id, start: c, width: 1, total: null });
+          c++;
+        } else {
+          const total = c++;
+          s.getCell(1, total).value = "جمع " + a.name;
+          s.mergeCells(1, total, 2, total);
+          s.getColumn(total).width = 5;
+          s.getCell(1, c).value = a.name;
+          s.mergeCells(1, c, 1, c + max - 1);
+          for (let j = 0; j < max; j++) {
+            s.getCell(2, c + j).value = j + 1;
+            s.getColumn(c + j).width = 2.7;
+          }
+          columns.push({ id: a.id, start: c, width: max, total });
+          c += max;
+        }
+      }
+      const offColumn = c;
+      s.getCell(1, c).value = "روز خالی";
+      s.mergeCells(1, c, 2, c);
+      s.getColumn(c).width = 5;
+      for (let r = 1; r <= keys.length + 2; r++) {
+        const row = s.getRow(r);
+        row.height = r <= 2 ? 20 : 14.5;
+        for (let n = 1; n <= c; n++) {
+          const cell = row.getCell(n);
+          cell.font = {
+            name: "Tahoma",
+            size: r <= 2 ? 8 : 9,
+            color: { argb: r <= 2 ? "FFFFFFFF" : "FF182822" },
+            bold: r <= 2,
+          };
+          cell.border = grid;
+          cell.alignment = {
+            horizontal: "center",
+            vertical: "middle",
+            wrapText: r <= 2,
+            shrinkToFit: r > 2,
+          };
+          cell.fill = r <= 2 ? dark : fill("FFFFFFFF");
+        }
+      }
+      keys.forEach((k, i) => {
+        const r = i + 3,
+          p = E.plan(state, k),
+          j = E.persian(k),
+          num =
+            Math.round((E.date(k) - E.date(state.startDate)) / 86400000) + 1;
+        [
+          num > 0 ? num : "",
+          [
+            "یکشنبه",
+            "دوشنبه",
+            "سه‌شنبه",
+            "چهارشنبه",
+            "پنجشنبه",
+            "جمعه",
+            "شنبه",
+          ][E.date(k).getDay()],
+          j.d,
+          monthNames[j.m - 1],
+          j.y,
+          0,
+          p.wake,
+        ].forEach((v, n) => (s.getCell(r, n + 1).value = v));
+        s.getCell(r, offColumn).value = p.off ? "بله" : "خیر";
+        s.getCell(r, offColumn).dataValidation = {
+          type: "list",
+          allowBlank: true,
+          formulae: ['"بله,خیر"'],
+        };
+        const useful = [];
+        for (const g of columns) {
+          const values = p.blocks[g.id] || [];
+          values.forEach(
+            (n, index) => (s.getCell(r, g.start + index).value = n),
+          );
+          if (g.total) {
+            s.getCell(r, g.total).value = {
+              formula: `SUM(${letter(g.start)}${r}:${letter(g.start + g.width - 1)}${r})`,
+              result: values.reduce((a, b) => a + b, 0),
+            };
+          }
+          if (E.activity(state, g.id).useful)
+            useful.push(letter(g.total || g.start) + r);
+        }
+        const minutes = E.blocks(state, k)
+          .filter((b) => E.activity(state, b.id).useful)
+          .reduce((n, b) => n + b.minutes, 0);
+        s.getCell(r, 6).value = {
+          formula: `IF(${letter(offColumn)}${r}="بله",0,SUM(${useful.length ? useful.join(",") : "0"})/60)`,
+          result: minutes / 60,
+        };
+        s.getCell(r, 6).numFmt = "0.00";
+        const weekend = [0, 6].includes(E.date(k).getDay());
+        if (p.off || weekend)
+          for (let n = 1; n <= c; n++) s.getCell(r, n).fill = fill("FFFFE078");
+        for (const n of [6, ...columns.map((g) => g.total).filter(Boolean)]) {
+          const cell = s.getCell(r, n);
+          cell.fill = dark;
+          cell.font = {
+            name: "Tahoma",
+            size: 9,
+            bold: true,
+            color: { argb: "FFFFFFFF" },
+          };
+        }
+      });
+      const estimatedPixels = s.columns.reduce(
+        (n, col) => n + (col.width || 8) * 7 + 5,
+        0,
+      );
+      s.views[0].zoomScale = Math.max(
+        55,
+        Math.min(90, Math.floor((1250 / estimatedPixels) * 100)),
+      );
+      s.pageSetup.printArea = `A1:${letter(c)}${keys.length + 2}`;
+      s.headerFooter.oddHeader = "&Cروال • " + monthNames[m - 1] + " " + year;
+      s.headerFooter.oddFooter = "&C&P / &N";
+      s.properties.defaultRowHeight = 14.5;
+      s.properties.tabColor = { argb: m % 2 ? "FF087F69" : "FFE4B85A" };
+    }
     const tasks = w.addWorksheet("کارها", {
-      views: [{ rightToLeft: true, state: "frozen", ySplit: 1 }],
+      views: [
+        {
+          rightToLeft: true,
+          state: "frozen",
+          ySplit: 1,
+          topLeftCell: "A2",
+          zoomScale: 90,
+        },
+      ],
     });
     tasks.addRow([
       "پروژه",
@@ -520,9 +678,11 @@
         t.lead,
         t.done ? "بله" : "خیر",
       ]);
-    tasks.columns.forEach((c, i) => (c.width = i === 1 ? 40 : 22));
+    tasks.columns.forEach(
+      (col, i) => (col.width = [19, 34, 23, 17, 11, 17, 11][i]),
+    );
     const groups = w.addWorksheet("گروه‌ها", {
-      views: [{ rightToLeft: true }],
+      views: [{ rightToLeft: true, zoomScale: 90 }],
     });
     groups.addRow(["نام فعالیت", "تخصصی", "زمان مفید"]);
     for (const a of activities)
@@ -531,33 +691,56 @@
         a.special ? "بله" : "خیر",
         a.useful ? "بله" : "خیر",
       ]);
-    groups.columns.forEach((c) => (c.width = 25));
-    const guide = w.addWorksheet("راهنما", { views: [{ rightToLeft: true }] });
+    groups.columns.forEach((col) => (col.width = 23));
+    const guide = w.addWorksheet("راهنما", {
+      views: [{ rightToLeft: true, zoomScale: 90 }],
+    });
     [
-      "این فایل قالب ورودی روال است. برنامه روزانه، کارها و گروه‌ها به بخش خودشان وارد می‌شوند.",
-      "هر ردیف برنامه یک روز شمسی است؛ مقدار هر بخش دقیقه است. برای چند بخش، خانه‌های زیر همان گروه را پر کن.",
-      "ساعت را به شکل 08:30 وارد کن. در فایل قدیمی 8.5 به معنی 08:30 و 8.45 به معنی 08:45 است.",
-      "علامت * زمان مشخص ندارد و وارد بخش‌های برنامه نمی‌شود.",
-      "ستون جمع مفید خروجی محاسبات است و هنگام ورود دوباره شمرده نمی‌شود.",
-      "شیت کارها: پروژه و عنوان کار لازم است؛ تاریخ شمسی و ساعت برای یادآوری اختیاری‌اند.",
-      "برای ورود، فایل را با پسوند xlsx ذخیره کن و در برنامه ابتدا پیش‌نمایش را بررسی کن.",
-      "ورود اکسل برنامه و کار می‌سازد؛ زمان واقعی انجام یا تیک‌های انجام را از اعداد برنامه جعل نمی‌کند.",
-    ].forEach((x) => guide.addRow([x]));
-    guide.getColumn(1).width = 110;
-    for (const sheet of w.worksheets) {
-      const max = sheet === s ? 2 : 1;
-      for (let r = 1; r <= max; r++) {
-        const row = sheet.getRow(r);
-        row.font = { bold: true, color: { argb: "FFFFFFFF" } };
-        row.fill = {
-          type: "pattern",
-          pattern: "solid",
-          fgColor: { argb: "FF087F69" },
-        };
-        row.alignment = { horizontal: "right", vertical: "middle" };
-        row.height = 28;
+      "هر ماه در یک شیت جداست؛ برای دیدن ماه دیگر از زبانه‌های پایین اکسل استفاده کن.",
+      "جدول فشرده، راست‌به‌چپ و خط‌کشی‌شده است؛ سرستون‌ها هنگام حرکت ثابت می‌مانند.",
+      "هر ردیف یک روز شمسی است؛ دقیقه‌های هر بخش را در خانه‌های کوچک زیر گروه بنویس.",
+      "جمع هر گروه و ساعت مفید روز با فرمول محاسبه می‌شود؛ خانه‌های تیره را ویرایش نکن.",
+      "ساعت را مثل 08:30 بنویس؛ در فایل قدیمی 8.5 یعنی 08:30 و 8.45 یعنی 08:45.",
+      "ستون روز خالی: بله یعنی آن روز بدون برنامهٔ روتین است. شنبه و یکشنبه برای خوانایی زرد هستند؛ رنگ زرد به‌تنهایی روز را خالی نمی‌کند.",
+      "شیت کارها: پروژه و عنوان کار لازم است؛ تاریخ شمسی، ساعت و یادآوری اختیاری‌اند.",
+      "ستون یادآوری، دقیقه قبل از ساعت کار است: 0، 5، 10، 15، 30 یا 60.",
+      "همین فایل چندشیتی را با پسوند xlsx در بخش اکسل برنامه وارد کن؛ ابتدا پیش‌نمایش را بررسی کن.",
+      "ورود اکسل فقط برنامه و کار می‌سازد؛ زمان واقعی یا تیک انجام از اعداد برنامه ساخته نمی‌شود.",
+    ].forEach((text) => guide.addRow([text]));
+    guide.getColumn(1).width = 100;
+    for (const sheet of [tasks, groups, guide]) {
+      for (
+        let r = 1;
+        r <= Math.max(sheet.rowCount, sheet === tasks ? 15 : sheet.rowCount);
+        r++
+      ) {
+        sheet.getRow(r).height = 22;
+        for (let c = 1; c <= sheet.columnCount; c++) {
+          const cell = sheet.getCell(r, c);
+          cell.border = grid;
+          cell.font = {
+            name: "Tahoma",
+            size: 10,
+            bold: r === 1,
+            color: { argb: r === 1 ? "FFFFFFFF" : "FF173D38" },
+          };
+          cell.alignment = {
+            horizontal: "right",
+            vertical: "middle",
+            wrapText: sheet === guide,
+          };
+          if (r === 1) cell.fill = dark;
+        }
       }
     }
+    const now = E.persian(E.key(new Date()));
+    w.views = [
+      {
+        activeTab: !month && now.y === year ? now.m - 1 : 0,
+        firstSheet: 0,
+        visibility: "visible",
+      },
+    ];
     return w;
   }
   const api = { wakeTime, readWorkbook, applyReport, buildWorkbook, raw };
