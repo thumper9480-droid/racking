@@ -39,7 +39,7 @@
     if (v instanceof Date)
       return `${String(v.getUTCHours()).padStart(2, "0")}:${String(v.getUTCMinutes()).padStart(2, "0")}`;
     const str = E.digits(v).trim();
-    if (!str) return "07:00";
+    if (!str) return "";
     if (/^([01]?\d|2[0-3]):[0-5]\d$/.test(str)) {
       const [h, m] = str.split(":");
       return h.padStart(2, "0") + ":" + m;
@@ -403,7 +403,7 @@
           ]),
         ),
       };
-      E.setPlan(next, row.date, p);
+      E.setPlan(next, row.date, { ...p, source: "excel" });
       plans++;
     }
     for (const task of report.tasks) {

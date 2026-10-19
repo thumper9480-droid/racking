@@ -15,7 +15,7 @@ const { chromium } = require("playwright"),
     errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("http://127.0.0.1:4173/");
-  await page.locator("[data-action=nav][data-arg=excel]").click();
+  await page.locator("#nav [data-action=nav][data-arg=excel]").click();
   if (process.env.TRACK_XLSX) {
     await page.locator("#excel-file").setInputFiles(process.env.TRACK_XLSX);
     await page.waitForFunction(() => pendingExcel?.plans.length === 203);
@@ -40,9 +40,9 @@ const { chromium } = require("playwright"),
       "PASS actual-file browser import: preview first, 203 plans retained across reload, correct wake time and numbering.",
     );
   }
-  await page.locator("[data-action=nav][data-arg=excel]").click();
+  await page.locator("#nav [data-action=nav][data-arg=excel]").click();
   const downloading = page.waitForEvent("download");
-  await page.locator("[data-action=excelMonth]").click();
+  await page.locator('a[download][href*="raval-template.xlsx"]').click();
   const downloaded = await downloading,
     file = await downloaded.path(),
     book = new ExcelJS.Workbook();
@@ -97,11 +97,11 @@ const { chromium } = require("playwright"),
       state.activities.some((a) => a.name === "تحقیق جدید"),
     ),
   );
-  await page.locator("[data-action=nav][data-arg=projects]").click();
+  await page.locator("#nav [data-action=nav][data-arg=projects]").click();
   assert.match(await page.locator("#view").innerText(), /کار ورودی/);
   // A corrupt file cannot mutate the current state.
   const before = await page.evaluate(() => JSON.stringify(state));
-  await page.locator("[data-action=nav][data-arg=excel]").click();
+  await page.locator("#nav [data-action=nav][data-arg=excel]").click();
   await page.locator("#excel-file").setInputFiles({
     name: "broken.xlsx",
     mimeType:
@@ -111,6 +111,55 @@ const { chromium } = require("playwright"),
   await page.waitForFunction(() => !excelBusy);
   assert.equal(await page.evaluate(() => JSON.stringify(state)), before);
   assert.equal(await page.evaluate(() => pendingExcel), null);
+  // A complete replacement removes stale dates without erasing real records or project tasks.
+  const sourceBook = new ExcelJS.Workbook(),
+    sourceSheet = sourceBook.addWorksheet("برنامه");
+  sourceSheet.addRow([
+    "شماره روز",
+    "روز",
+    "تاریخ",
+    "ماه",
+    "سال",
+    "بیدار باش",
+    "کتاب",
+    "تکنیکال",
+  ]);
+  sourceSheet.addRow([1, "سه‌شنبه", 28, "مهر", 1405, 8.3, 20, 15]);
+  await page.evaluate(() => {
+    E.setPlan(state, "2026-10-17", {
+      wake: "08:00",
+      off: false,
+      blocks: { book: [30] },
+    });
+    state.entries.push({
+      activity: "book",
+      name: "کتاب",
+      note: "",
+      start: 1000,
+      end: 61000,
+    });
+    save();
+  });
+  await page
+    .locator("#excel-file")
+    .setInputFiles({
+      name: "final.xlsx",
+      mimeType:
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      buffer: Buffer.from(await sourceBook.xlsx.writeBuffer()),
+    });
+  await page.waitForFunction(() => pendingExcel?.plans.length === 1);
+  await page.locator("#excel-replace").check();
+  await page.locator("[data-action=excelCommit]").click();
+  assert.deepEqual(await page.evaluate(() => Object.keys(state.plans)), [
+    "2026-10-20",
+  ]);
+  assert.equal(
+    await page.evaluate(() => E.blocks(state, "2026-10-17").length),
+    0,
+  );
+  assert.equal(await page.evaluate(() => state.entries.length), 1);
+  assert.equal(await page.evaluate(() => state.tasks.length), 1);
   const response = await page.request.get(
     "http://127.0.0.1:4173/raval-template.xlsx",
   );

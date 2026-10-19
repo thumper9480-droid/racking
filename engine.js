@@ -123,18 +123,14 @@
       ["phone", "تماس تلفنی", false, false],
       ["outside", "خارج از برنامه", true, false],
     ].map(([id, name, useful, special]) => ({ id, name, useful, special }));
-    const blocks = {
-      walk: [20],
-      book: [30],
-      platform: [5, 5, 5],
-      technical: [5, 5, 5],
-      chart: [5, 5, 5, 5, 5, 5, 5],
-    };
+    const blocks = {};
     return {
       version: 2,
+      revision: 3,
+      reviewTime: "21:00",
       activities,
       templates: Array.from({ length: 7 }, () => ({
-        wake: "07:00",
+        wake: "",
         off: false,
         blocks: JSON.parse(JSON.stringify(blocks)),
       })),
@@ -161,6 +157,7 @@
   }
   function migrate(old) {
     if (old.version === 2) {
+      upgrade(old);
       validate(old);
       return old;
     }
@@ -214,11 +211,15 @@
           "outside",
       };
     }
+    upgrade(s);
     validate(s);
     return s;
   }
   const activity = (s, id) => s.activities.find((a) => a.id === id);
-  const plan = (s, k) => s.plans[k] || s.templates[date(k).getDay()];
+  const plan = (s, k) => {
+    date(k);
+    return s.plans[k] || { wake: "", off: false, blocks: {}, unassigned: true };
+  };
   const blockKey = (k, id, index, n) => `${k}|${id}|${index}|${n}`;
   function blocks(s, k) {
     const p = plan(s, k);
@@ -253,7 +254,7 @@
     if (
       !p ||
       typeof p.off !== "boolean" ||
-      !/^([01]\d|2[0-3]):[0-5]\d$/.test(p.wake) ||
+      (p.wake !== "" && !/^([01]\d|2[0-3]):[0-5]\d$/.test(p.wake)) ||
       !p.blocks ||
       Array.isArray(p.blocks)
     )
@@ -350,11 +351,31 @@
         typeof t.done !== "boolean"
       )
         fail();
+      if (
+        t.progress !== undefined &&
+        (!Number.isInteger(t.progress) || t.progress < 0 || t.progress > 100)
+      )
+        fail();
+      if (t.archived !== undefined && typeof t.archived !== "boolean") fail();
+      if (
+        t.history !== undefined &&
+        (!Array.isArray(t.history) ||
+          t.history.some(
+            (h) =>
+              !Number.isFinite(h.at) ||
+              typeof h.action !== "string" ||
+              !h.before ||
+              !h.after,
+          ))
+      )
+        fail();
+      if (t.remaining !== undefined && typeof t.remaining !== "string") fail();
       taskIds.add(t.id);
       if (t.date) date(t.date);
       if (t.time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(t.time)) fail();
       if (![0, 5, 10, 15, 30, 60].includes(t.lead)) fail();
     }
+    if (s.reviewTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(s.reviewTime)) fail();
     date(s.startDate);
     for (const timer of [s.active, s.paused])
       if (timer) {
@@ -436,7 +457,9 @@
       }
       actual += minutes(s, k);
     }
-    const tasks = s.tasks.filter((t) => t.date >= start && t.date <= end);
+    const tasks = s.tasks.filter(
+      (t) => !t.archived && t.date >= start && t.date <= end,
+    );
     return {
       planned,
       completed,
@@ -511,6 +534,11 @@
     settle(s, now);
     const a = s.paused;
     s.paused = null;
+    if (a.free) {
+      s.active = { ...a, start: now };
+      delete s.active.deadline;
+      return;
+    }
     if (s.completions[a.block]) return;
     const remaining =
       a.series && !a.block
@@ -639,7 +667,7 @@
     return a;
   }
   function graceActivities(s, k) {
-    if (plan(s, k).off) return [];
+    if (plan(s, k).off || !s.plans[k]) return [];
     return s.activities.filter(
       (a) =>
         (a.custom ||
@@ -657,6 +685,123 @@
         if (b.id === id && !s.completions[b.key]) pending.push(b);
     }
     return pending;
+  }
+  function upgrade(s) {
+    if ((s.revision || 0) < 3) {
+      if (
+        s.templates?.some((p) =>
+          Object.values(p.blocks || {}).some((a) => a.length),
+        )
+      )
+        s.legacyTemplates = structuredClone(s.templates);
+      s.templates = Array.from({ length: 7 }, () => ({
+        wake: "",
+        off: false,
+        blocks: {},
+      }));
+      s.revision = 3;
+    }
+    s.reviewTime = s.reviewTime || "21:00";
+    for (const t of s.tasks) {
+      t.archived = !!t.archived;
+      t.progress = t.done ? 100 : t.progress || 0;
+      t.history = t.history || [];
+      t.remaining = t.remaining || "";
+    }
+    return s;
+  }
+  function pause(s, now = Date.now()) {
+    if (!s.active) return;
+    const a = { ...s.active };
+    settle(s, now);
+    if (a.block && s.completions[a.block]) return;
+    if (a.deadline) a.remaining = Math.max(0, a.deadline - now);
+    else {
+      a.free = true;
+      a.carry = (a.carry || 0) + Math.max(0, now - a.start);
+    }
+    s.paused = a;
+    if (s.series) s.series.paused = true;
+  }
+  function taskSnapshot(t) {
+    return {
+      title: t.title,
+      project: t.project,
+      date: t.date || "",
+      time: t.time || "",
+      progress: t.progress || 0,
+      remaining: t.remaining || "",
+      archived: !!t.archived,
+      done: t.done,
+    };
+  }
+  function changeTask(s, id, patch, now = Date.now()) {
+    const t = s.tasks.find((t) => t.id === id);
+    if (!t) throw Error("کار پیدا نشد");
+    const before = taskSnapshot(t);
+    Object.assign(t, patch);
+    const after = taskSnapshot(t);
+    if (JSON.stringify(before) !== JSON.stringify(after)) {
+      t.history = t.history || [];
+      t.history.push({ at: now, action: "edit", before, after });
+    }
+    return t;
+  }
+  function resolveTask(s, id, action, fields = {}, now = Date.now()) {
+    const t = s.tasks.find((t) => t.id === id);
+    if (!t) throw Error("کار پیدا نشد");
+    const before = taskSnapshot(t),
+      patch = { reviewedOn: key(new Date(now)) };
+    if (action === "done")
+      Object.assign(patch, { done: true, progress: 100, completedAt: now });
+    else if (action === "reopen")
+      Object.assign(patch, { done: false, progress: 0, completedAt: null });
+    else if (action === "archive") patch.archived = true;
+    else if (action === "restore")
+      Object.assign(patch, { archived: false, reviewedOn: "" });
+    else if (action === "move" || action === "partial") {
+      if (!fields.date) throw Error("تاریخ انجام باقی‌مانده را مشخص کن");
+      date(fields.date);
+      patch.date = fields.date;
+      if (fields.time && !/^([01]\d|2[0-3]):[0-5]\d$/.test(fields.time))
+        throw Error("ساعت نامعتبر است");
+      patch.time = fields.time || "";
+      patch.done = false;
+      patch.completedAt = null;
+      if (action === "partial") {
+        const n = Number(fields.progress);
+        if (!Number.isInteger(n) || n < 1 || n > 99)
+          throw Error("درصد انجام‌شده باید بین ۱ تا ۹۹ باشد");
+        if (!String(fields.remaining || "").trim())
+          throw Error("باقی‌ماندهٔ کار را بنویس");
+        patch.progress = n;
+        patch.remaining = String(fields.remaining).trim();
+      }
+    } else throw Error("عملیات ناشناخته است");
+    Object.assign(t, patch);
+    t.history = t.history || [];
+    t.history.push({ at: now, action, before, after: taskSnapshot(t) });
+    delete s.delivered[id];
+    return t;
+  }
+  function pendingReview(s, now = Date.now()) {
+    const today = key(new Date(now)),
+      clock = new Date(now),
+      cut = s.reviewTime || "21:00",
+      current =
+        String(clock.getHours()).padStart(2, "0") +
+        ":" +
+        String(clock.getMinutes()).padStart(2, "0");
+    return s.tasks
+      .filter(
+        (t) =>
+          !t.done &&
+          !t.archived &&
+          t.date &&
+          (t.date < today || (t.date === today && current >= cut)) &&
+          t.reviewedOn !== today,
+      )
+      .sort((a, b) => a.date.localeCompare(b.date));
   }
   function reminderTime(t) {
     return t.date && t.time
@@ -698,6 +843,11 @@
     ensureActivity,
     graceActivities,
     backlog,
+    upgrade,
+    pause,
+    changeTask,
+    resolveTask,
+    pendingReview,
     reminderTime,
     interval,
   };

@@ -40,6 +40,9 @@ let state,
   selected = todayKey(),
   calendar = E.persian(selected),
   reportPeriod = "week",
+  plannerSpan = "month",
+  showArchived = false,
+  lastReviewCheck = 0,
   filter = "",
   storageFailed = false,
   reminderChecking = false,
@@ -117,7 +120,14 @@ function render() {
     ["settings", "تنظیمات"],
     ["excel", "اکسل"],
   ]
-    .map(([id, name]) => button(name, "nav", id, tab === id ? "on" : ""))
+    .map(([id, name]) =>
+      button(
+        V.icon(id) + "<span>" + name + "</span>",
+        "nav",
+        id,
+        tab === id ? "on" : "",
+      ),
+    )
     .join("");
   const fn = {
     today: renderToday,
@@ -131,81 +141,10 @@ function render() {
   updateClock();
 }
 function dayControl() {
-  return `<div class="day-control">${button("روز قبل", "shiftDay", "-1", "icon")}<label class="sr-only" for="selected-date">تاریخ شمسی</label><input id="selected-date" inputmode="numeric" value="${label(selected)}" aria-label="تاریخ شمسی">${button("برو", "chooseDay")}${button("روز بعد", "shiftDay", "1", "icon")}${button("امروز", "goToday", "", selected === todayKey() ? "primary" : "")}<span class="muted">${week[E.date(selected).getDay()]}</span></div>`;
+  return `<div class="day-control">${button("روز قبل", "shiftDay", "-1", "small")}<label class="sr-only" for="selected-date">تاریخ شمسی</label><input id="selected-date" inputmode="numeric" value="${label(selected)}" aria-label="تاریخ شمسی">${button("برو", "chooseDay")}${button("روز بعد", "shiftDay", "1", "small")}${button("امروز", "goToday", "", selected === todayKey() ? "primary" : "")}<span class="muted">${week[E.date(selected).getDay()]}</span></div>`;
 }
 function renderToday() {
-  const p = E.plan(state, selected),
-    bs = E.blocks(state, selected),
-    stats = E.stats(state, selected, selected),
-    a = state.active,
-    now = todayKey();
-  let html =
-    dayControl() +
-    card(
-      selected === now ? "برنامهٔ امروز" : "برنامهٔ " + label(selected),
-      `<div class="row"><div><small>انجام برنامه</small><div class="big">${stats.planned ? fa(stats.percent) + "٪" : p.off ? "استراحت" : "ارفاقی"}</div><small>${fa(stats.done)} از ${fa(stats.count)} بخش</small></div><div><small>زمان مفید ثبت‌شدهٔ این روز</small><div class="stat">${fa(Math.round(stats.actual))} دقیقه</div></div><div><small>بیدارباش برنامه</small><div class="stat numeric">${esc(p.wake)}</div>${state.woke && E.key(new Date(state.woke)) === selected ? "<small>بیداری واقعی: " + time(state.woke) + "</small>" : ""}</div></div><progress value="${stats.completed}" max="${stats.planned || 1}"></progress>`,
-      "hero",
-    );
-  if (selected !== now)
-    html +=
-      '<div class="notice future">این صفحه برنامهٔ تاریخ انتخاب‌شده است؛ اگر الان انجامش بدهی، تیک برای این تاریخ و زمان واقعی برای امروز ثبت می‌شود.</div>';
-  html += card(
-    "الان چه کار می‌کنی؟",
-    `${a ? `<div class="row"><div><strong>${esc(a.name)}</strong><br><small>${a.block ? "زمان باقی‌ماندهٔ بخش" : "زمان سپری‌شده"}</small></div><div id="clock" class="big"></div>${button("پایان و ثبت", "stop", "", "primary")}</div>` : '<p class="muted">یک فعالیت یا بخش برنامه را شروع کن؛ زمانش خودکار ثبت می‌شود.</p>'}<div class="quick">${button("☀ الان بیدار شدم", "wake")}${["rest", "instagram", "wc", "family", "idle", "sleep", "phone", "outside"].map((id) => button(esc(groupName(id)), "quick", id)).join("")}</div>${state.paused ? `<div class="notice success">${esc(state.paused.name)} متوقف شده است. ${button("ادامهٔ کار قبلی", "resume", "", "primary")}</div>` : ""}${state.series ? '<p class="muted">جلسهٔ ' + esc(groupName(state.series.id)) + " • بخش " + fa(state.series.position + 1) + " از " + fa(state.series.queue.length) + " • استراحت " + fa(state.series.restMinutes) + " دقیقه</p>" : ""}${!a ? button("از آخرین ثبت تا الان", "since") : ""}`,
-    a ? "active-card" : "",
-  );
-  html += '<h2 class="section-title">فعالیت‌های برنامه</h2><div class="grid">';
-  if (!bs.length)
-    html += card(
-      p.off ? "روز خالی / استراحت" : "امروز فرصت جبران فعالیت‌هاست",
-      button("تنظیم این روز", "editDay", selected),
-    );
-  for (const activity of planActivities()) {
-    const list = bs.filter((b) => b.id === activity.id);
-    if (!list.length) {
-      if (!p.off) html += graceCard(activity);
-      continue;
-    }
-    const sum = list.reduce((n, b) => n + b.minutes, 0);
-    html += card(
-      `<span class="activity-heading">${esc(activity.name)}: ${fa(sum)} <span class="arrow">←</span></span>`,
-      `${activity.special ? "<small>کارهای تخصصی</small>" : ""}<div class="parts">${list.map((b) => `<label class="part ${state.completions[b.key] ? "checked" : ""}"><input type="checkbox" data-complete="${esc(b.key)}" ${state.completions[b.key] ? "checked" : ""} aria-label="تکمیل بخش ${fa(b.index + 1)} ${esc(activity.name)}"><span>${fa(b.minutes)}</span></label>`).join("")}</div><div class="actions">${
-        list
-          .filter((b) => !state.completions[b.key])
-          .slice(0, 1)
-          .map((b) =>
-            button(
-              (state.active?.block === b.key ? "در حال اجرا: " : "شروع ") +
-                fa(b.minutes),
-              "block",
-              b.key,
-              "small",
-            ),
-          )
-          .join("") || "<small>همهٔ بخش‌ها انجام شدند ✓</small>"
-      }${list.some((b) => !state.completions[b.key]) ? button("کار / استراحت", "series", activity.id, "small") : ""}</div>`,
-    );
-  }
-  html +=
-    '</div><div class="actions" style="margin-top:14px">' +
-    button("ویرایش برنامهٔ این روز", "editDay", selected) +
-    button("شروع فعالیت دلخواه", "activityDialog") +
-    "</div>";
-  const tasks = state.tasks
-    .filter((t) => t.date === selected)
-    .sort((a, b) => (a.time || "99").localeCompare(b.time || "99"));
-  html +=
-    '<h2 class="section-title">کارهای این روز</h2>' +
-    card(
-      "از پروژه‌ها و کارهای شخصی",
-      tasks.length
-        ? tasks.map(taskRow).join("")
-        : '<p class="empty">کاری برای این تاریخ تعیین نشده. در پروژه‌ها «برنامه‌ریزی» را بزن.</p>',
-    );
-  html +=
-    '<h2 class="section-title">خط زمانی واقعی این روز</h2>' +
-    timeline(selected);
-  $("#view").innerHTML = html;
+  V.today();
 }
 function graceCard(activity) {
   const pending = E.backlog(state, selected, activity.id),
@@ -358,20 +297,7 @@ function dateInput(name, k, required = true) {
   return `<input name="${name}" class="field" placeholder="۱۴۰۵/۰۸/۰۱" value="${k ? label(k) : ""}" inputmode="numeric" ${required ? "required" : ""}>`;
 }
 function renderPlanner() {
-  const y = calendar.y,
-    m = calendar.m,
-    count = E.monthLength(y, m),
-    activities = planActivities();
-  let rows = "";
-  for (let d = 1; d <= count; d++) {
-    const k = E.fromPersian(y, m, d),
-      p = E.plan(state, k),
-      sum = E.blocks(state, k).reduce((n, b) => n + b.minutes, 0),
-      n = Math.round((E.date(k) - E.date(state.startDate)) / 86400000) + 1;
-    rows += `<tr class="${p.off ? "off" : k === todayKey() ? "current" : ""}"><td>${n > 0 ? fa(n) : "—"}</td><td>${fa(d)} ${months[m - 1]}<br><small>${week[E.date(k).getDay()]}</small></td><td><input aria-label="بیدارباش ${label(k)}" data-day="${k}" data-field="wake" class="table-input wake" type="time" value="${p.wake}"></td>${activities.map((a) => `<td><input aria-label="${esc(a.name)} ${label(k)}" class="table-input" data-day="${k}" data-field="${a.id}" placeholder="۵ ۵ ۵" value="${p.off ? "" : (p.blocks[a.id] || []).join(" ")}"></td>`).join("")}<td>${fa(sum)} دقیقه</td><td><label><input type="checkbox" data-off="${k}" ${p.off ? "checked" : ""}> خالی</label></td><td>${button("برنامهٔ روز", "openDay", k, "small")}${button("ویرایش", "editDay", k, "small")}</td></tr>`;
-  }
-  $("#view").innerHTML =
-    `<div class="row"><div><h2>برنامهٔ کلی تا پایان سال</h2><p class="muted">اینجا برنامه را بچین؛ در «امروز» فقط بخش‌ها و کارهای همان روز را ببین.</p></div>${button("＋ گروه / فعالیت", "addGroup", "", "primary")}</div><div class="card"><div class="actions"><label>سال شمسی<input id="planner-year" type="number" min="1300" max="1599" value="${y}" style="width:110px"></label><label>ماه<select id="planner-month">${months.map((n, i) => `<option value="${i + 1}" ${m === i + 1 ? "selected" : ""}>${n}</option>`).join("")}</select></label>${button("نمایش", "chooseMonth")}${button("ماه قبل", "shiftMonth", "-1")}${button("ماه بعد", "shiftMonth", "1")}${button("تعیین برنامهٔ یک بازه / ماه / سال", "bulk", "", "primary")}${button("ورود / خروجی اکسل", "nav", "excel")}</div><div class="notice">هر خانه، بخش‌های دقیقه‌ای است: <b dir="ltr">5 5 5</b> یعنی سه بخش پنج‌دقیقه‌ای؛ <b dir="ltr">3×5</b> هم همین معنی را دارد. تغییر هر خانه خودکار ذخیره می‌شود. خالی‌بودن خانهٔ هر فعالیت یعنی ارفاقی همان فعالیت. گزینهٔ «روز خالی» فقط برای استراحت کل روز است؛ کارهای پروژه‌ای باقی می‌مانند.</div></div><div class="table-wrap"><table><thead><tr><th>شماره روز</th><th>تاریخ / روز</th><th>بیدارباش</th>${activities.map((a) => `<th>${esc(a.name)}</th>`).join("")}<th>جمع برنامه</th><th>روز خالی</th><th>نمای روز</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  V.planner();
 }
 function changePlanInput(input) {
   const k = input.dataset.day,
@@ -495,23 +421,10 @@ function bulk() {
   );
 }
 function taskRow(t) {
-  return `<div class="task ${t.done ? "done" : ""}"><input type="checkbox" data-task="${esc(t.id)}" ${t.done ? "checked" : ""} aria-label="تکمیل ${esc(t.title)}"><div class="content"><b class="title">${esc(t.title)}</b><br><small>${esc(t.project)}${t.tags ? " • " + esc(t.tags) : ""}${t.date ? " • " + label(t.date) : ""}${t.time ? " • " + esc(t.time) : ""}</small></div><div class="actions">${button("برنامه‌ریزی", "schedule", t.id, "small")}${button("ویرایش", "editTask", t.id, "small")}${button("×", "deleteTask", t.id, "small danger")}</div></div>`;
+  return V.taskRow(t);
 }
 function renderProjects() {
-  let html = `<div class="row"><div><h2>پروژه‌ها و کارها</h2><p class="muted">کار را به امروز یا یک تاریخ شمسی بفرست؛ ارتباطش با پروژه حفظ می‌شود.</p></div><div class="actions">${button("＋ کار جدید", "addTask", "", "primary")}${button("＋ پروژه", "addProject")}</div></div><div class="actions" style="margin-bottom:18px"><input id="search" placeholder="عنوان، پروژه، اصفهان، اداری…" value="${esc(filter)}">${button("جست‌وجو", "search")}</div><div class="grid">`;
-  for (const p of state.projects) {
-    const tasks = state.tasks.filter(
-        (t) =>
-          t.project === p &&
-          (p + " " + t.title + " " + t.tags).includes(filter),
-      ),
-      done = tasks.filter((t) => t.done).length;
-    html += card(
-      esc(p),
-      `<small>${fa(done)} از ${fa(tasks.length)} انجام‌شده</small><progress value="${done}" max="${tasks.length || 1}"></progress>${tasks.map(taskRow).join("") || '<p class="empty">هنوز کاری نیست.</p>'}`,
-    );
-  }
-  $("#view").innerHTML = html + "</div>";
+  V.projects();
 }
 function addProject() {
   modal(
@@ -528,30 +441,40 @@ function addProject() {
     },
   );
 }
-function editTask(id) {
+function editTask(id, presetDate = "") {
   const t = state.tasks.find((t) => t.id === id);
   modal(
     t ? "ویرایش کار" : "کار یا ایدهٔ جدید",
-    `<label>عنوان<input name="title" class="field" required maxlength="200" value="${esc(t?.title || "")}"></label><label>پروژه<select class="field" name="project">${state.projects.map((p) => `<option ${t?.project === p ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></label><label>شهر / برچسب<input class="field" name="tags" placeholder="اصفهان، اداری" value="${esc(t?.tags || "")}" maxlength="200"></label>`,
+    `<label>عنوان<input name="title" class="field" required maxlength="200" value="${esc(t?.title || "")}"></label><label>پروژه<select class="field" name="project">${state.projects.map((p) => `<option ${t?.project === p ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></label><label>شهر / برچسب (اختیاری)<input class="field" name="tags" placeholder="اصفهان، اداری" value="${esc(t?.tags || "")}" maxlength="200"></label><div class="split"><label>تاریخ شمسی (اختیاری)${dateInput("date", t?.date || presetDate, false)}</label><label>ساعت (اختیاری)<input class="field" name="time" type="time" value="${esc(t?.time || "")}"></label></div><label>یادآوری<select name="lead" class="field"><option value="-1" ${t?.reminder !== true ? "selected" : ""}>بدون یادآوری</option>${[0, 5, 10, 15, 30, 60].map((n) => `<option value="${n}" ${t?.reminder === true && t.lead === n ? "selected" : ""}>${n ? fa(n) + " دقیقه قبل" : "سر ساعت"}</option>`).join("")}</select></label>`,
     (f) => {
       const title = f.get("title").trim();
       if (!title) throw Error("عنوان را بنویس");
-      if (t)
-        Object.assign(t, {
-          title,
-          project: f.get("project"),
-          tags: f.get("tags"),
-        });
-      else
+      const date = f.get("date").trim() ? E.parsePersian(f.get("date")) : "",
+        time = f.get("time");
+      if (time && !date) throw Error("برای ساعت، تاریخ را هم مشخص کن");
+      if (+f.get("lead") >= 0 && (!date || !time))
+        throw Error("یادآوری نیاز به تاریخ و ساعت دارد");
+      const fields = {
+        title,
+        project: f.get("project"),
+        tags: f.get("tags"),
+        date,
+        time,
+        lead: Math.max(0, +f.get("lead")),
+        reminder: +f.get("lead") >= 0,
+      };
+      if (t) {
+        E.changeTask(state, t.id, fields);
+        delete state.delivered[t.id];
+      } else
         state.tasks.push({
           id: crypto.randomUUID(),
-          title,
-          project: f.get("project"),
-          tags: f.get("tags"),
+          ...fields,
           done: false,
-          date: "",
-          time: "",
-          lead: 0,
+          progress: 0,
+          archived: false,
+          remaining: "",
+          history: [],
           completedAt: null,
         });
       save();
@@ -566,17 +489,18 @@ function scheduleTask(id) {
     "تعیین روز و یادآوری",
     `<b>${esc(t.title)}</b><p class="muted">پروژه: ${esc(t.project)}</p><label>تاریخ شمسی${dateInput("date", t.date || selected)}</label>${button("تاریخ امروز", "fillToday", "", "small")}<label>ساعت (اختیاری)<input name="time" type="time" value="${esc(t.time)}"></label><label>یادآوری<select name="lead" class="field"><option value="-1" ${t.reminder === false ? "selected" : ""}>بدون یادآوری</option>${[0, 5, 10, 15, 30, 60].map((n) => `<option value="${n}" ${t.reminder !== false && t.lead === n ? "selected" : ""}>${n ? fa(n) + " دقیقه قبل" : "سر ساعت"}</option>`).join("")}</select></label><div class="notice">یادآوری وقتی این صفحه باز و مرورگر فعال باشد اجرا می‌شود. برای اعلان سیستم، در تنظیمات اجازه بده.</div><label><input name="unschedule" type="checkbox"> حذف از تقویم؛ فقط در پروژه بماند</label>`,
     (f) => {
-      if (f.has("unschedule")) {
-        t.date = "";
-        t.time = "";
-      } else {
-        t.date = E.parsePersian(f.get("date"));
-        t.time = f.get("time");
-        if (+f.get("lead") >= 0 && !t.time)
-          throw Error("برای یادآوری، ساعت را هم تعیین کن");
-      }
-      t.lead = Math.max(0, +f.get("lead"));
-      t.reminder = +f.get("lead") >= 0;
+      const unscheduled = f.has("unschedule"),
+        date = unscheduled ? "" : E.parsePersian(f.get("date")),
+        clock = unscheduled ? "" : f.get("time"),
+        lead = +f.get("lead");
+      if (!unscheduled && lead >= 0 && !clock)
+        throw Error("برای یادآوری، ساعت را هم تعیین کن");
+      E.changeTask(state, id, {
+        date,
+        time: clock,
+        lead: Math.max(0, lead),
+        reminder: !unscheduled && lead >= 0,
+      });
       delete state.delivered[t.id];
       save();
       closeModal();
@@ -604,83 +528,10 @@ function reportRange() {
   return [E.first(p.y), E.add(E.first(p.y + 1), -1)];
 }
 function renderReports() {
-  const [from, to] = reportRange(),
-    s = E.stats(state, from, to);
-  let html =
-    dayControl() +
-    `<h2>برنامه و عملکرد</h2><div class="actions" style="margin-bottom:18px">${[
-      ["day", "روز"],
-      ["week", "هفته"],
-      ["month", "ماه"],
-      ["year", "سال"],
-    ]
-      .map(([id, n]) =>
-        button(n, "reportPeriod", id, reportPeriod === id ? "primary" : ""),
-      )
-      .join(
-        "",
-      )}<small>${label(from)} تا ${label(to)}</small></div><div class="grid">${card("انجام برنامه", `<div class="stat">${fa(s.percent)}٪</div><small>${fa(s.done)} از ${fa(s.count)} بخش</small>`)}${card("زمان مفید واقعی", `<div class="stat">${fa(Math.round(s.actual))} دقیقه</div>`)}${card("هدف برنامه", `<div class="stat">${fa(s.planned)} دقیقه</div>`)}${card("کارهای پروژه‌ای", `<div class="stat">${fa(s.tasksDone)} از ${fa(s.tasks)}</div>`)}</div>`;
-  let buckets = [];
-  if (reportPeriod === "year") {
-    const y = E.persian(selected).y;
-    buckets = months.map((n, i) => ({
-      name: n,
-      from: E.fromPersian(y, i + 1, 1),
-      to: E.fromPersian(y, i + 1, E.monthLength(y, i + 1)),
-    }));
-  } else
-    buckets = E.range(from, to).map((k) => ({
-      name: reportPeriod === "day" ? "این روز" : label(k).slice(5),
-      from: k,
-      to: k,
-    }));
-  const chart = buckets.map((b) => ({ ...b, s: E.stats(state, b.from, b.to) })),
-    max = Math.max(1, ...chart.flatMap((b) => [b.s.planned, b.s.actual]));
-  html += card(
-    "پیشرفت برنامه و زمان واقعی",
-    `<div class="legend"><span><i class="dot" style="background:#c5dcd0"></i>برنامه</span><span><i class="dot" style="background:#26936c"></i>بخش انجام‌شده</span><span><i class="dot" style="background:#e4b85a"></i>زمان مفید واقعی</span></div><div class="bars">${chart.map((b) => `<div class="chart-line"><span>${b.name}</span><div class="tracks"><div class="bar planned" style="width:${(b.s.planned / max) * 100}%"></div><div class="bar completed" style="width:${(b.s.completed / max) * 100}%"></div><div class="bar actual" style="width:${(b.s.actual / max) * 100}%"></div></div><span>${fa(b.s.percent)}٪</span></div>`).join("")}</div><p class="muted" style="margin-top:15px">تیک دستی، انجام بخش را ثبت می‌کند؛ زمان واقعی فقط با ثبت فعالیت محاسبه می‌شود. استراحت و وقفه‌ها جزو زمان مفید نیستند.</p>`,
-  );
-  html +=
-    card(
-      "تفکیک زمان فعالیت‌ها",
-      state.activities
-        .map((a) => {
-          const n = E.range(from, to).reduce(
-            (v, k) => v + E.minutes(state, k, a.id),
-            0,
-          );
-          return `<div class="row"><span>${esc(a.name)}</span><b>${fa(Math.round(n))} دقیقه</b></div>`;
-        })
-        .join(""),
-    ) +
-    `<div class="actions">${button("کپی گزارش", "copyReport")}${button("خروجی CSV", "csv")}${button("پشتیبان JSON", "backup")}</div>`;
-  $("#view").innerHTML = html;
+  V.reports();
 }
 function renderSettings() {
-  const permitted =
-    "Notification" in window ? Notification.permission : "unsupported";
-  $("#view").innerHTML =
-    card(
-      "یادآوری مرورگر",
-      `<p>وضعیت اعلان: <b>${{ granted: "مجاز", denied: "مسدود", default: "هنوز اجازه ندادی", unsupported: "در این مرورگر پشتیبانی نمی‌شود" }[permitted]}</b></p>${button("فعال‌کردن اعلان‌ها", "notifications", "", "primary")}<p class="muted">اگر اعلان مسدود است از تنظیمات سایت در مرورگر اجازه بده. حتی بدون اعلان سیستم، هنگام بازبودن صفحه پیام داخل برنامه نمایش داده می‌شود.</p><div class="notice">صفحه باید باز بماند. مرورگرِ بسته، خواب کامپیوتر و محدودیت تب پس‌زمینه می‌توانند یادآوری را عقب بیندازند. این نسخه، زنگ بیدارباش اندروید نیست.</div>`,
-    ) +
-    card(
-      "گروه‌ها و فعالیت‌ها",
-      planActivities()
-        .map(
-          (a) =>
-            `<div class="row"><span>${esc(a.name)} ${a.special ? "• تخصصی" : ""}</span><small>${a.useful ? "زمان مفید" : "غیرمفید"}</small></div>`,
-        )
-        .join("") + button("＋ فعالیت جدید", "addGroup"),
-    ) +
-    card(
-      "برنامهٔ پیش‌فرض هفته",
-      `<p class="muted">برای روزهایی که هنوز برنامهٔ اختصاصی ندارند؛ روزهای ویرایش‌شده تغییر نمی‌کنند.</p><div class="actions">${[6, 0, 1, 2, 3, 4, 5].map((i) => button(week[i], "editTemplate", String(i))).join("")}</div><label style="margin-top:16px">تاریخ شروع برای شمارهٔ روز<input id="start-date" class="field" value="${label(state.startDate)}"></label>${button("ذخیرهٔ تاریخ شروع", "startDate")}`,
-    ) +
-    card(
-      "پشتیبان و انتقال اطلاعات",
-      `<div class="actions">${button("پشتیبان کامل JSON", "backup", "", "primary")}${button("CSV زمان‌ها", "csv")}${button("CSV جدول برنامه", "planCsv")}</div><p class="muted">دادهٔ نسخهٔ قبلی خودکار منتقل می‌شود. پشتیبان این نسخه شامل برنامهٔ روزها، گروه‌ها، تیک‌ها و کارهای تاریخ‌دار است. با بازیابی، دادهٔ فعلی جایگزین می‌شود؛ زمان‌سنج فعال منتقل نمی‌شود.</p><label>بازیابی پشتیبان<input id="restore" type="file" accept=".json,application/json" class="field"></label>`,
-    );
+  V.settings();
 }
 function exportFile(content, type, name) {
   const url = URL.createObjectURL(new Blob([content], { type })),
@@ -692,6 +543,7 @@ function exportFile(content, type, name) {
 }
 function backup() {
   const copy = structuredClone(state);
+  if (copy.active) E.settle(copy, Date.now());
   copy.active = null;
   copy.paused = null;
   copy.series = null;
@@ -807,12 +659,42 @@ async function copyReport() {
   }
 }
 function updateClock() {
-  const a = state.active,
+  const a = state.active || state.paused,
     c = $("#clock");
-  if (a && c)
-    c.textContent = duration(
-      a.deadline ? a.deadline - Date.now() : Date.now() - a.start,
-    );
+  if (c) {
+    const now = Date.now(),
+      paused = !state.active;
+    const ms = !a
+      ? 0
+      : a.deadline
+        ? paused
+          ? a.block
+            ? Math.max(0, a.target - (state.progress[a.block] || 0))
+            : a.remaining
+          : Math.max(0, a.deadline - now)
+        : paused
+          ? a.carry || 0
+          : (a.carry || 0) + now - a.start;
+    c.textContent = duration(ms);
+    const ring = $("#timer-ring");
+    if (ring) {
+      const done = a?.target ? 1 - ms / a.target : 0;
+      ring.style.setProperty(
+        "--progress",
+        Math.max(0, Math.min(100, done * 100)) + "%",
+      );
+    }
+  }
+  const live = $("#live-useful");
+  if (live) {
+    let n = E.minutes(state, selected);
+    if (state.active && E.activity(state, state.active.activity)?.useful) {
+      const [lo, hi] = E.interval(selected),
+        end = Math.min(Date.now(), state.active.deadline || Infinity, hi);
+      n += Math.max(0, end - Math.max(lo, state.active.start)) / 60000;
+    }
+    live.textContent = V.minute(n);
+  }
 }
 function taskToken(t) {
   return [t.date, t.time, t.lead].join("|");
@@ -826,6 +708,7 @@ function reminders() {
       const due = E.reminderTime(t);
       if (
         t.done ||
+        t.archived ||
         t.reminder === false ||
         due === null ||
         due > now ||
@@ -870,6 +753,10 @@ function tick() {
     render();
   } else updateClock();
   reminders();
+  if (Date.now() - lastReviewCheck > 60000) {
+    lastReviewCheck = Date.now();
+    maybeReview();
+  }
 }
 function seriesDialog(id) {
   modal(
@@ -884,6 +771,72 @@ function seriesDialog(id) {
   );
 }
 const actions = {
+  plannerSpan: (span) => {
+    plannerSpan = span;
+    render();
+  },
+  plannerShift: (n) => {
+    selected = E.add(selected, +n);
+    calendar = E.persian(selected);
+    render();
+  },
+  matrixToggle: (key) => complete(key, !state.completions[key]),
+  pause: () => {
+    E.pause(state);
+    save();
+    render();
+  },
+  finishFocus: () => {
+    E.settle(state, Date.now());
+    state.paused = null;
+    state.series = null;
+    save();
+    render();
+  },
+  quickTyped: () => {
+    const name = $("#quick-activity").value.trim(),
+      a = E.findActivity(state, name);
+    if (a) {
+      E.interrupt(state, a.id);
+      save();
+      render();
+    } else {
+      activityDialog();
+      $("#activity-name").value = name;
+      updateActivityMatches();
+    }
+  },
+  addTodayTask: () => editTask("", selected),
+  toggleArchive: () => {
+    showArchived = !showArchived;
+    render();
+  },
+  restoreTask: (id) => {
+    E.resolveTask(state, id, "restore");
+    save();
+    render();
+  },
+  openReview: () => openReview(),
+  reviewTask: (id) => openReview(id),
+  reviewAction: (arg) => {
+    const p = JSON.parse(arg);
+    resolveReview(p.id, p.action);
+  },
+  taskHistory: (id) => showTaskHistory(id),
+  reviewClock: () => {
+    const value = $("#review-time").value;
+    if (!value) throw Error("ساعت را مشخص کن");
+    state.reviewTime = value;
+    save();
+    toast("زمان مرور ذخیره شد");
+  },
+  analysis: () => {
+    tab = "settings";
+    render();
+    $("#analysis-details").open = true;
+    $("#analysis-details").scrollIntoView({ behavior: "smooth" });
+  },
+
   graceExpand: (id) => {
     if (graceExpanded.has(id)) graceExpanded.delete(id);
     else graceExpanded.add(id);
@@ -975,7 +928,7 @@ const actions = {
   },
   deleteTask: (id) => {
     if (confirm("این کار حذف شود؟")) {
-      state.tasks = state.tasks.filter((t) => t.id !== id);
+      E.resolveTask(state, id, "archive");
       save();
       render();
     }
@@ -991,22 +944,6 @@ const actions = {
   closeModal,
   rawBackup: () =>
     exportFile(source || "", "application/json", "raval-original.json"),
-  editTemplate: (i) =>
-    modal("پیش‌فرض " + week[+i], planFields(state.templates[+i]), (f) => {
-      const p = readPlan(f);
-      const probe = structuredClone(state);
-      probe.templates[+i] = p;
-      E.validate(probe);
-      state.templates[+i] = p;
-      save();
-      closeModal();
-      render();
-    }),
-  startDate: () => {
-    state.startDate = E.parsePersian($("#start-date").value);
-    save();
-    toast("ذخیره شد");
-  },
   notifications: async () => {
     if (!("Notification" in window))
       return toast("اعلان در این مرورگر پشتیبانی نمی‌شود");
@@ -1030,8 +967,7 @@ document.addEventListener("change", (e) => {
     if (el.dataset.complete) complete(el.dataset.complete, el.checked);
     if (el.dataset.task) {
       const t = state.tasks.find((t) => t.id === el.dataset.task);
-      t.done = el.checked;
-      t.completedAt = t.done ? Date.now() : null;
+      E.resolveTask(state, t.id, el.checked ? "done" : "reopen");
       save();
       render();
     }
@@ -1092,13 +1028,15 @@ function loadExcelJS() {
   return excelLoader;
 }
 function renderExcel() {
-  let html = card(
-    "برنامه و کارها را از اکسل وارد کن",
-    `<p>فایل TRACK.xlsx و قالب خود روال پشتیبانی می‌شوند. برنامهٔ روزانه، گروه‌ها و کارهای پروژه هرکدام در بخش مربوط وارد می‌شوند.</p><label>انتخاب فایل Excel (.xlsx)<input class="field" id="excel-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ${excelBusy ? "disabled" : ""}></label>${excelBusy ? "<p>در حال خواندن فایل…</p>" : ""}<div class="notice">فایل فقط در مرورگر خودت خوانده می‌شود. قبل از ورود، پیش‌نمایش را ببین؛ ورود اکسل، زمان واقعی یا تیک انجام فعالیت‌ها ایجاد نمی‌کند.</div>`,
-  );
+  let html =
+    V.heading("اکسل", "مرجع برنامهٔ کلی تو، فایل اکسل است.") +
+    card(
+      "برنامه و کارها را از اکسل وارد کن",
+      `<p>فایل TRACK.xlsx و قالب خود روال پشتیبانی می‌شوند. برنامهٔ روزانه، گروه‌ها و کارهای پروژه هرکدام در بخش مربوط وارد می‌شوند.</p><label>انتخاب فایل Excel (.xlsx)<input class="field" id="excel-file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" ${excelBusy ? "disabled" : ""}></label>${excelBusy ? "<p>در حال خواندن فایل…</p>" : ""}<div class="notice">فایل فقط در مرورگر خودت خوانده می‌شود. قبل از ورود، پیش‌نمایش را ببین؛ ورود اکسل، زمان واقعی یا تیک انجام فعالیت‌ها ایجاد نمی‌کند.</div>`,
+    );
   html += card(
-    "جدول اکسل قابل ویرایش",
-    `<p>برنامهٔ ماه ${months[calendar.m - 1]} ${fa(calendar.y)} یا کل سال را بگیر، در جدول پیوسته به سبک TRACK ویرایش کن و دوباره وارد کن. ماه و سال را از «برنامهٔ کلی» انتخاب کن.</p><div class="actions">${button("دریافت اکسل این ماه", "excelMonth", "", "primary")}${button("دریافت اکسل سال به سبک TRACK", "excelYear")}${button("نسخهٔ ماهانهٔ فشرده", "excelCompact")}</div><p><a href="raval-template.xlsx?v=2.4.0" download>دانلود قالب خام برنامه و کارها</a></p><small>شیت برنامهٔ روزانه: جدول پیوسته با بخش‌های زمانی، جمع‌های مشکی و خانه‌های ارفاقی سبز؛ شیت «کارها»: پروژه، عنوان، برچسب، تاریخ و ساعت؛ شیت «گروه‌ها»: گروه‌های دلخواه.</small>`,
+    "قالب ورودی برنامه و کارها",
+    `<p class="muted">قالب به سبک فایل خودت است؛ برنامهٔ روزانه، گروه‌ها و کارهای پروژه را در اکسل وارد کن و همین‌جا بارگذاری کن.</p><a class="button primary" href="raval-template.xlsx?v=3.0.0" download>${V.icon("excel")}دانلود قالب خام برنامه و کارها</a>`,
   );
   if (pendingExcel) {
     const p = pendingExcel,
@@ -1147,7 +1085,7 @@ function renderExcel() {
         )
         .join(
           "",
-        )}</tbody></table></div><p class="muted">نمایش چند ردیف اول؛ همهٔ ردیف‌های معتبر با تأیید وارد می‌شوند.</p><label><input id="excel-overwrite" type="checkbox"> برنامه‌ها و کارهای موجود با اطلاعات فایل جایگزین شوند</label><small>${fa(existing)} روز در حال حاضر برنامهٔ اختصاصی دارند؛ بدون این انتخاب حفظ می‌شوند. ثبت‌های زمانی و بقیهٔ تاریخ‌ها حذف نمی‌شوند.</small>${p.startDate ? '<label><input id="excel-start" type="checkbox" checked> شروع شماره‌روز از ' + label(p.startDate) + "، مطابق جدول اکسل</label>" : ""}<div class="actions" style="margin-top:16px">${button(p.errors.length ? "ورود ردیف‌های معتبر" : "تأیید و ورود اطلاعات", "excelCommit", "", "primary")}${button("انصراف", "excelClear")}</div>`,
+        )}</tbody></table></div><p class="muted">نمایش چند ردیف اول؛ همهٔ ردیف‌های معتبر با تأیید وارد می‌شوند.</p><label><input id="excel-overwrite" type="checkbox" checked> برنامه‌ها و کارهای موجود با اطلاعات فایل جایگزین شوند</label><small>${fa(existing)} روز در حال حاضر برنامهٔ اختصاصی دارند؛ بدون این انتخاب حفظ می‌شوند. ثبت‌های زمانی و بقیهٔ تاریخ‌ها حذف نمی‌شوند.</small><label class="notice"><input id="excel-replace" type="checkbox"> این فایل مرجع کامل برنامه است؛ برنامه‌های قبلی که در فایل نیستند حذف شوند. زمان‌های واقعی، تیک‌ها و کارهای پروژه حفظ می‌شوند.</label>${p.startDate ? '<label><input id="excel-start" type="checkbox" checked> شروع شماره‌روز از ' + label(p.startDate) + "، مطابق جدول اکسل</label>" : ""}<div class="actions" style="margin-top:16px">${button(p.errors.length ? "ورود ردیف‌های معتبر" : "تأیید و ورود اطلاعات", "excelCommit", "", "primary")}${button("انصراف", "excelClear")}</div>`,
     );
   }
   $("#view").innerHTML = html;
@@ -1193,7 +1131,17 @@ function commitExcel() {
     overwrite: $("#excel-overwrite").checked,
     setStart: !!$("#excel-start")?.checked,
   });
-  state = result.state;
+  if ($("#excel-replace")?.checked && pendingExcel.plans.length) {
+    const dates = new Set(pendingExcel.plans.map((p) => p.date));
+    for (const k of Object.keys(result.state.plans))
+      if (!dates.has(k)) delete result.state.plans[k];
+  }
+  state = E.upgrade(result.state);
+  state.importMeta = {
+    name: pendingExcel.fileName,
+    at: Date.now(),
+    count: pendingExcel.plans.length,
+  };
   const dates = pendingExcel.plans.map((r) => r.date);
   pendingExcel = null;
   selected = dates.includes(todayKey()) ? todayKey() : dates[0] || todayKey();
@@ -1222,4 +1170,118 @@ async function exportExcel(fullYear, layout = "track") {
   } catch (err) {
     toast("ساخت فایل اکسل ناموفق بود: " + err.message);
   }
+}
+
+function openReview(id = "") {
+  const due = E.pendingReview(state),
+    t = id ? state.tasks.find((t) => t.id === id) : due[0];
+  if (!t) {
+    toast("کار ناتمامِ نیازمند مرور نداری.");
+    return;
+  }
+  if (!id) {
+    state.reviewPromptedOn = todayKey();
+    save();
+  }
+  modal(
+    "این کار چی شد؟",
+    `<div class="review-task"><h3>${esc(t.title)}</h3><p>${esc(t.project)} ${t.date ? "• " + label(t.date) : ""}</p>${t.progress ? "<p>" + fa(t.progress) + "٪ انجام شده • " + esc(t.remaining) + "</p>" : ""}</div><p class="muted">وضعیت را مشخص کن؛ سابقهٔ قبلی حفظ می‌شود.</p><div class="review-choices">${[
+      ["done", "✓ انجام شد"],
+      ["partial", "بخشی انجام شد"],
+      ["move", "انتقال به روز دیگر"],
+      ["archive", "بایگانی"],
+    ]
+      .map(([action, title]) =>
+        button(
+          title,
+          "reviewAction",
+          JSON.stringify({ id: t.id, action }),
+          action === "done" ? "primary" : "secondary",
+        ),
+      )
+      .join("")}</div>`,
+    () => {},
+  );
+  $("#form button[type=submit]").hidden = true;
+}
+function resolveReview(id, action) {
+  if (action === "done" || action === "archive") {
+    E.resolveTask(state, id, action);
+    save();
+    closeModal();
+    render();
+    openReview();
+    return;
+  }
+  const t = state.tasks.find((t) => t.id === id);
+  modal(
+    action === "partial" ? "اصلاح کار نیمه‌تمام" : "انتقال کار",
+    `<b>${esc(t.title)}</b>${action === "partial" ? `<label>درصد انجام‌شده<input class="field" name="progress" type="number" min="1" max="99" value="${t.progress || 50}" required></label><label>چه چیزی باقی مانده؟<textarea class="field" name="remaining" rows="3" maxlength="1000" required>${esc(t.remaining)}</textarea></label>` : ""}<div class="split"><label>تاریخ انجام باقی‌مانده${dateInput("date", E.add(todayKey(), 1))}</label><label>ساعت (اختیاری)<input class="field" name="time" type="time" value="${esc(t.time)}"></label></div>`,
+    (f) => {
+      E.resolveTask(state, id, action, {
+        date: E.parsePersian(f.get("date")),
+        time: f.get("time"),
+        progress: f.get("progress"),
+        remaining: f.get("remaining"),
+      });
+      save();
+      closeModal();
+      render();
+      openReview();
+    },
+  );
+}
+function maybeReview() {
+  if (
+    document.visibilityState !== "visible" ||
+    $("#dialog").open ||
+    state.reviewPromptedOn === todayKey()
+  )
+    return;
+  if (E.pendingReview(state).length) openReview();
+}
+function showTaskHistory(id) {
+  const t = state.tasks.find((t) => t.id === id),
+    names = {
+      edit: "ویرایش",
+      schedule: "تعیین زمان",
+      done: "انجام شد",
+      reopen: "بازگشایی",
+      archive: "بایگانی",
+      restore: "بازگرداندن",
+      move: "انتقال",
+      partial: "بخشی انجام شد",
+    };
+  modal(
+    "سابقهٔ " + esc(t.title),
+    `<div class="history-list">${
+      (t.history || [])
+        .slice()
+        .reverse()
+        .map(
+          (h) =>
+            "<article><b>" +
+            esc(names[h.action] || h.action) +
+            "</b><small>" +
+            label(E.key(new Date(h.at))) +
+            " • " +
+            time(h.at) +
+            "</small><p>" +
+            (h.before.date ? label(h.before.date) : "بدون تاریخ") +
+            " ← " +
+            (h.after.date ? label(h.after.date) : "بدون تاریخ") +
+            "</p>" +
+            (h.after.progress
+              ? "<p>انجام‌شده: " + fa(h.after.progress) + "٪</p>"
+              : "") +
+            (h.after.remaining
+              ? "<p>باقی‌مانده: " + esc(h.after.remaining) + "</p>"
+              : "") +
+            "</article>",
+        )
+        .join("") || "<p>هنوز تغییری ثبت نشده.</p>"
+    }</div>`,
+    closeModal,
+  );
+  $("#form button[type=submit]").hidden = true;
 }

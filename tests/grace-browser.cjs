@@ -34,6 +34,7 @@ const { chromium } = require("playwright"),
     await page.locator(".grace-card").filter({ hasText: "کتاب" }).count(),
     0,
   );
+  await technical.locator("summary").click();
   await technical.locator("[data-action=block]").first().click();
   assert.equal(
     await page.evaluate(() => state.active.planDate),
