@@ -1,3 +1,39 @@
 <!doctype html>
-<html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#087f79"><title>زمان من • نمونه وب</title><link rel="stylesheet" href="style.css"><script defer src="app.js"></script></head>
-<body><main><header><div><span class="eyebrow">هر لحظه، برای خودت</span><h1>زمان من<span>✦</span></h1></div><div><span class="badge">نسخهٔ آزمایشی وب</span><p id="date"></p></div></header><nav aria-label="صفحه‌ها"><button data-tab="today" class="selected">◷ امروز</button><button data-tab="alarms">♧ یادآورها</button><button data-tab="projects">▣ پروژه‌ها و ایده‌ها</button></nav><div id="warning"></div><section id="view"></section><footer>اطلاعات روی همین مرورگر ذخیره می‌شود. <button id="export">دریافت پشتیبان</button> <label class="import">بازیابی پشتیبان<input id="import" type="file" accept="application/json" hidden></label></footer></main><dialog id="dialog"><form id="form"></form></dialog><div id="toast" role="status"></div><aside id="ring" hidden><b>🔔 <span id="ring-title"></span></b><button id="silence">قطع زنگ</button></aside></body></html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#087f79">
+  <title>زمان من</title>
+  <link rel="preload" href="fonts/Vazirmatn-Variable.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="style.css?v=1.1.0">
+  <script defer src="app.js?v=1.1.0"></script>
+</head>
+<body>
+  <main>
+    <header class="app-header">
+      <div class="brand"><span aria-hidden="true">✦</span><h1>زمان من</h1></div>
+      <button id="settings" class="icon-button" aria-label="تنظیمات و پشتیبان‌گیری" title="تنظیمات و پشتیبان‌گیری">⚙</button>
+    </header>
+    <nav aria-label="صفحه‌ها">
+      <button data-tab="today" class="selected"><span aria-hidden="true">☀</span> امروز</button>
+      <button data-tab="alarms"><span aria-hidden="true">♧</span> یادآورها</button>
+      <button data-tab="projects"><span aria-hidden="true">▣</span> پروژه‌ها</button>
+    </nav>
+    <section id="date" class="date-panel" aria-label="تاریخ و ساعت امروز">
+      <div class="date-line"><b id="weekday"></b><span id="persian-date"></span></div>
+      <div id="gregorian-date" class="gregorian-date"></div>
+      <time id="wall-clock" class="wall-clock" aria-label="ساعت دستگاه"></time>
+    </section>
+    <div id="warning"></div>
+    <section id="view"></section>
+  </main>
+  <dialog id="settings-dialog" aria-labelledby="settings-title">
+    <div class="row"><h2 id="settings-title">تنظیمات</h2><button id="settings-close" class="icon-button" aria-label="بستن تنظیمات">×</button></div>
+    <section class="backup-settings"><h3>پشتیبان اطلاعات</h3><div class="actions"><button id="export" class="primary">دریافت پشتیبان</button><label class="import" tabindex="0" role="button">بازیابی پشتیبان<input id="import" type="file" accept="application/json" hidden></label></div></section>
+  </dialog>
+  <dialog id="dialog"><form id="form"></form></dialog>
+  <div id="toast" role="status"></div>
+  <aside id="ring" hidden><b>🔔 <span id="ring-title"></span></b><button id="silence">قطع زنگ</button></aside>
+</body>
+</html>

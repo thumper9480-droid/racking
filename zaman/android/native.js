@@ -10,9 +10,6 @@ const originalSilence=document.querySelector('#silence').onclick;
 document.querySelector('#silence').onclick=()=>{AndroidZaman.stopAlarm();originalSilence();};
 actions.permission=()=>AndroidZaman.permissions();
 document.querySelector('#export').onclick=()=>AndroidZaman.export(JSON.stringify(state,null,2));
-const statusBox=document.createElement('div');statusBox.id='native-status';statusBox.className='info';document.querySelector('nav').after(statusBox);
+const statusBox=document.createElement('div');statusBox.id='native-status';statusBox.className='info';document.querySelector('#settings-dialog').append(statusBox);
 document.addEventListener('click',e=>{if(e.target.closest('#native-test'))AndroidZaman.testAlarm();if(e.target.closest('#native-stop'))AndroidZaman.stopAlarm();});
 nativeSync();render();
-
-document.querySelector('.badge').textContent='نسخهٔ اندروید ۱.۰';
-document.querySelector('.countdown .muted:last-child').textContent='زنگ پایان با سیستم اندروید اجرا می‌شود؛ مجوزهای زنگ را فعال کنید.';
