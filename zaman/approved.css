@@ -101,3 +101,49 @@ nav .settings-nav { background:#f5f7f4; }
 .session-actions .circle-action { height:clamp(96px,28vw,124px); padding:8px 5px; line-height:1.45; gap:0; }
 @media(max-width:350px) { .session-actions .circle-action { height:93px; } }
 .donut-center strong { max-width:65%; line-height:1.4; text-align:center; overflow-wrap:anywhere; }
+
+/* Compact Today footer approved in1.8: three foldable rows, then end/reset. */
+.today-layout { gap:7px; }
+.today-layout .due-project-tasks,.today-layout .journey,.today-layout .day-chart { padding:6px 10px; border-radius:12px; }
+.today-layout .due-project-tasks h2,.today-layout .journey h2,.today-layout .day-chart h2 { margin:0; font-size:14px; }
+.today-layout .section-toggle { min-height:34px; padding:0; gap:6px; }
+.today-layout .section-chevron { min-width:21px; width:21px; height:25px; }
+.today-layout .disclosure-box { width:21px; height:21px; border-radius:6px; }
+.today-layout .disclosure-box svg { width:15px; height:15px; }
+.today-layout .due-project-tasks .section-toggle::before { font-size:19px; }
+.journey-heading { position:relative; min-height:34px; }
+.journey-heading h2 { flex:1; min-width:0; }
+.journey .history-nav { position:absolute; inset-inline-start:74px; top:50%; transform:translateY(-50%); z-index:2; gap:3px; }
+.journey .history-nav button { padding:4px 5px; min-height:25px; min-width:24px; font-size:10px; }
+.today-layout > .end-day[data-hold-end] { width:100%; margin:0; min-height:51px; padding:7px 12px; border:1px solid #43816b; border-radius:11px; color:#376c59; background:linear-gradient(to left,#c7dfd2 var(--hold-progress,0%),#fff var(--hold-progress,0%)); font-size:12px; font-weight:700; }
+.today-layout > .end-day[data-hold-end] > small { font-size:9px; color:#90a594; font-weight:400; margin-top:2px; }
+.today-layout > .end-day[data-hold-end]:disabled { opacity:.7; }
+.day-reset-panel { padding:0; }
+.reset-day-button { min-height:41px; padding:9px 10px; font-size:11px; color:#a87966; border-color:#e3c5b8; border-radius:10px; background:#fffaf5; }
+.empty-today-projects { margin:7px 0; font-size:12px; }
+.today-layout #chart-content { padding:8px 0 3px; }
+.today-layout #project-tasks-content { padding-bottom:3px; }
+@media(max-width:350px) {
+ .today-layout .due-project-tasks,.today-layout .journey,.today-layout .day-chart { padding-inline:9px; }
+ .today-layout .due-project-tasks h2,.today-layout .journey h2,.today-layout .day-chart h2 { font-size:13px; }
+ .journey .history-nav { inset-inline-start:68px; }
+ .journey .history-nav button { font-size:9px; padding:4px; min-width:22px; }
+ .today-layout > .end-day[data-hold-end] { font-size:11px; }
+ .reset-day-button { font-size:10px; }
+}
+#today-header { position:relative; }
+.header-education { position:absolute; left:0; top:27px; z-index:1; width:45px; height:45px; padding:0; border:1.5px solid #267764; border-radius:50%; color:#206954; background:#fff; font-size:12px; font-weight:750; box-shadow:0 2px 7px #23533e0a; }
+#education-dialog { max-height:88dvh; overflow:auto; }
+#education-dialog h2 { font-size:18px; margin:0; }
+.education-lead { font-size:13px; line-height:1.9; color:#6b8275; }
+.education-files { display:grid; gap:8px; margin:14px 0 20px; }
+.education-files button { font-size:13px; }
+.education-topics { display:grid; gap:6px; }
+.education-topics button { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:11px 12px; font-size:12px; text-align:right; background:#f1f6ef; border:1px solid #dce8dd; }
+.education-topics button span { font-size:20px; color:#6e8b7a; }
+.education-gallery { margin-top:20px; padding-top:12px; border-top:1px solid #dce7dc; }
+.education-gallery summary { cursor:pointer; font-size:13px; font-weight:650; }
+.education-gallery figure { margin:15px 0; padding:10px; background:#f6f8f3; border-radius:12px; text-align:center; }
+.education-gallery img { display:block; width:100%; height:auto; max-height:430px; object-fit:contain; }
+.education-gallery figcaption { margin-top:7px; font-size:12px; color:#587963; }
+@media(max-width:350px) { .header-education { width:42px; height:42px; font-size:11px; } }

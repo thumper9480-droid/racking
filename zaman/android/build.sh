@@ -13,11 +13,11 @@ cp ../fonts/Vazirmatn-Variable.ttf build/assets/fonts/
 python3 - <<'PY'
 from pathlib import Path
 p=Path('build/assets/index.html')
-s=p.read_text().replace('<script defer src="app.js?v=1.7.0"></script>','<script defer src="app.js?v=1.7.0"></script><script defer src="native.js"></script>')
+s=p.read_text().replace('<script defer src="app.js?v=1.8.0"></script>','<script defer src="app.js?v=1.8.0"></script><script defer src="native.js"></script>')
 p.write_text(s)
 PY
 "$TOOLS/aapt2" compile --dir res -o build/resources.zip
-"$TOOLS/aapt2" link -o build/base.apk -I "$PLATFORM" --manifest AndroidManifest.xml --min-sdk-version 26 --target-sdk-version 35 --version-code 9 --version-name 1.7.0 -A build/assets build/resources.zip
+"$TOOLS/aapt2" link -o build/base.apk -I "$PLATFORM" --manifest AndroidManifest.xml --min-sdk-version 26 --target-sdk-version 35 --version-code 10 --version-name 1.8.0 -A build/assets build/resources.zip
 find src -name '*.java' > build/sources.txt
 "${JAVA_HOME:+$JAVA_HOME/bin/}javac" --release 17 -classpath "$PLATFORM" -d build/classes @build/sources.txt
 find build/classes -name '*.class' > build/classes.txt
@@ -33,8 +33,8 @@ PY
 if [ ! -f "$SIGNING_DIR/zaman-development.jks" ]; then
  keytool -genkeypair -noprompt -keystore "$SIGNING_DIR/zaman-development.jks" -storepass android -keypass android -alias zaman -dname 'CN=Zaman Development' -keyalg RSA -keysize 2048 -validity 10000 >/dev/null
 fi
-"$TOOLS/apksigner" sign --ks "$SIGNING_DIR/zaman-development.jks" --ks-pass pass:android --key-pass pass:android --ks-key-alias zaman --out build/zaman-1.7.0.apk build/aligned.apk
-"$TOOLS/apksigner" verify --verbose build/zaman-1.7.0.apk
-"$TOOLS/zipalign" -c -p 4 build/zaman-1.7.0.apk
-"$TOOLS/aapt" dump badging build/zaman-1.7.0.apk
-sha256sum build/zaman-1.7.0.apk
+"$TOOLS/apksigner" sign --ks "$SIGNING_DIR/zaman-development.jks" --ks-pass pass:android --key-pass pass:android --ks-key-alias zaman --out build/zaman-1.8.0.apk build/aligned.apk
+"$TOOLS/apksigner" verify --verbose build/zaman-1.8.0.apk
+"$TOOLS/zipalign" -c -p 4 build/zaman-1.8.0.apk
+"$TOOLS/aapt" dump badging build/zaman-1.8.0.apk
+sha256sum build/zaman-1.8.0.apk

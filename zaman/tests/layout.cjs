@@ -1,10 +1,11 @@
+const {openTodayPanels}=require('./open-panels.cjs');
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:390,height:844},timezoneId:'Asia/Tehran'});
  const errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('dialog',d=>d.accept());
  await page.clock.install({time:new Date('2026-10-21T10:20:00+03:30')});
- await page.goto('http://127.0.0.1:4173/zaman/');
+ await page.goto('http://127.0.0.1:4173/zaman/');await openTodayPanels(page);
  await page.evaluate(()=>{const today=new Date();today.setHours(0,0,0,0);const midnight=today.getTime();state.history=[{name:'دیروز',start:midnight-7200000,end:midnight-3600000},{name:'بازه شبانه',start:midnight-1800000,end:midnight+1800000},{name:'صبحانه',start:midnight+8*3600000,end:midnight+8.5*3600000}];state.countdown={remaining:90*60000,duration:90*60000,end:null};save();render();});
  await page.evaluate(()=>document.fonts.ready);
  assert.equal(await page.evaluate(()=>document.fonts.check('16px Vazirmatn')),true);

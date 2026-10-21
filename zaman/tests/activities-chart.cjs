@@ -1,7 +1,8 @@
+const {openTodayPanels}=require('./open-panels.cjs');
 const {chromium,devices}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
- const page=await browser.newPage({...devices['Pixel 5'],viewport:{width:390,height:844},timezoneId:'Asia/Tehran'});const errors=[];let popups=0;page.on('pageerror',e=>errors.push(e.message));page.on('popup',()=>popups++);await page.clock.install({time:new Date('2026-10-21T10:59:59+03:30')});await page.clock.pauseAt(new Date('2026-10-21T11:00:00+03:30'));await page.goto('http://127.0.0.1:4173/zaman/');
+ const page=await browser.newPage({...devices['Pixel 5'],viewport:{width:390,height:844},timezoneId:'Asia/Tehran'});const errors=[];let popups=0;page.on('pageerror',e=>errors.push(e.message));page.on('popup',()=>popups++);await page.clock.install({time:new Date('2026-10-21T10:59:59+03:30')});await page.clock.pauseAt(new Date('2026-10-21T11:00:00+03:30'));await page.goto('http://127.0.0.1:4173/zaman/');await openTodayPanels(page);
  const submit=()=>page.locator('#form button[type=submit]').click(),store=()=>page.evaluate(()=>JSON.parse(localStorage.getItem('zaman-browser-v1')));
  await page.evaluate(()=>{const d=new Date();d.setHours(8,0,0,0);const a=d.getTime(),h=3600000;state.history=[{name:'صبحانه',start:a,end:a+h/2},{name:'مطالعه',start:a+h/2,end:a+2*h},{name:'صبحانه',start:a+2*h,end:a+2.5*h}];state.day={start:a,segment:a+2.5*h,activity:'فعالیت جاری'};save();render();});
  assert.equal(await page.locator('main header,main h1').count(),0);assert.equal(await page.locator('nav [data-tab]').count(),4);

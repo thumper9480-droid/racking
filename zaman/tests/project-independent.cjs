@@ -1,9 +1,10 @@
+const {openTodayPanels}=require('./open-panels.cjs');
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  const p=await browser.newPage({viewport:{width:390,height:844}}),errors=[];p.on('pageerror',e=>errors.push(e.message));
  await p.clock.install({time:new Date('2026-10-21T10:00:00Z')});await p.clock.pauseAt(new Date('2026-10-21T10:00:01Z'));
- await p.goto('http://127.0.0.1:4173/zaman/');
+ await p.goto('http://127.0.0.1:4173/zaman/');await openTodayPanels(p);
  const submit=()=>p.locator('#form button[type=submit]').click(),store=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('zaman-browser-v1')));
  await p.locator('[data-tab=projects]').click();await p.locator('[data-action=project]').click();await p.locator('[name=name]').fill('خانه بالا');await submit();
  const id=(await store()).projects[0].id,project=p.locator(`[data-project="${id}"]`);

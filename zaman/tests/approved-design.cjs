@@ -1,3 +1,4 @@
+const {openTodayPanels}=require('./open-panels.cjs');
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
@@ -5,7 +6,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  page.on('pageerror',error=>errors.push(error.message));
  await page.clock.install({time:new Date('2026-10-21T12:00:00+03:30')});await page.clock.pauseAt(new Date('2026-10-21T12:00:01+03:30'));
  await page.route('**/release.json*',route=>route.fulfill({json:{versionCode:9,versionName:'1.7.0',apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.7.0.apk',sha256:'a'.repeat(64)}}));
- await page.goto('http://127.0.0.1:4173/zaman/');await page.evaluate(()=>document.fonts.ready);
+ await page.goto('http://127.0.0.1:4173/zaman/');await openTodayPanels(page);await page.evaluate(()=>document.fonts.ready);
  const brand=page.locator('#today-brand');assert(await brand.isVisible(),'Today shows the approved calligraphic masthead');
  const art=page.locator('#today-brand img, img#today-brand');assert.equal(await art.count(),1);assert(await art.evaluate(img=>img.complete&&img.naturalWidth>0),'masthead artwork loads');
  await page.locator('[data-action=wake]').click();

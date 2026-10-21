@@ -1,7 +1,8 @@
+const {openTodayPanels}=require('./open-panels.cjs');
 const {chromium,devices}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
  const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const p=await b.newPage({...devices['Pixel 5'],viewport:{width:390,height:844},timezoneId:'Asia/Tehran'}),errors=[];p.on('pageerror',e=>errors.push(e.message));
- await p.clock.install({time:new Date('2026-10-21T12:00:00+03:30')});await p.clock.pauseAt(new Date('2026-10-21T12:00:01+03:30'));await p.goto('http://127.0.0.1:4173/zaman/');assert.equal(await p.title(),'مدیریت زمان علی میرزا');
+ await p.clock.install({time:new Date('2026-10-21T12:00:00+03:30')});await p.clock.pauseAt(new Date('2026-10-21T12:00:01+03:30'));await p.goto('http://127.0.0.1:4173/zaman/');await openTodayPanels(p);assert.equal(await p.title(),'مدیریت زمان علی میرزا');
  await p.evaluate(()=>{const day=todayBounds().start;state.history=Array.from({length:18},(_,i)=>({name:['صبحانه','مطالعه','کار پروژه'][i%3],start:day+(7*60+i*10)*60000,end:day+(7*60+(i+1)*10)*60000}));state.day={start:day+7*3600000,segment:day+10*3600000,activity:'فعالیت جاری'};state.projects=[{id:'p',name:'خانه بالا',ideas:[],tasks:[{id:'t',title:'خرید آهن',done:false,dueAt:day+13*3600000,dueRepeat:'none'}]}];state.alarms=[{id:'a',title:'خرید آهن',at:day+13*3600000,repeat:'none',enabled:true,projectId:'p',itemId:'t',itemKind:'task'}];save();render();});
  assert.equal(await p.locator('.history-table tbody tr').count(),19);
  const metrics=()=>p.locator('.history-scroll').evaluate(el=>{const h=el.querySelector('thead th').getBoundingClientRect(),f=el.querySelector('tfoot td').getBoundingClientRect(),r=el.getBoundingClientRect();return {height:el.clientHeight,scrollHeight:el.scrollHeight,top:h.top-r.top,bottom:f.bottom-r.bottom};});

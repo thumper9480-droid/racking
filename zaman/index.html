@@ -9,17 +9,17 @@
   <link rel="apple-touch-icon" href="logo.png">
   <meta name="application-name" content="مدیریت زمان علی میرزا">
   <link rel="preload" href="fonts/Vazirmatn-Variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=1.7.0">
-  <link rel="stylesheet" href="reports.css?v=1.7.0">
-  <link rel="stylesheet" href="enhancements.css?v=1.7.0">
-  <link rel="stylesheet" href="approved.css?v=1.7.0">
-  <script defer src="reports.js?v=1.7.0"></script>
-  <script defer src="enhancements.js?v=1.7.0"></script>
-  <script defer src="app.js?v=1.7.0"></script>
+  <link rel="stylesheet" href="style.css?v=1.8.0">
+  <link rel="stylesheet" href="reports.css?v=1.8.0">
+  <link rel="stylesheet" href="enhancements.css?v=1.8.0">
+  <link rel="stylesheet" href="approved.css?v=1.8.0">
+  <script defer src="reports.js?v=1.8.0"></script>
+  <script defer src="enhancements.js?v=1.8.0"></script>
+  <script defer src="app.js?v=1.8.0"></script>
 </head>
 <body>
   <main>
-    <div id="today-brand" role="img" aria-label="علی میرزا — مدیریت زمان"><img src="wordmark.png" alt="علی میرزا — مدیریت زمان" width="2172" height="724"></div>
+    <div id="today-header"><button type="button" id="education-button" class="header-education" data-education aria-label="آموزش نرم‌افزار">آموزش</button><div id="today-brand" role="img" aria-label="علی میرزا — مدیریت زمان"><img src="wordmark.png" alt="علی میرزا — مدیریت زمان" width="2172" height="724"></div></div>
     <nav aria-label="صفحه‌ها">
       <button data-tab="today" class="selected"><span aria-hidden="true">☀</span> امروز</button>
       <button data-tab="alarms"><span aria-hidden="true">🔔</span> یادآورها</button>
@@ -39,13 +39,14 @@
   <dialog id="settings-dialog" aria-labelledby="settings-title">
     <div class="row"><h2 id="settings-title">تنظیمات</h2><button id="settings-close" class="icon-button" aria-label="بستن تنظیمات">×</button></div>
     <section id="web-alarm-settings"><h3>اعلان و صدا</h3><p class="muted">انتخاب زنگ‌های گوشی در نسخهٔ اندروید در دسترس است.</p><button class="small" data-action="permission">فعال‌سازی اعلان و آزمایش صدا</button></section>
-    <section class="app-identity"><img src="logo.png" alt="لوگوی مدیریت زمان علی میرزا" width="56" height="56"><b>مدیریت زمان علی میرزا</b><small>نسخهٔ ۱.۷.۰</small></section>
+    <section class="app-identity"><img src="logo.png" alt="لوگوی مدیریت زمان علی میرزا" width="56" height="56"><b>مدیریت زمان علی میرزا</b><small>نسخهٔ ۱.۸.۰</small></section>
     <section class="settings-about"><h3>دربارهٔ نرم‌افزار و آموزش</h3><div class="actions"><button class="small" data-action="about">دربارهٔ نرم‌افزار</button><button class="small" data-help>آموزش کاربردی</button><button class="small" data-guide-pdf>جزوهٔ آموزشی PDF</button></div></section>
-    <section class="settings-updates"><h3>به‌روزرسانی</h3><button class="small" data-check-update>بررسی نسخهٔ جدید</button><p id="update-status" class="muted">نسخهٔ ۱.۷.۰</p></section>
+    <section class="settings-updates"><h3>به‌روزرسانی</h3><button class="small" data-check-update>بررسی نسخهٔ جدید</button><p id="update-status" class="muted">نسخهٔ ۱.۸.۰</p></section>
     <section class="backup-settings"><h3>پشتیبان اطلاعات</h3><div class="actions"><button id="export" class="primary">دریافت پشتیبان</button><label class="import" tabindex="0" role="button">بازیابی پشتیبان<input id="import" type="file" accept="application/json" hidden></label></div></section>
   </dialog>
   <dialog id="dialog"><form id="form"></form></dialog>
-  <dialog id="about-dialog" aria-labelledby="about-title"><div class="row"><h2 id="about-title">دربارهٔ نرم‌افزار</h2><button class="small" data-close-about>بستن</button></div><img class="about-logo" src="logo.png" alt="لوگوی نرم‌افزار"><h3>مدیریت زمان علی میرزا</h3><p>نسخهٔ ۱.۷.۰</p><p>این نرم‌افزار توسط <b>امین نقدی پور</b> برای ثبت و مدیریت زمان روزانه، سامان‌دادن به پروژه‌ها و پیگیری کارها طراحی شده است.</p><p>این نرم‌افزار رایگان است. هر ۳۰ روز، برای شادی روح <b>آقای علی میرزا نقدی پور</b>، درخواست فرستادن ده صلوات یا خواندن فاتحه نمایش داده می‌شود.</p><p class="designer-contact">شماره تماس طراح: <a href="tel:09131693134" dir="ltr">09131693134</a></p><div class="actions"><button class="primary" data-help>آموزش کاربردی</button><button data-guide-pdf>دریافت جزوهٔ PDF</button></div></dialog>
+  <dialog id="about-dialog" aria-labelledby="about-title"><div class="row"><h2 id="about-title">دربارهٔ نرم‌افزار</h2><button class="small" data-close-about>بستن</button></div><img class="about-logo" src="logo.png" alt="لوگوی نرم‌افزار"><h3>مدیریت زمان علی میرزا</h3><p>نسخهٔ ۱.۸.۰</p><p>این نرم‌افزار توسط <b>امین نقدی پور</b> برای ثبت و مدیریت زمان روزانه، سامان‌دادن به پروژه‌ها و پیگیری کارها طراحی شده است.</p><p>این نرم‌افزار رایگان است. هر ۳۰ روز، برای شادی روح <b>آقای علی میرزا نقدی پور</b>، درخواست فرستادن ده صلوات یا خواندن فاتحه نمایش داده می‌شود.</p><p class="designer-contact">شماره تماس طراح: <a href="tel:09131693134" dir="ltr">09131693134</a></p><div class="actions"><button class="primary" data-help>آموزش کاربردی</button><button data-guide-pdf>دریافت جزوهٔ PDF</button></div></dialog>
+  <dialog id="education-dialog" aria-labelledby="education-title"><div class="row"><h2 id="education-title">آموزش نرم‌افزار</h2><button type="button" class="small" data-close-education aria-label="بستن آموزش">بستن</button></div><div id="education-contents"></div></dialog>
   <dialog id="memorial-dialog" aria-labelledby="memorial-title" aria-describedby="memorial-message"><h2 id="memorial-title">یادبود علی میرزا نقدی پور</h2><p id="memorial-message">برای شادی روح <b>علی میرزا نقدی پور</b>، لطفاً ده صلوات بفرستید یا فاتحه‌ای بخوانید.</p><p class="muted">پس از انجام، تأیید کنید تا برنامه باز شود.</p><button class="primary wide" id="memorial-confirm">فرستادم / خواندم</button><button class="small memorial-stop" id="memorial-silence">قطع زنگ</button></dialog>
   <div id="toast" role="status"></div>
   <aside id="ring" hidden><b>🔔 <span id="ring-title"></span></b><button id="silence">قطع زنگ</button></aside>

@@ -1,6 +1,7 @@
+const {openTodayPanels}=require('./open-panels.cjs');
 const {chromium,devices}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
- const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const p=await browser.newPage({...devices['Pixel 5'],viewport:{width:390,height:844},timezoneId:'Asia/Tehran'});const errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept());await p.clock.install({time:new Date('2026-10-21T09:59:59+03:30')});await p.clock.pauseAt(new Date('2026-10-21T10:00:00+03:30'));await p.goto('http://127.0.0.1:4173/zaman/');
+ const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const p=await browser.newPage({...devices['Pixel 5'],viewport:{width:390,height:844},timezoneId:'Asia/Tehran'});const errors=[];p.on('pageerror',e=>errors.push(e.message));p.on('dialog',d=>d.accept());await p.clock.install({time:new Date('2026-10-21T09:59:59+03:30')});await p.clock.pauseAt(new Date('2026-10-21T10:00:00+03:30'));await p.goto('http://127.0.0.1:4173/zaman/');await openTodayPanels(p);
  const store=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('zaman-browser-v1'))),submit=()=>p.locator('#form button[type=submit]').click(),action=a=>p.locator(`[data-action="${a}"]`).click();
  async function project(name){await action('project');await p.locator('[name=name]').fill(name);await submit();}
  async function task(title,time,day='29',repeat='none'){await action('task');await p.locator('[name=title]').fill(title);if(time){await p.locator('#task-has-reminder').check();await p.locator('[name=jday]').selectOption(day);await p.locator('[name=time]').fill(time);await p.locator('[name=taskRepeat]').selectOption(repeat);}await submit();}
