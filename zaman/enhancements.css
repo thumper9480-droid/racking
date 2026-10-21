@@ -26,8 +26,17 @@ nav [data-tab] { min-width:0; padding-inline:6px; }
 .sound-setting-row > div { flex:1; min-width:130px; }
 .sound-setting-row small { display:block; font-size:11px; color:#718477; margin-top:4px; }
 .sound-setting-row b { font-size:13px; }
-#update-banner { display:flex; align-items:center; gap:10px; justify-content:space-between; border:1px solid #d8bc70; border-radius:14px; background:#fff7df; padding:11px 13px; margin-bottom:12px; }
-#update-banner b { display:block; font-size:12px; color:#6b571d; }
-#update-banner small { display:block; font-size:10px; color:#95844b; margin-top:3px; }
+#update-banner { display:flex; align-items:center; gap:12px; justify-content:space-between; border:2px solid #c23737; border-radius:14px; background:#fff0ee; padding:17px 13px; margin-bottom:12px; box-shadow:0 3px 12px #a72b2b12; }
+#update-banner b { display:block; font-size:16px; font-weight:850; color:#a51e27; }
+#update-banner small { display:block; font-size:11px; color:#9d3939; margin-top:5px; }
+#update-banner button { flex-shrink:0; background:#bd2937; color:white; padding:11px 12px; font-weight:750; }
+.reminder-delete { min-width:44px; min-height:44px; padding:3px 9px; font-size:30px; line-height:1; font-weight:750; border:1px solid #f0c6c1; }
+.settings-wipe { margin-top:20px; border-top:1px solid #e7cbc7; padding-top:8px; }
+.settings-wipe > button { border:1px solid #e0aaa4; font-weight:750; }
+#wipe-dialog { border:1px solid #d3aaa2; }
+#wipe-dialog::backdrop { background:#253c39ad; }
+#wipe-message { font-size:14px; line-height:2; }
+.wipe-stage { color:#a42c2c; font-size:12px; font-weight:800; }
+#wipe-dialog [data-wipe-confirm] { border:1px solid #bc3838; background:#fff0ee; color:#a51e27; font-weight:750; }
 @media(max-width:650px) { nav [data-tab] { font-size:10px; gap:4px; } nav button span { font-size:16px; } nav .settings-nav { flex-basis:31px; } .project-row-actions { max-width:52%; } }
 .memorial-stop { margin-top:12px; color:#7c6860; font-size:11px; }

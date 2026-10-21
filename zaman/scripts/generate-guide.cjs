@@ -9,7 +9,7 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
  const context=await browser.newContext({viewport:{width:390,height:880},deviceScaleFactor:1.5,timezoneId:'Asia/Tehran'}),p=await context.newPage(),errors=[],failed=[];
  p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
- await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.8.0',versionCode:10,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.8.0.apk',sha256:'0'.repeat(64)})}));
+ await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.9.0',versionCode:11,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.9.0.apk',sha256:'0'.repeat(64)})}));
  if(!process.argv.includes('--pdf-only')){
   await p.clock.install({time:new Date('2026-10-21T13:30:00+03:30')});await p.clock.pauseAt(new Date('2026-10-21T13:30:01+03:30'));
   await p.goto(base);await p.evaluate(()=>document.fonts.ready);
@@ -33,12 +33,17 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
   if(compactTop&&compactBottom)await p.screenshot({path:path.join(root,'guide-assets','today-compact.png'),clip:{x:compactTop.x,y:compactTop.y,width:compactTop.width,height:compactBottom.y+compactBottom.height-compactTop.y},animations:'disabled'});
   for(const id of ['project-tasks','journey','chart']){const button=p.locator(`[data-toggle-section="${id}"]`);if(await button.getAttribute('aria-expanded')==='false')await button.click();}
   await image('journey','.journey');await image('chart','.day-chart');
+  await p.locator('[data-action=reset-day]').click();await p.locator('[data-reset-wheel-toggle]').click();await image('reset-time','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-action=segment]').click();await p.locator('#activity-input').fill('مطالعه');await image('segment','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-action=duration]').click();await image('countdown','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-tab=alarms]').click();await image('reminders','#view');
   await p.locator('[data-tab=projects]').click();await p.locator('[data-project=house]').click();await image('projects','#view');
   await p.locator('[data-tab=activities]').click();await p.locator('[data-action=reports]').click();await p.locator('[data-report-mode=week]').click();await image('reports','#view');
   await p.locator('#settings[data-action=settings]').click();await image('settings','#settings-dialog');
+  await p.locator('[data-wipe-all]').click();await image('wipe-confirmation','#wipe-dialog');await p.locator('[data-wipe-cancel]').click();await p.locator('#settings-close').click();
+  await p.locator('[data-tab=today]').click();
+  await p.evaluate(()=>applyUpdateResult({ok:true,versionCode:APP_VERSION_CODE+1,versionName:'1.10.0',apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.10.0.apk',sha256:'0'.repeat(64)}));
+  await image('update-banner','#update-banner');
  }
  const guide=await context.newPage();guide.on('pageerror',e=>errors.push(e.message));guide.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
  await guide.setViewportSize({width:1000,height:1200});await guide.goto(new URL('help.html',base).href);await guide.evaluate(()=>document.fonts.ready);

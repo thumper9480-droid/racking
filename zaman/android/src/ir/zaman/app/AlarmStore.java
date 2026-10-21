@@ -30,6 +30,17 @@ final class AlarmStore {
     for(int i=0;i<read(c).length();i++)manager(c).cancel(pending(c,read(c).getJSONObject(i).getString("id")));
     prefs(c).edit().putString("alarms",next.toString()).commit(); restore(c);
   }
+  static synchronized void clear(Context c) throws JSONException,java.io.IOException {
+    JSONArray alarms=read(c);
+    for(int i=0;i<alarms.length();i++){
+      JSONObject alarm=alarms.optJSONObject(i);if(alarm==null||alarm.optString("id","").isEmpty())continue;
+      PendingIntent intent=pending(c,alarm.optString("id"));
+      manager(c).cancel(intent);intent.cancel();
+    }
+    PendingIntent countdown=pending(c,"countdown");manager(c).cancel(countdown);countdown.cancel();
+    if(Build.VERSION.SDK_INT>=34)manager(c).cancelAll();
+    if(!prefs(c).edit().clear().commit())throw new java.io.IOException("alarm settings were not cleared");
+  }
   static synchronized void restore(Context c) {
     JSONArray old=read(c),kept=new JSONArray();long now=System.currentTimeMillis();
     for(int i=0;i<old.length();i++)try {

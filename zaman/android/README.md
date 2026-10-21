@@ -1,4 +1,4 @@
-# Ali Mirza Time Management Android 1.8.0
+# Ali Mirza Time Management Android 1.9.0
 
 Locally bundled Android package `ir.zaman.app`, separate from the existing Raval app. Minimum API 26, target/compile API 35; pure Java, no third-party Android libraries or Gradle dependencies.
 
@@ -14,7 +14,7 @@ JAVA_HOME=/path/to/jdk ANDROID_SDK_ROOT=/path/to/sdk ANDROID_BUILD_TOOLS=/path/t
 
 The local defaults match the SDK prepared for this task (`/workspace/android-sdk`, build-tools extracted under `android-15`). The official Google SDK repository metadata was downloaded over verified TLS; platform-35_r02.zip and build-tools_r35_linux.zip SHA-1 values matched that metadata. The downloaded JDK was verified against its official SHA-256. No verification was disabled.
 
-Output: `build/zaman-1.8.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
+Output: `build/zaman-1.9.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
 
 ## Native alarms
 
@@ -30,7 +30,7 @@ Output: `build/zaman-1.8.0.apk`. The script compiles resources/Java/DEX, aligns 
 - The actual native recurrence method is exercised on the JVM by `tests/AlarmStoreTest.java`, including missed repeats and daylight-saving changes. Compile against `build/classes` and Android 35's android.jar and run `ir.zaman.app.AlarmStoreTest` with the same classpath.
 - No Android emulator or physical phone was available for runtime installation, document picker, background audio, reboot recovery or lock-screen testing. These checks remain for a real device; package compilation alone does not prove them.
 
-Distribution: `downloads/zaman-android-1.8.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
+Distribution: `downloads/zaman-android-1.9.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
 
 Version 1.1.0 uses versionCode 2 and the same development signing key as 1.0.0, so it can update the installed app without clearing its local data. Its compact home screen shows colored navigation, Persian/Gregorian dates, a live clock, a minute-only countdown and a daily activity table. Backup controls and native alarm settings are in the settings dialog.
 
@@ -67,7 +67,7 @@ Approved Ali Mirza logo embedded as adaptive launcher artwork and browser/settin
 
 Adds native device ringtone picker and per-category countdown/reminder sound preferences, preview and default fallback. The Java asset allowlist now permits only bundled index/help pages for navigation; no remote page can receive the bridge. Guide PDF can be saved via the Android document picker. MainActivity handles native back without dismissing the due memorial confirmation.
 
-UpdateStore fetches a fixed HTTPS GitHub release manifest with timeouts, redirects disabled and a64KiB limit. APK paths are restricted to the same fixed repository downloads directory. DownloadManager saves in public Downloads; the persisted download ID and SHA-256 must match before status becomes verified. UpdateReceiver handles system completion; no silent installer or REQUEST_INSTALL_PACKAGES permission is used. Android8/9 requests WRITE_EXTERNAL_STORAGE only when the user initiates a download. Internet is used for this update check/download; no accounts, device identifier or billing service exists.
+UpdateStore fetches a fixed HTTPS GitHub release manifest with timeouts, redirects disabled and a64KiB limit. APK paths are restricted to the same fixed repository downloads directory. DownloadManager saves in public Downloads; the persisted download ID and SHA-256 must match before status becomes verified. UpdateReceiver handles system completion. Starting with version 1.9, REQUEST_INSTALL_PACKAGES supports only the explicit, verified-file installer action; Android unknown-source permission and user confirmation are still required. Silent installation is not used. Android8/9 requests WRITE_EXTERNAL_STORAGE only when the user initiates a download. Internet is used for this update check/download; no accounts, device identifier or billing service exists.
 
 The free30day memorial is a local self-attestation gate, implemented in enhancements.js and persisted in LocalStorage. It is not a secure license mechanism and resets after data deletion; it must not be described as tamper-proof. It does not verify prayer/recitation. Alarm silencing remains usable.
 
@@ -93,3 +93,10 @@ The designer contact link opens Android ACTION_DIAL only after a user gesture an
 Compact Today lower section: task list, journey and share cards start collapsed in the new layout and later preserve user toggles. Empty task lists keep the header visible. History date controls sit beside the title and disclosure boxes stay at the left edge. The five-second end-day control follows all three panels; day reset remains last. Existing timer/state/native scheduling, logo, package and signing identity are retained. The bundled guide/PDF and demo screenshots were refreshed for the collapsed and expanded views.
 
 A circular education entry beside the Today wordmark opens the bundled guide library, screenshots and PDF access. Native guide navigation keeps local help anchors within the app.
+
+
+## Version 1.9.0 (versionCode 11)
+
+Adds the live analog wall clock, reset-day hour/minute wheels and an exact submission-time “now” action, larger reminder deletion targets, and the Today section title “لیست کارها / پروژه‌ها”. Timer durations remain digital. Settings offers application-data deletion after three separate confirmations; cancellation before the final confirmation preserves data. Native cleanup cancels scheduled alarms and active update work, clears app-owned preferences and preserves completed public downloads.
+
+A prominent red Today update notice leads to the existing allowlisted, SHA-256-verified download. An explicit installer action opens Android’s package installer with temporary read access to the verified APK. Normal unknown-source permission and user installation confirmation remain required; no silent installation is implemented. Google Play Protect prompts for sideloaded APKs belong to the OS/Google and cannot be guaranteed absent by application code. The existing package ID and signing certificate are retained for upgrades. Browser and native source/build verification do not prove installer or audio behavior on a physical phone.

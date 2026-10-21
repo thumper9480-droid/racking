@@ -1,0 +1,20 @@
+/* Compact, high-contrast analog clock for the current device time. */
+#wall-clock.has-analog-clock { display:flex; align-items:center; justify-content:center; min-width:0; margin:0; line-height:1; letter-spacing:0; font-size:inherit; direction:ltr; }
+.analog-clock-shell { display:grid; justify-items:center; gap:3px; padding:0 2px; }
+.analog-clock { display:block; width:98px; height:98px; overflow:visible; }
+.analog-shadow { fill:#143e3510; }
+.analog-bezel { fill:#155f55; stroke:#0f5148; stroke-width:.6; }
+.analog-face { fill:#fffcf2; stroke:#e5c47d; stroke-width:1.2; }
+.analog-tick { stroke:#becfc1; stroke-width:.8; stroke-linecap:round; }
+.analog-hour-tick { stroke:#b68c38; stroke-width:1.5; }
+.analog-number { fill:#24564c; font-family:Vazirmatn,Tahoma,sans-serif; font-size:8px; font-weight:750; text-anchor:middle; dominant-baseline:central; }
+.analog-inner-ring { fill:none; stroke:#ebe9d9; stroke-width:.5; }
+.analog-hand { fill:none; stroke:#145d52; stroke-linecap:round; }
+.analog-hour-hand { stroke-width:4; }
+.analog-minute-hand { stroke-width:2.7; }
+.analog-second-hand { fill:none; stroke:#cc9a31; stroke-width:1.25; stroke-linecap:round; }
+.analog-hand-pin { fill:#155f55; stroke:#fffcf2; stroke-width:1; }
+.analog-pin-highlight { fill:#d7ab4b; }
+.analog-clock-time { font-family:Vazirmatn,Tahoma,sans-serif; font-variant-numeric:tabular-nums; font-size:11px; font-weight:650; color:#3c7163; letter-spacing:.6px; white-space:nowrap; line-height:1.25; }
+@media(max-width:650px){.analog-clock{width:88px;height:88px}.analog-clock-time{font-size:10px}}
+@media(max-width:350px){.analog-clock{width:82px;height:82px}.analog-clock-time{font-size:9px}}

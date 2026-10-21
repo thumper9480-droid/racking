@@ -48,4 +48,31 @@ final class UpdateStore {
     try(Cursor cursor=c.getSystemService(DownloadManager.class).query(new DownloadManager.Query().setFilterById(id))){if(cursor==null||!cursor.moveToFirst()){prefs(c).edit().putString("status","failed").putString("message","دانلود پیدا نشد؛ دوباره دریافت کنید.").apply();return;}int status=cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS));if(status==DownloadManager.STATUS_SUCCESSFUL||status==DownloadManager.STATUS_FAILED)finish(c,id);}catch(Exception ignored){}
   }
   static String status(Context c){refresh(c);JSONObject out=new JSONObject();try{out.put("status",prefs(c).getString("status","idle")).put("message",prefs(c).getString("message","")).put("id",prefs(c).getLong("id",-1));}catch(JSONException ignored){}return out.toString();}
+  // An install is always an explicit user action. Recheck the actual bytes immediately
+  // before sharing the app-owned DownloadManager URI with Android's installer.
+  static synchronized Uri verifiedUri(Context c)throws Exception{
+    refresh(c);
+    if(!"verified".equals(prefs(c).getString("status","")))throw new IOException("no verified update");
+    long id=prefs(c).getLong("id",-1);DownloadManager manager=c.getSystemService(DownloadManager.class);
+    try(Cursor cursor=manager.query(new DownloadManager.Query().setFilterById(id))){
+      if(cursor==null||!cursor.moveToFirst()||cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))!=DownloadManager.STATUS_SUCCESSFUL)throw new IOException("missing update");
+    }
+    Uri uri=manager.getUriForDownloadedFile(id);
+    if(uri==null||!"content".equals(uri.getScheme()))throw new IOException("missing content URI");
+    try(InputStream in=c.getContentResolver().openInputStream(uri)){
+      if(in==null||!prefs(c).getString("sha256","").equals(hash(in)))throw new IOException("changed update");
+    }
+    return uri;
+  }
+  static synchronized void clear(Context c)throws IOException{
+    long id=prefs(c).getLong("id",-1);
+    if(id>=0){
+      DownloadManager manager=c.getSystemService(DownloadManager.class);
+      try(Cursor cursor=manager.query(new DownloadManager.Query().setFilterById(id))){
+        // Keep completed public APKs; remove only an active or failed partial download.
+        if(cursor!=null&&cursor.moveToFirst()&&cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))!=DownloadManager.STATUS_SUCCESSFUL)manager.remove(id);
+      }
+    }
+    if(!prefs(c).edit().clear().commit())throw new IOException("update settings were not cleared");
+  }
 }
