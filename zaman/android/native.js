@@ -5,7 +5,7 @@ function nativeSync(){AndroidZaman.sync(JSON.stringify(state));}
 function updateNativeStatus(){try{const status=JSON.parse(AndroidZaman.status());const el=document.querySelector('#native-status');if(el)el.innerHTML=`زنگ اندروید • اعلان: ${status.notifications?'فعال':'نیاز به مجوز'} • زنگ دقیق: ${status.exact?'فعال':'نیاز به مجوز'} <button class="small" data-action="permission">مجوزهای زنگ</button> <button class="small" id="native-test">آزمایش صدا</button> <button class="small" id="native-stop">قطع زنگ</button>`;}catch{}}
 render=function(){originalRender();updateNativeStatus();};
 save=function(){nativeSync();originalSave();};
-ring=function(title){document.querySelector('#ring-title').textContent=title;document.querySelector('#ring').hidden=false;};
+ring=function(title,options={}){showRing(title,options);};
 const originalSilence=document.querySelector('#silence').onclick;
 document.querySelector('#silence').onclick=()=>{AndroidZaman.stopAlarm();originalSilence();};
 actions.permission=()=>AndroidZaman.permissions();

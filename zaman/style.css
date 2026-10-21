@@ -96,9 +96,13 @@ dialog::backdrop { background: #152c4260; backdrop-filter: blur(4px); }
 form .actions { margin-top: 22px; }
 .backup-settings { border-top: 1px solid var(--line); margin-top: 14px; padding-top: 6px; }
 .import { display: inline-block; border-radius: 11px; margin: 0; padding: 11px 17px; background: #eef3ef; color: #287367; }
-#toast { display: none; position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #233e3b; color: white; border-radius: 12px; padding: 14px 22px; z-index: 5; max-width: 90vw; }
-#ring { position: fixed; inset: auto 15px 20px; background: #173f3b; color: white; padding: 22px; border-radius: 18px; z-index: 10; box-shadow: 0 5px 40px #0004; }
-#ring button { float: left; }
+#toast { display: none; position: fixed; bottom: 25px; left: 50%; transform: translateX(-50%); background: #233e3b; color: white; border-radius: 12px; padding: 14px 22px; z-index: 5; max-width: 90vw; pointer-events:none; }
+#ring { position:fixed; inset:auto 15px 20px; max-width:600px; margin-inline:auto; background:#173f3b; color:#fff; padding:17px; border-radius:18px; z-index:10; box-shadow:0 5px 40px #0004; }
+#ring > b { display:block; line-height:1.8; }
+.ring-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:9px; margin-top:13px; }
+#ring button { min-height:44px; padding:10px 18px; font-weight:750; }
+#ring #silence { color:#25373c; background:#f1f3f4; border:1px solid #d3dade; }
+#ring #restart-countdown { color:#fff; background:#267e62; border:1px solid #8bb8a5; }
 #warning:not(:empty) { background: #fff1d8; padding: 12px; border-radius: 10px; margin-bottom: 15px; }
 .info { font-size: 12px; line-height: 2; background: #eaf0ed; border-radius: 12px; padding: 12px; margin: 16px 0; }
 #native-status button { margin-top: 8px; }

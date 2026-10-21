@@ -1,12 +1,12 @@
-/* Approved Ali Mirza layout: jade clock, lavender tasks, amber journey, blue chart. */
-:root { --project-ink:#7134a7; --project-line:#d9b8fa; --journey-ink:#96500e; --journey-line:#efbd67; --chart-ink:#1c5c9f; --chart-line:#98c8fa; background:#f7f8f3; }
+/* Approved Ali Mirza layout: jade clock, gray projects and warm brown journey/share panels. */
+:root { --project-ink:#444b50; --project-line:#b9bfc2; --journey-ink:#96500e; --journey-line:#efbd67; --chart-ink:var(--journey-ink); --chart-line:var(--journey-line); background:#f7f8f3; }
 main { padding-top:6px; }
 #today-brand { position:relative; width:240px; height:93px; margin:0 auto 4px; overflow:hidden; }
 #today-brand img { position:absolute; width:320px; max-width:none; height:auto; left:50%; top:-10px; transform:translateX(-50%); }
 nav { padding:5px; background:#fff; border-radius:15px; box-shadow:0 3px 12px #123c3410; margin-bottom:10px; }
 nav button { font-weight:750; }
 nav [data-tab=today] { background:#e4f1ec; color:#176658; }
-nav [data-tab=projects] { background:#f4eafa; color:var(--project-ink); }
+nav [data-tab=projects] { background:#eceff0; color:var(--project-ink); --tab-color:#70787e; }
 nav [data-tab=activities] { color:#91601c; background:#fff7e5; }
 nav .settings-nav { background:#f5f7f4; }
 .date-panel { padding:14px 15px; border-radius:17px; border-color:#e9eee7; margin-bottom:10px; box-shadow:0 3px 10px #123c3408; }
@@ -31,15 +31,15 @@ nav .settings-nav { background:#f5f7f4; }
 .countdown.is-running .primary { color:#fff; background:#ca594b; }
 .hero > .end-day[data-hold-end] { margin:0; border:1px solid #377d68; background:linear-gradient(to left,#c7dfd2 var(--hold-progress,0%),#fff var(--hold-progress,0%)); border-radius:13px; padding:9px 12px; min-height:54px; color:#185b4b; font-size:13px; font-weight:750; }
 .hero > .end-day[data-hold-end]:disabled { opacity:.65; }
-.due-project-tasks { border:1px solid var(--project-line); background:linear-gradient(115deg,#f2e8ff,#faf6ff); border-radius:15px; padding:10px 12px; box-shadow:0 3px 12px #8156ac10; }
+.due-project-tasks { border:1px solid var(--project-line); background:linear-gradient(115deg,#eceff0,#fafafa); border-radius:15px; padding:10px 12px; box-shadow:0 3px 12px #42494d0d; }
 .due-project-tasks h2 { color:var(--project-ink); font-size:16px; margin-bottom:4px; }
 .due-project-tasks .section-toggle::before { content:'📁'; font-size:22px; }
-.due-task-row { background:#ffffff69; border:1px solid #e9dcf6; border-radius:10px; padding:8px; margin-top:5px; }
-.due-task-row:last-child { border-bottom:1px solid #e9dcf6; }
+.due-task-row { background:#ffffff69; border:1px solid #d8dddf; border-radius:10px; padding:8px; margin-top:5px; }
+.due-task-row:last-child { border-bottom:1px solid #d8dddf; }
 .due-task-row .check { color:#253241; font-weight:700; }
-.due-task-row > .small { background:#f0e9f9; color:#8b75a2; border:1px solid #d9caec; }
-.due-task-meta .project-link { background:#ead8fc; color:#7945a0; }
-.due-task-meta time { color:#49395f; font-weight:700; }
+.due-task-row > .small { background:#f0f2f3; color:#535c62; border:1px solid #cdd3d6; }
+.due-task-meta .project-link { background:#e0e4e6; color:#4d565c; }
+.due-task-meta time { color:#40484d; font-weight:700; }
 .section-toggle { gap:7px; }
 .section-chevron { margin-inline-start:auto; }
 .journey { background:linear-gradient(120deg,#fff8ea,#fffdf7); border:1px solid var(--journey-line); border-radius:15px; padding:10px 10px 7px; box-shadow:0 3px 12px #9c6a240c; }
@@ -53,23 +53,26 @@ nav .settings-nav { background:#f5f7f4; }
 .history-table .current-row { background:#fff2d7; }
 .history-table tfoot th,.history-table tfoot td { background:#ffe6a9; color:#163d44; border-color:#edce8e; }
 .history-table tfoot th { text-align:right; }
-.day-chart { background:linear-gradient(120deg,#eaf6ff,#f6fbff); border:1px solid var(--chart-line); border-radius:15px; padding:12px; box-shadow:0 3px 12px #346b9a0e; }
+.day-chart { background:linear-gradient(120deg,#fff8ea,#fffdf7); border:1px solid var(--chart-line); border-radius:15px; padding:12px; box-shadow:0 3px 12px #9c6a240c; }
 .day-chart h2 { color:var(--chart-ink); font-size:17px; margin-bottom:8px; }
 .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 132px; gap:12px; }
 .day-chart .donut { width:132px; }
-.day-chart .chart-legend { padding:0 5px; background:#ffffff55; border:1px solid #dcecfb; border-radius:10px; }
-.day-chart .legend-item { color:#28495b; border-bottom-color:#d8e8f8; }
-.day-chart .legend-duration,.day-chart .legend-percent { color:#2b5474; font-weight:650; }
-.day-chart .donut-center strong { color:#326287; }
-.projects-screen { background:linear-gradient(140deg,#f5edff,#fcf9ff); border:1px solid var(--project-line); padding:15px; border-radius:18px; }
+.day-chart .chart-legend { padding:0 5px; background:#ffffff55; border:1px solid #ead6b9; border-radius:10px; }
+.day-chart .legend-item { color:#654623; border-bottom-color:#eadcc6; }
+.day-chart .legend-duration,.day-chart .legend-percent { color:#795329; font-weight:650; }
+.day-chart .donut-center strong { color:#795329; }
+.projects-screen { background:linear-gradient(140deg,#eceff0,#fafafa); border:1px solid var(--project-line); padding:15px; border-radius:18px; }
 .projects-screen .projects-heading h2 { color:var(--project-ink); }
-.projects-screen .projects-heading .primary,.projects-screen .project-detail .primary { background:#8b55b7; }
-.projects-screen .project-list-row { border-color:#dfcbed; background:#ffffffb5; }
-.projects-screen .project-list-row.selected { background:#ede0fa; border-color:#b58ad7; }
-.projects-screen .project-status-tabs button.selected { background:#e7d8f6; border-color:#b58ad7; color:var(--project-ink); }
-.projects-screen .project-detail { border-color:#dfcbed; background:#fffcff; }
-.projects-screen .task-key { background:#f8f2fd; border-color:#e6d7f0; }
+.projects-screen .projects-heading .primary,.projects-screen .project-detail .primary { background:#606a70; }
+.projects-screen .project-list-row { border-color:#d0d6d9; background:#ffffffb5; }
+.projects-screen .project-list-row.selected { background:#e1e6e8; border-color:#939da4; }
+.projects-screen .project-status-tabs button.selected { background:#e0e5e7; border-color:#939da4; color:var(--project-ink); }
+.projects-screen .project-detail { border-color:#d0d6d9; background:#fff; }
+.projects-screen .task-key { background:#f3f5f5; border-color:#d8dfe1; }
 .projects-screen .task-key.completed { background:#edf4e9; }
+.projects-screen .project-number { background:#e3e7e9; color:#586268; }
+.projects-screen .project-row-actions button:not(.danger) { background:#edf0f1; color:#4c565b; }
+.projects-screen .project-status-tabs [data-project-mode=done].selected { background:#e0e5e7; border-color:#939da4; color:var(--project-ink); }
 .designer-contact { padding-top:9px; border-top:1px solid #d6e3da; }
 .designer-contact a { display:inline-block; font-weight:750; color:#08766b; text-decoration:none; }
 @media(max-width:650px) {
@@ -102,7 +105,7 @@ nav .settings-nav { background:#f5f7f4; }
 @media(max-width:350px) { .session-actions .circle-action { height:93px; } }
 .donut-center strong { max-width:65%; line-height:1.4; text-align:center; overflow-wrap:anywhere; }
 
-/* Compact Today footer approved in1.8: three foldable rows, then end/reset. */
+/* Compact Today: reset entry first, three foldable rows, then end day. */
 .today-layout { gap:7px; }
 .today-layout .due-project-tasks,.today-layout .journey,.today-layout .day-chart { padding:6px 10px; border-radius:12px; }
 .today-layout .due-project-tasks h2,.today-layout .journey h2,.today-layout .day-chart h2 { margin:0; font-size:14px; }
@@ -119,7 +122,7 @@ nav .settings-nav { background:#f5f7f4; }
 .today-layout > .end-day[data-hold-end] > small { font-size:9px; color:#90a594; font-weight:400; margin-top:2px; }
 .today-layout > .end-day[data-hold-end]:disabled { opacity:.7; }
 .day-reset-panel { padding:0; }
-.reset-day-button { min-height:41px; padding:9px 10px; font-size:11px; color:#a87966; border-color:#e3c5b8; border-radius:10px; background:#fffaf5; }
+.reset-day-button { width:100%; min-height:41px; padding:9px 10px; font-size:12px; font-weight:650; color:#745039; border:1px solid #cfb7a0; border-radius:10px; background:#fff9f0; }
 .empty-today-projects { margin:7px 0; font-size:12px; }
 .today-layout #chart-content { padding:8px 0 3px; }
 .today-layout #project-tasks-content { padding-bottom:3px; }

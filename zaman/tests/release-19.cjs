@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  const browser=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});
  const page=await browser.newPage({viewport:{width:390,height:844},timezoneId:'Asia/Tehran'}),errors=[];
  page.on('pageerror',e=>errors.push(e.message));
- const future={versionCode:12,versionName:'1.10.0',apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.10.0.apk',sha256:'b'.repeat(64)};
+ const future={versionCode:13,versionName:'1.11.0',apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.11.0.apk',sha256:'b'.repeat(64)};
  await page.route('**/release.json*',r=>r.fulfill({json:future}));
  await page.goto('http://127.0.0.1:4173/zaman/');
  await page.locator('#analog-clock').waitFor();
