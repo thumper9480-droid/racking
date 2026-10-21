@@ -1,0 +1,12 @@
+const {chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{
+ const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const p=await b.newPage({viewport:{width:390,height:844}});await p.clock.install({time:new Date('2026-10-21T10:00:00Z')});await p.clock.pauseAt(new Date('2026-10-21T10:00:01Z'));await p.goto('http://127.0.0.1:4173/zaman/');await p.locator('[data-action=wake]').click();
+ const state=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('zaman-browser-v1')));const button=p.locator('[data-hold-end]');
+ await button.click();assert.equal(await p.locator('#dialog').isVisible(),false);assert((await state()).day);
+ await button.focus();await p.keyboard.down('Space');await p.clock.fastForward(4999);assert.equal(await p.locator('#dialog').isVisible(),false);await p.keyboard.up('Space');await p.clock.fastForward(1000);assert(!(await state()).pendingSegment);
+ // A touch/pointer leaving the button cancels the long press.
+ let rect=await button.boundingBox();await p.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);await p.mouse.down();await p.clock.fastForward(3000);await p.mouse.move(0,0);await p.clock.fastForward(3000);await p.mouse.up();assert.equal(await p.locator('#dialog').isVisible(),false);assert(!(await state()).pendingSegment);
+ // A continuous mouse/touch-style hold opens naming after exactly five seconds.
+ rect=await button.boundingBox();await p.mouse.move(rect.x+rect.width/2,rect.y+rect.height/2);await p.mouse.down();await p.clock.fastForward(4900);assert.equal(await p.locator('#dialog').isVisible(),false);await p.clock.fastForward(100);assert(await p.locator('#dialog').isVisible());await p.mouse.up();assert.equal((await state()).history.length,0);assert((await state()).pendingSegment.ending);await p.locator('#cancel').click();assert((await state()).day);assert(!(await state()).pendingSegment);
+ await button.focus();await p.keyboard.down('Enter');await p.clock.fastForward(5000);await p.keyboard.up('Enter');await p.locator('#activity-input').fill('پایان روز');await p.locator('#form button[type=submit]').click();assert.equal((await state()).day,null);assert.equal((await state()).history.length,1);assert.equal((await state()).history[0].name,'پایان روز');await b.close();console.log('PASS end-day five-second mouse/keyboard hold, short-tap prevention, early release and pointer leave cancellation, naming still required');
+})().catch(e=>{console.error(e);process.exit(1)});
