@@ -218,3 +218,11 @@ nav [data-tab=activities] { background: #fff2da; color: #8b681e; --tab-color: #c
 .end-day[data-hold-end] > span, .end-day[data-hold-end] > small { position: relative; display: block; }
 .end-day[data-hold-end] > small { font-size: 8px; color: #7d9585; margin-top: 3px; }
 .end-day[data-hold-end].holding { border-color: #559675; }
+.hero > .end-day[data-hold-end] { margin-top: 13px; min-height: 56px; padding: 10px 14px; border: 1px solid #97b9a5; color: #315f4d; font-size: 13px; font-weight: 600; }
+.hero > .end-day[data-hold-end] > small { font-size: 10px; font-weight: 400; }
+.hero > .end-day[data-hold-end]:disabled { opacity: .7; border-color: #d2dfd4; }
+.day-reset-panel { padding: 3px 0 12px; text-align: center; }
+.reset-day-button { border: 1px solid #dcc8bd; color: #9b6958; background: #fffaf5; width: 100%; padding: 14px; }
+.reset-description { color: #7d8d82; font-size: 12px; line-height: 2; }
+.reset-confirmation { display: flex; gap: 9px; align-items: center; line-height: 1.8; margin-top: 20px; font-size: 12px; }
+.reset-confirmation input { flex-shrink: 0; width: 18px; height: 18px; accent-color: #9d6b53; }
