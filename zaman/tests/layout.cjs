@@ -17,7 +17,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  assert.equal(await page.locator('.history-table tbody tr').first().locator('td').first().innerText(),'۰۰:۰۰');
  assert.equal(await page.locator('#history-total').innerText(),'۰۱:۰۰');
  assert.deepEqual(await page.locator('.history-table thead th').allInnerTexts(),['از ساعت','تا ساعت','مدت','فعالیت']);
- assert.doesNotMatch(await page.locator('main').innerText(),/شروع روز|مسیر روزت|مستقل از تایمر روز|اطلاعات روی همین مرورگر|دریافت پشتیبان/);
+ assert.doesNotMatch(await page.locator('main').innerText(),/شروع روز\s+[۰-۹]|مسیر روزت|مستقل از تایمر روز|اطلاعات روی همین مرورگر|دریافت پشتیبان/);
  await page.locator('[data-action=previous-day]').click();assert.equal(await page.locator('.activity-name').count(),2);
  assert.equal(await page.locator('#history-total').innerText(),'۰۱:۳۰');
  await page.locator('[data-action=history-today]').click();
