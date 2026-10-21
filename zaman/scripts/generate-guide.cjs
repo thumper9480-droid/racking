@@ -1,0 +1,45 @@
+'use strict';
+// Run from the repository root after starting python3 -m http.server 4173.
+// Requires Playwright and an installed Chromium; no remote asset/network dependency.
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const {chromium}=require('playwright');
+const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http://127.0.0.1:4173/zaman/';
+(async()=>{
+ fs.mkdirSync(path.join(root,'guide-assets'),{recursive:true});
+ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
+ const context=await browser.newContext({viewport:{width:390,height:880},deviceScaleFactor:1.5,timezoneId:'Asia/Tehran'}),p=await context.newPage(),errors=[],failed=[];
+ p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
+ await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({version:'1.6.0',versionCode:8,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.6.0.apk',sha256:'0'.repeat(64)})}));
+ if(!process.argv.includes('--pdf-only')){
+  await p.clock.install({time:new Date('2026-10-21T13:30:00+03:30')});await p.clock.pauseAt(new Date('2026-10-21T13:30:01+03:30'));
+  await p.goto(base);await p.evaluate(()=>document.fonts.ready);
+  await p.evaluate(()=>{
+   const midnight=new Date();midnight.setHours(0,0,0,0);const d=midnight.getTime(),m=60000;
+   state.history=[{name:'صبحانه',start:d+7*60*m,end:d+7.5*60*m},{name:'مطالعه',start:d+7.5*60*m,end:d+9*60*m},{name:'ورزش',start:d+9*60*m,end:d+9.5*60*m},{name:'کار پروژه',start:d+9.5*60*m,end:d+11.5*60*m}];
+   for(let i=1;i<=6;i++)state.history.push({name:i%2?'مطالعه':'کار پروژه',start:d-i*86400000+8*60*m,end:d-i*86400000+(i%2?10:11)*60*m});
+   state.day={start:d+7*60*m,segment:d+11.5*60*m,activity:'فعالیت جاری'};
+   state.countdown={remaining:10*m,duration:10*m,end:null};
+   state.activities=[{id:'reading',name:'مطالعه'},{id:'exercise',name:'ورزش'},{id:'breakfast',name:'صبحانه'},{id:'work',name:'کار پروژه'}];
+   state.projects=[{id:'house',name:'خانه بالا',ideas:[],tasks:[{id:'iron',title:'خرید آهن\nهماهنگی با فروشنده و گرفتن قیمت',done:false,dueAt:d+14*60*m,dueRepeat:'none'},{id:'plan',title:'بررسی نقشه',done:false},{id:'visit',title:'بازدید محل',done:true,completedAt:d+10*60*m,statusHistory:[{done:true,at:d+10*60*m}]}]},{id:'learn',name:'یادگیری زبان',ideas:[],tasks:[{id:'words',title:'مرور واژه‌ها',done:false}]}];
+   state.alarms=[{id:'iron-alarm',title:'خرید آهن',at:d+14*60*m,repeat:'none',enabled:true,projectId:'house',itemKind:'task',itemId:'iron'},{id:'call',title:'تماس با استاد',at:d+86400000+10*60*m,repeat:'weekly',enabled:true,projectId:''}];
+   state.collapsedSections={};tab='today';save();render();
+  });
+  async function image(name,selector){const el=p.locator(selector);await el.waitFor({state:'visible'});await el.screenshot({path:path.join(root,'guide-assets',name+'.png'),animations:'disabled'});}
+  await image('today','.hero');await image('journey','.journey');await image('chart','.day-chart');
+  await p.locator('[data-action=segment]').click();await p.locator('#activity-input').fill('مطالعه');await image('segment','#dialog');await p.locator('#cancel').click();
+  await p.locator('[data-action=duration]').click();await image('countdown','#dialog');await p.locator('#cancel').click();
+  await p.locator('[data-tab=alarms]').click();await image('reminders','#view');
+  await p.locator('[data-tab=projects]').click();await p.locator('[data-project=house]').click();await image('projects','#view');
+  await p.locator('[data-tab=activities]').click();await p.locator('[data-action=reports]').click();await p.locator('[data-report-mode=week]').click();await image('reports','#view');
+  await p.locator('#settings[data-action=settings]').click();await image('settings','#settings-dialog');
+ }
+ const guide=await context.newPage();guide.on('pageerror',e=>errors.push(e.message));guide.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
+ await guide.setViewportSize({width:1000,height:1200});await guide.goto(new URL('help.html',base).href);await guide.evaluate(()=>document.fonts.ready);
+ await guide.locator('.screen img').evaluateAll(images=>Promise.all(images.map(image=>image.decode())));
+ assert.equal(await guide.locator('.guide-page').count(),8);
+ await guide.evaluate(()=>document.querySelectorAll('details').forEach(el=>el.open=true));
+ await guide.pdf({path:path.join(root,'user-guide.pdf'),format:'A4',printBackground:true,preferCSSPageSize:true,displayHeaderFooter:false,tagged:true,outline:true});
+ assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
+ await guide.setViewportSize({width:390,height:844});assert(await guide.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'HTML guide must fit mobile');
+ await browser.close();console.log('PASS actual-app demo screenshots, offline linked HTML guide, eight instructional sections, mobile layout and generated Persian PDF');
+})().catch(e=>{console.error(e);process.exit(1)});

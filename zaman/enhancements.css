@@ -1,0 +1,33 @@
+nav .settings-nav { flex:0 0 38px; display:flex; flex-direction:column; gap:1px; padding:5px 2px; color:#476960; background:#eaf0e9; font-size:21px; }
+.settings-nav small { font-size:8px; }
+nav { gap:6px; }
+nav [data-tab] { min-width:0; padding-inline:6px; }
+.disclosure-box { display:grid; place-items:center; width:25px; height:25px; flex-shrink:0; border:1px solid; border-radius:7px; }
+.disclosure-box svg { display:block; width:18px; height:18px; }
+.disclosure-box.is-closed { background:#fff0ed; color:#ca4039; border-color:#e9b5af; }
+.disclosure-box.is-open { background:#e7f4ea; color:#27814d; border-color:#a1cbb0; }
+.section-chevron,.project-chevron { min-width:25px; width:25px; }
+.project-row-actions { max-width:55%; }
+.project-row-actions .small { font-size:9px; padding:6px 5px; }
+.reminder-date-stack { max-width:240px; margin:6px 0; color:#233e36; font-weight:700; }
+.reminder-numeric-date { display:block; border-bottom:1.5px solid #9eb8aa; padding-bottom:5px; font-size:15px; font-variant-numeric:tabular-nums; text-align:right; }
+.reminder-weekday-time { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-top:5px; font-size:14px; }
+.alarm-heading + .card .content .reminder-meta { display:block; font-size:11px; font-weight:500; }
+.settings-about,.settings-updates { margin-top:18px; border-top:1px solid var(--line); padding-top:8px; }
+.settings-about .actions,.settings-updates .actions { justify-content:flex-start; }
+#settings-dialog { max-height:88dvh; overflow:auto; }
+#about-dialog p,#memorial-dialog p { font-size:14px; line-height:2.1; }
+.about-logo { display:block; width:80px; height:80px; margin:20px auto; border-radius:20px; }
+#about-dialog { text-align:right; }
+#memorial-dialog { border:1px solid #bfd3c6; text-align:center; }
+#memorial-dialog::backdrop { background:#183c35cc; backdrop-filter:blur(6px); }
+#memorial-confirm { padding:14px; font-weight:750; }
+.sound-setting-row { display:flex; align-items:center; gap:6px; padding:10px 0; border-bottom:1px solid var(--line); flex-wrap:wrap; }
+.sound-setting-row > div { flex:1; min-width:130px; }
+.sound-setting-row small { display:block; font-size:11px; color:#718477; margin-top:4px; }
+.sound-setting-row b { font-size:13px; }
+#update-banner { display:flex; align-items:center; gap:10px; justify-content:space-between; border:1px solid #d8bc70; border-radius:14px; background:#fff7df; padding:11px 13px; margin-bottom:12px; }
+#update-banner b { display:block; font-size:12px; color:#6b571d; }
+#update-banner small { display:block; font-size:10px; color:#95844b; margin-top:3px; }
+@media(max-width:650px) { nav [data-tab] { font-size:10px; gap:4px; } nav button span { font-size:16px; } nav .settings-nav { flex-basis:31px; } .project-row-actions { max-width:52%; } }
+.memorial-stop { margin-top:12px; color:#7c6860; font-size:11px; }

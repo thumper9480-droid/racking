@@ -1,8 +1,8 @@
-# Ali Mirza Time Management Android 1.5.0
+# Ali Mirza Time Management Android 1.6.0
 
-Offline Android package `ir.zaman.app`, separate from the existing Raval app. Minimum API 26, target/compile API 35; pure Java, no third-party Android libraries or Gradle dependencies.
+Locally bundled Android package `ir.zaman.app`, separate from the existing Raval app. Minimum API 26, target/compile API 35; pure Java, no third-party Android libraries or Gradle dependencies.
 
-The APK embeds the current `zaman/index.html`, `app.js`, `style.css`, the user-provided Vazirmatn variable font, and an Android-only adapter. WebView serves a fixed local HTTPS origin, blocks external navigation, disables file access and mixed content, and exposes the bridge only to bundled content. The app requests no network permission. Browser storage remains separate; JSON backup/restore transfers data.
+The APK embeds the current `zaman/index.html`, `app.js`, `style.css`, the user-provided Vazirmatn variable font, and an Android-only adapter. WebView serves a fixed local HTTPS origin, blocks external navigation, disables file access and mixed content, and exposes the bridge only to bundled content. The app requests Internet access for the explicit update feature; activity data remain local. Browser storage remains separate; JSON backup/restore transfers data.
 
 ## Build
 
@@ -14,7 +14,7 @@ JAVA_HOME=/path/to/jdk ANDROID_SDK_ROOT=/path/to/sdk ANDROID_BUILD_TOOLS=/path/t
 
 The local defaults match the SDK prepared for this task (`/workspace/android-sdk`, build-tools extracted under `android-15`). The official Google SDK repository metadata was downloaded over verified TLS; platform-35_r02.zip and build-tools_r35_linux.zip SHA-1 values matched that metadata. The downloaded JDK was verified against its official SHA-256. No verification was disabled.
 
-Output: `build/zaman-1.5.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
+Output: `build/zaman-1.6.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
 
 ## Native alarms
 
@@ -30,7 +30,7 @@ Output: `build/zaman-1.5.0.apk`. The script compiles resources/Java/DEX, aligns 
 - The actual native recurrence method is exercised on the JVM by `tests/AlarmStoreTest.java`, including missed repeats and daylight-saving changes. Compile against `build/classes` and Android 35's android.jar and run `ir.zaman.app.AlarmStoreTest` with the same classpath.
 - No Android emulator or physical phone was available for runtime installation, document picker, background audio, reboot recovery or lock-screen testing. These checks remain for a real device; package compilation alone does not prove them.
 
-Distribution: `downloads/zaman-android-1.5.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
+Distribution: `downloads/zaman-android-1.6.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
 
 Version 1.1.0 uses versionCode 2 and the same development signing key as 1.0.0, so it can update the installed app without clearing its local data. Its compact home screen shows colored navigation, Persian/Gregorian dates, a live clock, a minute-only countdown and a daily activity table. Backup controls and native alarm settings are in the settings dialog.
 
@@ -58,6 +58,24 @@ The existing native sync bridge receives the same linked alarm records and enabl
 
 Independent project/task status, collapsible project list, project row actions, five-second hold plus confirmation for recoverable deletion, deleted-project folder and restore with alarm suspension, multiline task text, hidden ideas UI (legacy data retained), compact Today tasks and darker/larger daily table. Same signing key and local storage schema. Native device runtime remains unverified.
 
-## Version 1.5.0 (versionCode 7)
+## Version 1.6.0 (versionCode 7)
 
 Approved Ali Mirza logo embedded as adaptive launcher artwork and browser/settings identity; Persian application name updated. Existing Android package and signing certificate retained. Collapsible persisted dashboard sections, a six-row daily history viewport with sticky column headers and total, compact HH:MM chart durations beside percentages, and larger reminder text. Native local asset handler now serves PNG with image/png MIME. Same offline architecture and alarm engine. Source archive contains the web application, Java/XML sources, font, logo, build scripts and tests; private signing keys are intentionally excluded.
+
+
+## Version1.6.0 (versionCode8)
+
+Adds native device ringtone picker and per-category countdown/reminder sound preferences, preview and default fallback. The Java asset allowlist now permits only bundled index/help pages for navigation; no remote page can receive the bridge. Guide PDF can be saved via the Android document picker. MainActivity handles native back without dismissing the due memorial confirmation.
+
+UpdateStore fetches a fixed HTTPS GitHub release manifest with timeouts, redirects disabled and a64KiB limit. APK paths are restricted to the same fixed repository downloads directory. DownloadManager saves in public Downloads; the persisted download ID and SHA-256 must match before status becomes verified. UpdateReceiver handles system completion; no silent installer or REQUEST_INSTALL_PACKAGES permission is used. Android8/9 requests WRITE_EXTERNAL_STORAGE only when the user initiates a download. Internet is used for this update check/download; no accounts, device identifier or billing service exists.
+
+The free30day memorial is a local self-attestation gate, implemented in enhancements.js and persisted in LocalStorage. It is not a secure license mechanism and resets after data deletion; it must not be described as tamper-proof. It does not verify prayer/recitation. Alarm silencing remains usable.
+
+Additional native source policy test:
+
+```sh
+javac -cp build/classes:$ANDROID_SDK_ROOT/platforms/android-35/android.jar -d build/test-classes tests/UpdatePolicyTest.java
+java -cp build/test-classes:build/classes:$ANDROID_SDK_ROOT/platforms/android-35/android.jar ir.zaman.app.UpdatePolicyTest
+```
+
+See SOURCE-GUIDE.fa.md for reproducible source-package build instructions. Browser/mock tests exercise controls but do not prove physical Android ringtone, background alarm, DownloadManager or installer behavior.
