@@ -1,0 +1,103 @@
+/* Approved Ali Mirza layout: jade clock, lavender tasks, amber journey, blue chart. */
+:root { --project-ink:#7134a7; --project-line:#d9b8fa; --journey-ink:#96500e; --journey-line:#efbd67; --chart-ink:#1c5c9f; --chart-line:#98c8fa; background:#f7f8f3; }
+main { padding-top:6px; }
+#today-brand { position:relative; width:240px; height:93px; margin:0 auto 4px; overflow:hidden; }
+#today-brand img { position:absolute; width:320px; max-width:none; height:auto; left:50%; top:-10px; transform:translateX(-50%); }
+nav { padding:5px; background:#fff; border-radius:15px; box-shadow:0 3px 12px #123c3410; margin-bottom:10px; }
+nav button { font-weight:750; }
+nav [data-tab=today] { background:#e4f1ec; color:#176658; }
+nav [data-tab=projects] { background:#f4eafa; color:var(--project-ink); }
+nav [data-tab=activities] { color:#91601c; background:#fff7e5; }
+nav .settings-nav { background:#f5f7f4; }
+.date-panel { padding:14px 15px; border-radius:17px; border-color:#e9eee7; margin-bottom:10px; box-shadow:0 3px 10px #123c3408; }
+.wall-clock { font-size:34px; font-weight:850; letter-spacing:0; color:#064c49; }
+.today-layout { gap:9px; }
+.hero.card { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; display:grid; gap:8px; }
+.activity-session { grid-template-columns:minmax(0,1.6fr) minmax(92px,1fr); gap:18px; padding:21px 18px; background:linear-gradient(120deg,#eff9e9,#f6fcf3); border:1px solid #c7e4cf; border-radius:17px; box-shadow:0 3px 11px #284e2d0a; }
+.session-caption { margin:0 0 12px; font-size:14px; font-weight:750; color:#185747; }
+.session-clock .clock { color:#064b42; font-size:clamp(31px,7.9vw,48px); letter-spacing:0; line-height:1.3; margin:0 0 17px; font-weight:850; }
+.day-total { padding-top:10px; border-top:1px solid #cce2d1; font-size:11px; font-weight:600; color:#7b9286; }
+.session-actions { justify-items:center; }
+.session-actions .circle-action { width:clamp(96px,28vw,124px); height:auto; aspect-ratio:1; max-width:100%; margin:0; padding:15px 8px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; border:1px solid #37a36f; color:#fff; background:linear-gradient(135deg,#48bb81,#08783f); box-shadow:0 4px 9px #1773462e,0 0 0 7px #dff4e1,0 0 0 13px #edf9e9; font-size:17px; font-weight:800; line-height:1.55; }
+.circle-action span { display:block; }
+.circle-action:active { transform:scale(.98); }
+.countdown { background:linear-gradient(115deg,#f3e8ff,#f7f0fe); border:1px solid #d8b8fc; margin:0; padding:10px 11px; border-radius:14px; box-shadow:0 3px 9px #6a3d8b09; }
+.countdown-value { color:#7137ab; }
+.countdown button { background:#f9f2ff; color:#764c9d; border:1px solid #e6d1f8; }
+.countdown .primary { color:#fff; border-color:transparent; background:linear-gradient(135deg,#b17de0,#9054c1); }
+.countdown.is-running { background:#fff1ed; border-color:#ebbbb0; }
+.countdown.is-running .countdown-value { color:#bd4536; }
+.countdown.is-running button { color:#a75246; background:#ffe5df; border-color:#f5cbc0; }
+.countdown.is-running .primary { color:#fff; background:#ca594b; }
+.hero > .end-day[data-hold-end] { margin:0; border:1px solid #377d68; background:linear-gradient(to left,#c7dfd2 var(--hold-progress,0%),#fff var(--hold-progress,0%)); border-radius:13px; padding:9px 12px; min-height:54px; color:#185b4b; font-size:13px; font-weight:750; }
+.hero > .end-day[data-hold-end]:disabled { opacity:.65; }
+.due-project-tasks { border:1px solid var(--project-line); background:linear-gradient(115deg,#f2e8ff,#faf6ff); border-radius:15px; padding:10px 12px; box-shadow:0 3px 12px #8156ac10; }
+.due-project-tasks h2 { color:var(--project-ink); font-size:16px; margin-bottom:4px; }
+.due-project-tasks .section-toggle::before { content:'📁'; font-size:22px; }
+.due-task-row { background:#ffffff69; border:1px solid #e9dcf6; border-radius:10px; padding:8px; margin-top:5px; }
+.due-task-row:last-child { border-bottom:1px solid #e9dcf6; }
+.due-task-row .check { color:#253241; font-weight:700; }
+.due-task-row > .small { background:#f0e9f9; color:#8b75a2; border:1px solid #d9caec; }
+.due-task-meta .project-link { background:#ead8fc; color:#7945a0; }
+.due-task-meta time { color:#49395f; font-weight:700; }
+.section-toggle { gap:7px; }
+.section-chevron { margin-inline-start:auto; }
+.journey { background:linear-gradient(120deg,#fff8ea,#fffdf7); border:1px solid var(--journey-line); border-radius:15px; padding:10px 10px 7px; box-shadow:0 3px 12px #9c6a240c; }
+.journey h2 { color:var(--journey-ink); font-size:17px; }
+.journey .history-nav { gap:3px; }
+.journey .history-nav button { color:#8e661f; background:#fff8e8; border:1px solid #fae3bd; padding:6px 7px; }
+.history-scroll { scrollbar-color:#d9b06b #fff6df; margin-top:8px; border:1px solid #f0d5a1; border-radius:10px; }
+.history-table thead th { color:#38454b; background:#fff3d9; box-shadow:0 1px #ead2a6; font-weight:750; }
+.history-table tbody td { border-bottom-color:#eadcc6; color:#243740; }
+.history-table .activity-name { color:#20363b; }
+.history-table .current-row { background:#fff2d7; }
+.history-table tfoot th,.history-table tfoot td { background:#ffe6a9; color:#163d44; border-color:#edce8e; }
+.history-table tfoot th { text-align:right; }
+.day-chart { background:linear-gradient(120deg,#eaf6ff,#f6fbff); border:1px solid var(--chart-line); border-radius:15px; padding:12px; box-shadow:0 3px 12px #346b9a0e; }
+.day-chart h2 { color:var(--chart-ink); font-size:17px; margin-bottom:8px; }
+.day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 132px; gap:12px; }
+.day-chart .donut { width:132px; }
+.day-chart .chart-legend { padding:0 5px; background:#ffffff55; border:1px solid #dcecfb; border-radius:10px; }
+.day-chart .legend-item { color:#28495b; border-bottom-color:#d8e8f8; }
+.day-chart .legend-duration,.day-chart .legend-percent { color:#2b5474; font-weight:650; }
+.day-chart .donut-center strong { color:#326287; }
+.projects-screen { background:linear-gradient(140deg,#f5edff,#fcf9ff); border:1px solid var(--project-line); padding:15px; border-radius:18px; }
+.projects-screen .projects-heading h2 { color:var(--project-ink); }
+.projects-screen .projects-heading .primary,.projects-screen .project-detail .primary { background:#8b55b7; }
+.projects-screen .project-list-row { border-color:#dfcbed; background:#ffffffb5; }
+.projects-screen .project-list-row.selected { background:#ede0fa; border-color:#b58ad7; }
+.projects-screen .project-status-tabs button.selected { background:#e7d8f6; border-color:#b58ad7; color:var(--project-ink); }
+.projects-screen .project-detail { border-color:#dfcbed; background:#fffcff; }
+.projects-screen .task-key { background:#f8f2fd; border-color:#e6d7f0; }
+.projects-screen .task-key.completed { background:#edf4e9; }
+.designer-contact { padding-top:9px; border-top:1px solid #d6e3da; }
+.designer-contact a { display:inline-block; font-weight:750; color:#08766b; text-decoration:none; }
+@media(max-width:650px) {
+ main { padding-top:3px; }
+ #today-brand { margin-bottom:2px; }
+ .activity-session { gap:15px; padding:20px 15px; }
+ .session-caption { font-size:12px; }
+ .session-clock .clock { font-size:clamp(26px,8.3vw,36px); }
+ .session-actions .circle-action { font-size:16px; }
+ .date-line { font-size:11px; }
+ .wall-clock { font-size:33px; }
+ .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 118px; gap:8px; }
+ .day-chart .donut { width:118px; }
+ .due-project-tasks h2 { font-size:15px; }
+ .projects-screen { padding:11px; }
+}
+@media(max-width:350px) {
+ nav [data-tab] { padding-inline:3px; font-size:9px; }
+ .activity-session { padding:18px 12px; gap:12px; }
+ .session-actions .circle-action { width:93px; font-size:14px; }
+ .day-total { font-size:9px; }
+ .wall-clock { font-size:28px; }
+ .session-clock .clock { font-size:26px; }
+ .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 95px; gap:6px; }
+ .day-chart .donut { width:95px; }
+ .journey .history-nav button { font-size:10px; padding:5px; }
+}
+/* Keep the action genuinely circular at narrow mobile widths as well. */
+.session-actions .circle-action { height:clamp(96px,28vw,124px); padding:8px 5px; line-height:1.45; gap:0; }
+@media(max-width:350px) { .session-actions .circle-action { height:93px; } }
+.donut-center strong { max-width:65%; line-height:1.4; text-align:center; overflow-wrap:anywhere; }

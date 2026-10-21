@@ -9,7 +9,7 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
  const context=await browser.newContext({viewport:{width:390,height:880},deviceScaleFactor:1.5,timezoneId:'Asia/Tehran'}),p=await context.newPage(),errors=[],failed=[];
  p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
- await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({version:'1.6.0',versionCode:8,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.6.0.apk',sha256:'0'.repeat(64)})}));
+ await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.7.0',versionCode:9,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.7.0.apk',sha256:'0'.repeat(64)})}));
  if(!process.argv.includes('--pdf-only')){
   await p.clock.install({time:new Date('2026-10-21T13:30:00+03:30')});await p.clock.pauseAt(new Date('2026-10-21T13:30:01+03:30'));
   await p.goto(base);await p.evaluate(()=>document.fonts.ready);
@@ -25,7 +25,9 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
    state.collapsedSections={};tab='today';save();render();
   });
   async function image(name,selector){const el=p.locator(selector);await el.waitFor({state:'visible'});await el.screenshot({path:path.join(root,'guide-assets',name+'.png'),animations:'disabled'});}
-  await image('today','.hero');await image('journey','.journey');await image('chart','.day-chart');
+  const masthead=await p.locator('#today-brand').boundingBox(),hero=await p.locator('.hero').boundingBox();
+  if(masthead&&hero)await p.screenshot({path:path.join(root,'guide-assets','today.png'),clip:{x:hero.x,y:masthead.y,width:hero.width,height:hero.y+hero.height-masthead.y},animations:'disabled'});else await image('today','.hero');
+  await image('journey','.journey');await image('chart','.day-chart');
   await p.locator('[data-action=segment]').click();await p.locator('#activity-input').fill('مطالعه');await image('segment','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-action=duration]').click();await image('countdown','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-tab=alarms]').click();await image('reminders','#view');

@@ -1,4 +1,4 @@
-# Ali Mirza Time Management Android 1.6.0
+# Ali Mirza Time Management Android 1.7.0
 
 Locally bundled Android package `ir.zaman.app`, separate from the existing Raval app. Minimum API 26, target/compile API 35; pure Java, no third-party Android libraries or Gradle dependencies.
 
@@ -14,7 +14,7 @@ JAVA_HOME=/path/to/jdk ANDROID_SDK_ROOT=/path/to/sdk ANDROID_BUILD_TOOLS=/path/t
 
 The local defaults match the SDK prepared for this task (`/workspace/android-sdk`, build-tools extracted under `android-15`). The official Google SDK repository metadata was downloaded over verified TLS; platform-35_r02.zip and build-tools_r35_linux.zip SHA-1 values matched that metadata. The downloaded JDK was verified against its official SHA-256. No verification was disabled.
 
-Output: `build/zaman-1.6.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
+Output: `build/zaman-1.7.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
 
 ## Native alarms
 
@@ -30,7 +30,7 @@ Output: `build/zaman-1.6.0.apk`. The script compiles resources/Java/DEX, aligns 
 - The actual native recurrence method is exercised on the JVM by `tests/AlarmStoreTest.java`, including missed repeats and daylight-saving changes. Compile against `build/classes` and Android 35's android.jar and run `ir.zaman.app.AlarmStoreTest` with the same classpath.
 - No Android emulator or physical phone was available for runtime installation, document picker, background audio, reboot recovery or lock-screen testing. These checks remain for a real device; package compilation alone does not prove them.
 
-Distribution: `downloads/zaman-android-1.6.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
+Distribution: `downloads/zaman-android-1.7.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
 
 Version 1.1.0 uses versionCode 2 and the same development signing key as 1.0.0, so it can update the installed app without clearing its local data. Its compact home screen shows colored navigation, Persian/Gregorian dates, a live clock, a minute-only countdown and a daily activity table. Backup controls and native alarm settings are in the settings dialog.
 
@@ -79,3 +79,10 @@ java -cp build/test-classes:build/classes:$ANDROID_SDK_ROOT/platforms/android-35
 ```
 
 See SOURCE-GUIDE.fa.md for reproducible source-package build instructions. Browser/mock tests exercise controls but do not prove physical Android ringtone, background alarm, DownloadManager or installer behavior.
+
+
+## Version 1.7.0 (versionCode 9)
+
+Applies the approved calligraphic Ali Mirza/time-management launcher identity and Today design. The activity-recording control is circular and green; task list, daily journey and daily share cards use coordinated purple, amber and blue identities, with Projects sharing the purple treatment. The updated About text identifies designer Amin Naghdi Pour (امین نقدی پور), phone09131693134, and memorial Ali Mirza Naghdi Pour. Existing package, signing certificate, local storage, alarm controls, update policy and monthly self-attestation behavior are retained. The illustrated HTML/PDF guide was refreshed for these visuals.
+
+The designer contact link opens Android ACTION_DIAL only after a user gesture and only for the configured number; no phone-call permission or automatic call is used. The launcher foreground is inset for adaptive icon masks while keeping the approved artwork intact.

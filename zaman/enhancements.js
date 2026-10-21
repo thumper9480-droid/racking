@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.6.0',APP_VERSION_CODE=8,MEMORIAL_KEY='ali-mirza-memorial-v1',MEMORIAL_INTERVAL=30*86400000;
+const APP_VERSION='1.7.0',APP_VERSION_CODE=9,MEMORIAL_KEY='ali-mirza-memorial-v1',MEMORIAL_INTERVAL=30*86400000;
 let memorialRecord=null,availableUpdate=null,checkingUpdate=false,downloadPoll=null;
 function memorialDue(now=Date.now()){return !!memorialRecord&&now>=memorialRecord.nextAt;}
 function readMemorial(){let saved;try{saved=JSON.parse(localStorage.getItem(MEMORIAL_KEY)||'null');}catch{}const now=Date.now();memorialRecord=saved&&Number.isFinite(saved.startedAt)&&Number.isFinite(saved.nextAt)&&saved.nextAt>=saved.startedAt?saved:{startedAt:now,nextAt:now+MEMORIAL_INTERVAL};try{localStorage.setItem(MEMORIAL_KEY,JSON.stringify(memorialRecord));}catch{}}
