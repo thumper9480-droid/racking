@@ -1,4 +1,4 @@
-# Zaman Android 1.3.0
+# Zaman Android 1.4.0
 
 Offline Android package `ir.zaman.app`, separate from the existing Raval app. Minimum API 26, target/compile API 35; pure Java, no third-party Android libraries or Gradle dependencies.
 
@@ -14,7 +14,7 @@ JAVA_HOME=/path/to/jdk ANDROID_SDK_ROOT=/path/to/sdk ANDROID_BUILD_TOOLS=/path/t
 
 The local defaults match the SDK prepared for this task (`/workspace/android-sdk`, build-tools extracted under `android-15`). The official Google SDK repository metadata was downloaded over verified TLS; platform-35_r02.zip and build-tools_r35_linux.zip SHA-1 values matched that metadata. The downloaded JDK was verified against its official SHA-256. No verification was disabled.
 
-Output: `build/zaman-1.3.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
+Output: `build/zaman-1.4.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
 
 ## Native alarms
 
@@ -30,7 +30,7 @@ Output: `build/zaman-1.3.0.apk`. The script compiles resources/Java/DEX, aligns 
 - The actual native recurrence method is exercised on the JVM by `tests/AlarmStoreTest.java`, including missed repeats and daylight-saving changes. Compile against `build/classes` and Android 35's android.jar and run `ir.zaman.app.AlarmStoreTest` with the same classpath.
 - No Android emulator or physical phone was available for runtime installation, document picker, background audio, reboot recovery or lock-screen testing. These checks remain for a real device; package compilation alone does not prove them.
 
-Distribution: `downloads/zaman-android-1.3.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
+Distribution: `downloads/zaman-android-1.4.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
 
 Version 1.1.0 uses versionCode 2 and the same development signing key as 1.0.0, so it can update the installed app without clearing its local data. Its compact home screen shows colored navigation, Persian/Gregorian dates, a live clock, a minute-only countdown and a daily activity table. Backup controls and native alarm settings are in the settings dialog.
 
@@ -53,3 +53,7 @@ Projects use numbered lists and open/completed views. Task keys open an action d
 Task dueAt/dueRepeat metadata is retained separately from the alarm's next occurrence so firing a reminder does not remove the task from Today. Matching open tasks appear above the daily activity table; completed-today tasks move into a separate expandable group. Completion cancels pending task alarms; reopening restores future reminders (advancing paused repeats to a future occurrence, without replaying expired one-time alarms). Reminder edits update task deadlines; deleting a reminder clears the deadline, and deleting a task/project removes linked alarms. Existing linked reminders hydrate missing deadline metadata on load/import.
 
 The existing native sync bridge receives the same linked alarm records and enabled flags. `node zaman/tests/project-workflow.cjs` validates numbered project selection, task CRUD, Persian deadlines, Today placement, ringing and retention after firing, completion timestamps/history and persistence, project moves, reopen behavior, repeat dates and responsive layout. The Android bridge smoke test also checks that scheduled task alarms reach native sync and are disabled on completion. Actual device background alarm delivery remains unverified.
+
+## Version 1.4.0 (versionCode 6)
+
+Independent project/task status, collapsible project list, project row actions, five-second hold plus confirmation for recoverable deletion, deleted-project folder and restore with alarm suspension, multiline task text, hidden ideas UI (legacy data retained), compact Today tasks and darker/larger daily table. Same signing key and local storage schema. Native device runtime remains unverified.

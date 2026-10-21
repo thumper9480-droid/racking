@@ -267,3 +267,48 @@ nav [data-tab=activities] { background: #fff2da; color: #8b681e; --tab-color: #c
 .status-history li { font-size: 10px; margin: 8px 0; }
 .today-completed .task-key { margin-top: 8px; }
 .project-detail h2, #form h2 { overflow-wrap: anywhere; }
+
+/* Compact project lists, independent task status and recoverable deletion. */
+.project-list-row { display:flex; align-items:center; gap:6px; border:1px solid #dce4df; border-radius:12px; background:white; padding:7px; }
+.project-list-row.selected { background:#f5f0fb; border-color:#a58bc3; }
+.project-list-row .project-list-button { flex:1; min-width:0; gap:7px; border:0; background:transparent; padding:5px; }
+.project-list-row .project-summary b { font-size:12px; }
+.project-list-row .project-number { width:25px; height:28px; font-size:11px; }
+.project-chevron { font-size:30px; font-weight:700; line-height:1; min-width:28px; min-height:36px; display:grid; place-items:center; color:#715397; }
+.project-row-actions { display:flex; align-items:stretch; gap:5px; max-width:52%; flex-wrap:wrap; }
+.project-row-actions .small { padding:7px 5px; font-size:9px; line-height:1.6; }
+.delete-project-button { touch-action:none; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+.delete-project-button small { display:block; font-size:8px; }
+.delete-project-button.holding { background:linear-gradient(to left,#edb6ad var(--hold-progress,0%),#fff4f1 var(--hold-progress,0%)); }
+.deleted-folder { margin:0 0 12px; font-size:12px; background:#f1eaf5; color:#735a89; }
+.project-detail { padding:16px; }
+.project-detail h2 { font-size:15px; margin:0; }
+.project-task-keys { margin:12px 0 0; gap:7px; }
+.task-key { padding:10px; }
+.task-key-content b { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; white-space:pre-line; }
+#form h2 { white-space:pre-wrap; max-height:35vh; overflow:auto; font-size:17px; }
+textarea[name=title] { min-height:140px; resize:vertical; line-height:1.9; }
+.due-project-tasks { padding:10px 12px; }
+.due-project-tasks h2 { font-size:12px; margin:0 0 5px; }
+.due-task-row { padding:5px 0; gap:6px; }
+.due-task-row .content { display:flex; align-items:center; gap:7px; min-width:0; }
+.due-task-row .check { flex:1; min-width:0; gap:5px; font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+.due-task-row .check input { flex-shrink:0; width:17px; height:17px; }
+.due-task-meta { margin:0; gap:6px; flex-shrink:0; }
+.due-task-meta .project-link { max-width:70px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:3px 5px; font-size:9px; }
+.due-task-meta time { font-size:10px; }
+.due-task-row > .small { padding:5px; font-size:9px; }
+.today-completed { margin-top:7px; }
+.history-table { font-size:14px; color:#161b18; font-weight:650; }
+.history-table th { font-size:12px; color:#252d28; font-weight:750; }
+.history-table th,.history-table td { border-bottom-color:#c3d0c7; }
+.history-table .activity-name { font-size:14px; font-weight:650; color:#161b18; }
+.history-table .time-cell,.history-table .duration-cell,.history-table .running-label { color:#161b18; font-weight:650; }
+@media(max-width:350px) { .project-row-actions { max-width:49%; } .project-row-actions .small { font-size:8px; } .project-list-row .project-number { display:none; } .due-task-row .content { gap:4px; } .due-task-meta { gap:4px; } .due-task-meta .project-link { max-width:48px; } }
+.due-task-row .check span { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.today-layout { width:100%; grid-template-columns:minmax(0,1fr); }
+.today-layout > * { min-width:0; }
+.due-task-row .check span { flex:1; min-width:0; }
+.history-table .duration-cell { font-size:13px; }
+.history-table .running-label { font-size:12px; }
+.history-table tfoot td,.history-table tfoot th { font-size:13px; color:#161b18; font-weight:750; }
