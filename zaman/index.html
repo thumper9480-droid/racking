@@ -4,10 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#087f79">
-  <title>زمان من</title>
+  <title>مدیریت زمان علی میرزا</title>
+  <link rel="icon" type="image/png" href="logo.png">
+  <link rel="apple-touch-icon" href="logo.png">
+  <meta name="application-name" content="مدیریت زمان علی میرزا">
   <link rel="preload" href="fonts/Vazirmatn-Variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=1.4.0">
-  <script defer src="app.js?v=1.4.0"></script>
+  <link rel="stylesheet" href="style.css?v=1.5.0">
+  <script defer src="app.js?v=1.5.0"></script>
 </head>
 <body>
   <main>
@@ -28,6 +31,7 @@
   <dialog id="settings-dialog" aria-labelledby="settings-title">
     <div class="row"><h2 id="settings-title">تنظیمات</h2><button id="settings-close" class="icon-button" aria-label="بستن تنظیمات">×</button></div>
     <section id="web-alarm-settings"><h3>اعلان و صدا</h3><button class="small" data-action="permission">فعال‌سازی اعلان و آزمایش صدا</button></section>
+    <section class="app-identity"><img src="logo.png" alt="لوگوی مدیریت زمان علی میرزا" width="56" height="56"><b>مدیریت زمان علی میرزا</b><small>نسخهٔ ۱.۵.۰</small></section>
     <section class="backup-settings"><h3>پشتیبان اطلاعات</h3><div class="actions"><button id="export" class="primary">دریافت پشتیبان</button><label class="import" tabindex="0" role="button">بازیابی پشتیبان<input id="import" type="file" accept="application/json" hidden></label></div></section>
   </dialog>
   <dialog id="dialog"><form id="form"></form></dialog>

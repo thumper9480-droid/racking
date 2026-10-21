@@ -312,3 +312,92 @@ textarea[name=title] { min-height:140px; resize:vertical; line-height:1.9; }
 .history-table .duration-cell { font-size:13px; }
 .history-table .running-label { font-size:12px; }
 .history-table tfoot td,.history-table tfoot th { font-size:13px; color:#161b18; font-weight:750; }
+
+/* Final identity and collapsible dashboard sections. */
+:root { color:#173b3d; background:#f6f7f2; }
+.card { border-radius:22px; box-shadow:0 4px 16px #173c3610; }
+.hero { background:linear-gradient(140deg,#f0f8ec,#e8f5ee); border-color:#d6e8dc; }
+.wall-clock,.session-clock .clock { font-weight:800; color:#09595c; }
+.session-actions .wide { font-weight:700; }
+.section-toggle { display:flex; align-items:center; gap:9px; width:100%; padding:4px 0; background:transparent; color:inherit; font-size:inherit; font-weight:800; text-align:right; border-radius:6px; }
+.section-chevron { display:grid; place-items:center; min-width:24px; height:28px; font-size:24px; color:#61817c; line-height:1; }
+.journey h2,.day-chart h2 { margin:0; font-size:17px; }
+.day-chart h2 { margin-bottom:12px; }
+.day-chart:has([aria-expanded=false]) h2 { margin-bottom:0; }
+.due-project-tasks h2 { margin-bottom:3px; }
+.due-project-tasks:has([aria-expanded=false]) h2 { margin-bottom:0; }
+.history-scroll { margin-top:12px; max-height:398px; overflow:auto; overscroll-behavior-y:contain; scrollbar-width:thin; scrollbar-color:#9ab7ac #edf3ee; border-radius:8px; }
+.history-scroll .history-table { margin-top:0; border-collapse:separate; border-spacing:0; }
+.history-table thead th { position:sticky; top:0; z-index:2; background:#fff; height:40px; box-shadow:0 1px #b9cdc2; }
+.history-table tbody tr { height:52px; }
+.history-table tbody td { padding:10px 5px; }
+.history-table .activity-name { display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:2; overflow:hidden; line-height:1.65; }
+.history-table tfoot th,.history-table tfoot td { position:sticky; bottom:0; z-index:2; height:44px; background:#eef5f1; border-top:1px solid #bccfc3; }
+.history-table tfoot th { border-radius:0 9px 9px 0; }
+.history-table tfoot td { border-radius:9px 0 0 9px; }
+.alarm-heading h2 { color:#173b3d; }
+.alarm-heading + .card .content b { font-size:17px; font-weight:800; color:#123c3e; line-height:1.8; }
+.alarm-heading + .card .content .muted { font-size:14px; font-weight:650; color:#314b43; line-height:1.9; }
+.alarm-heading + .card .item { padding:15px 0; }
+.app-identity { display:grid; grid-template-columns:56px minmax(0,1fr); gap:0 12px; align-items:center; padding-top:12px; border-top:1px solid var(--line); margin-top:18px; }
+.app-identity img { grid-row:1/3; border-radius:14px; }
+.app-identity b { font-size:14px; }
+.app-identity small { color:#71847a; font-size:11px; }
+@media(max-width:650px) {
+ .session-actions .wide { font-size:12px; line-height:1.9; }
+ .date-line { font-size:11px; }
+ .wall-clock { font-size:28px; }
+ .alarm-heading + .card { padding:17px; }
+ .alarm-heading + .card .content b { font-size:16px; }
+ .alarm-heading + .card .content .muted { font-size:13px; }
+ .alarm-heading + .card .item { gap:7px; }
+}
+[hidden] { display:none !important; }
+/* Side-by-side clock, legend and donut follow the approved visual proposal. */
+.session-caption { margin:0 0 5px; font-size:13px; font-weight:650; color:#60796c; }
+.countdown { border-top:1px solid #caddd1; }
+.day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 150px; gap:18px; }
+.day-chart .donut { grid-column:2; grid-row:1; width:150px; margin:0; }
+.day-chart .chart-legend { grid-column:1; grid-row:1; min-width:0; }
+.legend-item { grid-template-columns:10px minmax(0,1fr) 42px; gap:4px 8px; text-align:right; }
+.legend-dot { grid-column:1; grid-row:1; }
+.legend-name { grid-column:2; grid-row:1; font-weight:700; }
+.legend-percent { grid-column:3; grid-row:1; text-align:left; }
+.legend-duration { grid-column:2 / 4; grid-row:2; font-size:12px; font-weight:600; color:#526c5e; }
+@media(max-width:650px) {
+ .day-chart { padding:17px 15px; }
+ .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 120px; gap:11px; }
+ .day-chart .donut { width:120px; }
+ .donut-center strong { font-size:15px; }
+ .donut-center span { font-size:9px; }
+ .legend-item { font-size:12px; grid-template-columns:8px minmax(0,1fr) 36px; gap:3px 5px; padding:8px 0; }
+ .legend-duration { font-size:11px; }
+ .hero { padding:20px 13px 14px; }
+ .session-clock .clock { font-size:clamp(24px,7.6vw,34px); letter-spacing:0; }
+ .session-caption { font-size:12px; }
+ .day-total { font-size:10px; }
+ .hero > .end-day[data-hold-end] { font-size:12px; }
+}
+@media(max-width:350px) {
+ .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 100px; gap:8px; }
+ .day-chart .donut { width:100px; }
+ .donut-center strong { font-size:13px; }
+ .session-actions .wide { font-size:11px; }
+}
+/* Compact duration requested as HH:MM beside the percentage. */
+.legend-item { grid-template-columns:8px minmax(0,1fr) 44px 36px; gap:5px; }
+.legend-name { grid-column:2; grid-row:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.legend-duration { grid-column:3; grid-row:1; direction:ltr; text-align:center; font-size:12px; }
+.legend-percent { grid-column:4; grid-row:1; font-size:12px; }
+.legend-duration[aria-label="زیر یک دقیقه"] { direction:rtl; font-size:9px; line-height:1.5; }
+@media(max-width:650px) {
+ .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 110px; gap:10px; }
+ .day-chart .donut { width:110px; }
+ .legend-item { grid-template-columns:7px minmax(0,1fr) 36px 31px; gap:4px; font-size:11px; }
+ .legend-duration,.legend-percent { font-size:11px; }
+}
+@media(max-width:350px) {
+ .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 92px; gap:7px; }
+ .day-chart .donut { width:92px; }
+ .legend-item { gap:3px; }
+}

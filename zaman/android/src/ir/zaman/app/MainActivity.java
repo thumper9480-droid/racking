@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
       @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest request){
         Uri u=request.getUrl();String path=u.getPath();
         if(!"https".equals(u.getScheme())||!"appassets.androidplatform.net".equals(u.getHost())||path==null||path.contains(".."))return missing();
-        try {String file=path.equals("/")?"index.html":path.substring(1);String mime=file.endsWith(".js")?"text/javascript":file.endsWith(".css")?"text/css":file.endsWith(".ttf")?"font/ttf":"text/html";return new WebResourceResponse(mime,"UTF-8",getAssets().open(file));}catch(IOException e){return missing();}
+        try {String file=path.equals("/")?"index.html":path.substring(1);String mime=file.endsWith(".js")?"text/javascript":file.endsWith(".css")?"text/css":file.endsWith(".ttf")?"font/ttf":file.endsWith(".png")?"image/png":"text/html";return new WebResourceResponse(mime,"UTF-8",getAssets().open(file));}catch(IOException e){return missing();}
       }
       @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){return !"https://appassets.androidplatform.net/".equals(r.getUrl().toString());}
     });
@@ -51,7 +51,7 @@ public class MainActivity extends Activity {
       if(titles.length()>0)startForegroundService(new Intent(MainActivity.this,AlarmService.class).putExtra("title",titles.toString()));
     }
     @JavascriptInterface public void stopAlarm(){stopService(new Intent(MainActivity.this,AlarmService.class));}
-    @JavascriptInterface public void testAlarm(){runOnUiThread(()->startForegroundService(new Intent(MainActivity.this,AlarmService.class).putExtra("title","آزمایش زنگ زمان من")));}
+    @JavascriptInterface public void testAlarm(){runOnUiThread(()->startForegroundService(new Intent(MainActivity.this,AlarmService.class).putExtra("title","آزمایش زنگ مدیریت زمان علی میرزا")));}
     @JavascriptInterface public void export(String text){if(text.length()>5000000)return;runOnUiThread(()->{exportText=text;startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"zaman-backup.json"),11);});}
   }
 }
