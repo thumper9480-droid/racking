@@ -253,3 +253,35 @@ nav .settings-nav { flex:0 0 32px; background:#f6f8f4; }
 .header-education svg { width:17px; height:17px; flex-shrink:0; }
 .header-education span { font-size:10px; }
 @media(max-width:350px) { .header-education svg { width:14px; height:14px; } .header-education span { font-size:9px; } }
+
+/* Approved rectangular record action and three distinct Today panel themes. */
+.is-today .session-actions .circle-action {
+ width:100%; min-width:0; height:clamp(70px,20vw,94px); min-height:70px; aspect-ratio:auto; max-width:166px;
+ padding:10px 5px; border-radius:12px; gap:0; line-height:1.7; font-size:16px;
+ border:1px solid #176547; background:linear-gradient(125deg,#2c875a,#125a3d);
+ box-shadow:0 4px 10px #174d3426;
+}
+.today-layout .due-project-tasks,.today-layout > .journey,.today-layout > .day-chart {
+ padding:0; overflow:hidden; border-width:1.5px; border-radius:13px;
+}
+.is-today .due-project-tasks { background:#f1f5f8; border-color:#91a7bb; box-shadow:0 3px 12px #4254690b; }
+.is-today .due-project-tasks > h2 { background:linear-gradient(110deg,#e7eef3,#dce7ef); }
+.is-today .due-project-tasks .section-toggle { color:#414a52; }
+.is-today .journey { background:#fffaf3; border-color:#dc8d3c; }
+.is-today .journey > .journey-heading { background:linear-gradient(110deg,#fff5e5,#fbedcf); }
+.is-today .journey .section-toggle { color:#985018; }
+.is-today .day-chart { background:#f0faf8; border-color:#32a8a3; box-shadow:0 3px 12px #258d850b; }
+.is-today .day-chart > h2 { background:linear-gradient(110deg,#dff4f0,#d3eeed); }
+.is-today .day-chart .section-toggle { color:#145b60; }
+.today-layout .due-project-tasks > h2,.today-layout .day-chart > h2 { margin:0; }
+.today-layout .section-toggle { padding:8px 10px; min-height:44px; }
+.today-layout .journey-heading { min-height:44px; }
+.today-layout #project-tasks-content { padding:0 10px 8px; }
+.today-layout #journey-content { padding:0 10px 8px; }
+.today-layout #chart-content { padding:8px 10px 10px; }
+.is-today .due-task-row { border-color:#c9d4dd; background:#ffffffb8; }
+.is-today .day-chart .legend-item { border-bottom-color:#c8e3dc; }
+@media(max-width:350px) {
+ .is-today .session-actions .circle-action { min-height:70px; padding:8px 4px; font-size:14px; border-radius:11px; }
+ .today-layout .section-toggle { padding-inline:9px; }
+}

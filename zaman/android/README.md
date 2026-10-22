@@ -1,4 +1,4 @@
-# Ali Mirza Time Management Android 1.12.1
+# Ali Mirza Time Management Android 1.12.2
 
 Locally bundled Android package `ir.zaman.app`, separate from the existing Raval app. Minimum API 26, target/compile API 35; pure Java, no third-party Android libraries or Gradle dependencies.
 
@@ -14,7 +14,7 @@ JAVA_HOME=/path/to/jdk ANDROID_SDK_ROOT=/path/to/sdk ANDROID_BUILD_TOOLS=/path/t
 
 The local defaults match the SDK prepared for this task (`/workspace/android-sdk`, build-tools extracted under `android-15`). The official Google SDK repository metadata was downloaded over verified TLS; platform-35_r02.zip and build-tools_r35_linux.zip SHA-1 values matched that metadata. The downloaded JDK was verified against its official SHA-256. No verification was disabled.
 
-Output: `build/zaman-1.12.1.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
+Output: `build/zaman-1.12.2.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
 
 ## Native alarms
 
@@ -30,7 +30,7 @@ Output: `build/zaman-1.12.1.apk`. The script compiles resources/Java/DEX, aligns
 - The actual native recurrence method is exercised on the JVM by `tests/AlarmStoreTest.java`, including missed repeats and daylight-saving changes. Compile against `build/classes` and Android 35's android.jar and run `ir.zaman.app.AlarmStoreTest` with the same classpath.
 - No Android emulator or physical phone was available for runtime installation, document picker, background audio, reboot recovery or lock-screen testing. These checks remain for a real device; package compilation alone does not prove them.
 
-Distribution: `downloads/zaman-android-1.12.1.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
+Distribution: `downloads/zaman-android-1.12.2.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
 
 Version 1.1.0 uses versionCode 2 and the same development signing key as 1.0.0, so it can update the installed app without clearing its local data. Its compact home screen shows colored navigation, Persian/Gregorian dates, a live clock, a minute-only countdown and a daily activity table. Backup controls and native alarm settings are in the settings dialog.
 
@@ -129,3 +129,10 @@ Task dictation uses the installed speech activity through ACTION_RECOGNIZE_SPEEC
 ## Version 1.12.1 (versionCode 15)
 
 The approved leafy green wordmark, book/education button, HH:MM clock and both dates now form one shared masthead on all main tabs and reports. Reset remains on Today. Native behavior and storage are unchanged.
+
+
+## Version 1.12.2 (versionCode 16)
+
+Approved rectangular action and slate/brown/teal Today cards. Voice attachments use MediaRecorder and IndexedDB with transactional audio backup/restore. RECORD_AUDIO is requested only on capture; WebChromeClient grants AUDIO_CAPTURE only for the internal HTTPS origin after Android permission. No background microphone service is used. Update discovery runs on start/resume/online and every five minutes while visible, with cached update notices and normal verified download/install.
+
+The build requires the existing signing file and supports ZAMAN_STORE_PASSWORD, ZAMAN_KEY_PASSWORD and ZAMAN_KEY_ALIAS environment variables. It never creates a replacement signing key. Read ../MAINTENANCE.fa.md to recover/release without chat history.

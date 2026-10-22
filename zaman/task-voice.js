@@ -15,7 +15,7 @@ function applyTaskVoiceResult(result){
 }
 window.onNativeTaskVoice=applyTaskVoiceResult;
 function startTaskVoice(){
- if(taskVoiceSession)return;
+ if(taskVoiceSession)return;if(typeof taskAudioDraft!=='undefined'&&taskAudioDraft&&taskAudioDraft.status!=='idle'){taskVoiceStatus('ابتدا ضبط ویس را پایان دهید.');return;}
  const target=document.querySelector('#task-description'),button=document.querySelector('[data-task-voice]');if(!target||!button)return;
  const id=crypto.randomUUID(),session={id,target};taskVoiceSession=session;button.disabled=true;button.classList.add('listening');taskVoiceStatus('در حال دریافت گفتار…');
  if(typeof window.AndroidZaman?.startTaskDictation==='function'){

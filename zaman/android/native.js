@@ -9,7 +9,7 @@ ring=function(title,options={}){showRing(title,options);};
 const originalSilence=document.querySelector('#silence').onclick;
 document.querySelector('#silence').onclick=()=>{AndroidZaman.stopAlarm();originalSilence();};
 actions.permission=()=>AndroidZaman.permissions();
-document.querySelector('#export').onclick=()=>AndroidZaman.export(JSON.stringify(state,null,2));
+document.querySelector('#export').onclick=()=>exportAppBackup(true);
 const statusBox=document.createElement('div');statusBox.id='native-status';statusBox.className='info';document.querySelector('#settings-dialog').append(statusBox);
 document.addEventListener('click',e=>{if(e.target.closest('#native-test'))AndroidZaman.testAlarm();if(e.target.closest('#native-stop'))AndroidZaman.stopAlarm();});
 document.querySelector('#web-alarm-settings').hidden=true;

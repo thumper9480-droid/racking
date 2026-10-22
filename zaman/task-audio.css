@@ -1,0 +1,12 @@
+.task-audio { margin:12px 0; padding:10px; background:#f3f8f4; border:1px solid #c7dbcc; border-radius:12px; }
+.task-audio-heading { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.task-audio-heading h3 { flex:1; margin:0; font-size:13px; }
+.task-audio-heading button { border:1px solid #9abfa6; color:#24623d; background:#e2f0e5; font-size:12px; }
+.task-audio-heading .audio-stop { background:#f9e8e3; color:#9f3e30; border-color:#dba89b; }
+#task-audio-status { font-size:11px; line-height:1.8; color:#607b66; margin:7px 0 0; }
+#task-audio-status:empty { display:none; }
+.task-audio-note { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:6px; padding:9px 0 0; }
+.task-audio-note > span { font-size:11px; color:#45684c; }
+.task-audio-note audio { grid-column:1/-1; width:100%; min-width:0; height:40px; }
+.task-audio-note button { grid-column:2; grid-row:1; padding:4px 8px; font-size:10px; }
+.task-audio-note small { grid-column:1/-1; color:#a54b3e; font-size:11px; }

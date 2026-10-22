@@ -6,10 +6,10 @@ const {chromium}=require('playwright');
 const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http://127.0.0.1:4173/zaman/';
 (async()=>{
  fs.mkdirSync(path.join(root,'guide-assets'),{recursive:true});
- const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
- const context=await browser.newContext({viewport:{width:390,height:880},deviceScaleFactor:1.5,timezoneId:'Asia/Tehran'}),p=await context.newPage(),errors=[],failed=[];
+ const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
+ const context=await browser.newContext({viewport:{width:390,height:880},deviceScaleFactor:1.5,timezoneId:'Asia/Tehran',permissions:['microphone']}),p=await context.newPage(),errors=[],failed=[];
  p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
- await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.12.1',versionCode:15,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.12.1.apk',sha256:'0'.repeat(64)})}));
+ await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.12.2',versionCode:16,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.12.2.apk',sha256:'0'.repeat(64)})}));
  if(!process.argv.includes('--pdf-only')){
   await p.clock.install({time:new Date('2026-10-22T13:30:00+03:30')});await p.clock.pauseAt(new Date('2026-10-22T13:30:01+03:30'));
   await p.goto(base);await p.evaluate(()=>document.fonts.ready);
@@ -39,6 +39,7 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
   await p.locator('[data-action=duration]').click();await image('countdown','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-tab=alarms]').click();await image('reminders','#view');
   await p.locator('[data-tab=projects]').click();await p.locator('[data-project=house]').click();await image('projects','#view');
+  await p.clock.resume();await p.locator('[data-action=task]').click();await p.locator('[name=title]').fill('پیگیری خرید آهن');await p.locator('[data-audio-record]').click();await p.waitForFunction(()=>taskAudioDraft?.status==='recording');await p.waitForTimeout(700);await p.locator('[data-audio-stop]').click();await p.waitForFunction(()=>taskAudioDraft?.status==='idle'&&taskAudioDraft.notes.length===1);await image('audio','#dialog');await p.locator('#cancel').click();await p.clock.pauseAt(new Date('2026-10-22T13:30:10+03:30'));
   await p.locator('[data-tab=activities]').click();await p.locator('[data-action=reports]').click();await p.locator('[data-report-mode=week]').click();await image('reports','#view');
   await p.locator('#settings[data-action=settings]').click();await image('settings','#settings-dialog');
   await p.locator('[data-wipe-all]').click();await image('wipe-confirmation','#wipe-dialog');await p.locator('[data-wipe-cancel]').click();await p.locator('#settings-close').click();
@@ -49,10 +50,10 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
  const guide=await context.newPage();guide.on('pageerror',e=>errors.push(e.message));guide.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
  await guide.setViewportSize({width:1000,height:1200});await guide.goto(new URL('help.html',base).href);await guide.evaluate(()=>document.fonts.ready);
  await guide.locator('.screen img').evaluateAll(images=>Promise.all(images.map(image=>image.decode())));
- assert.equal(await guide.locator('.guide-page').count(),9);
+ assert.equal(await guide.locator('.guide-page').count(),10);
  await guide.evaluate(()=>document.querySelectorAll('details').forEach(el=>el.open=true));
  await guide.pdf({path:path.join(root,'user-guide.pdf'),format:'A4',printBackground:true,preferCSSPageSize:true,displayHeaderFooter:false,tagged:true,outline:true});
  assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
  await guide.setViewportSize({width:390,height:844});assert(await guide.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'HTML guide must fit mobile');
- await browser.close();console.log('PASS actual-app demo screenshots, offline linked HTML guide, nine instructional sections, mobile layout and generated Persian PDF');
+ await browser.close();console.log('PASS actual-app demo screenshots, offline linked HTML guide, ten instructional sections, mobile layout and generated Persian PDF');
 })().catch(e=>{console.error(e);process.exit(1)});

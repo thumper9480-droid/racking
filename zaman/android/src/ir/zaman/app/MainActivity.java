@@ -14,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 import org.json.*;
 
 public class MainActivity extends Activity {
-  WebView web; ValueCallback<Uri[]> chooser; String exportText,ringtoneKind,pendingDownloadUrl,pendingDownloadHash,dictationRequestId;
+  WebView web; PermissionRequest pendingMic; ValueCallback<Uri[]> chooser; String exportText,ringtoneKind,pendingDownloadUrl,pendingDownloadHash,dictationRequestId;
   volatile int appDataGeneration=0; volatile boolean pendingInstall=false,installBusy=false;
   @Override public void onCreate(Bundle saved) {
     super.onCreate(saved);
@@ -33,13 +33,21 @@ public class MainActivity extends Activity {
       @Override public boolean shouldOverrideUrlLoading(WebView v,WebResourceRequest r){Uri u=r.getUrl();if("tel".equals(u.getScheme())&&"09131693134".equals(u.getSchemeSpecificPart())&&r.hasGesture()){try{startActivity(new Intent(Intent.ACTION_DIAL,u));}catch(ActivityNotFoundException ignored){toast("شمارهٔ طراح: 09131693134");}return true;}String path=u.getPath();return !("https".equals(u.getScheme())&&"appassets.androidplatform.net".equals(u.getHost())&&(u.getPort()==-1||u.getPort()==443)&&(u.getQuery()==null)&&(path.equals("/")||path.equals("/index.html")||path.equals("/help.html")));}
     });
     web.setWebChromeClient(new WebChromeClient(){
+      @Override public void onPermissionRequest(PermissionRequest request){runOnUiThread(()->{
+        Uri origin=request.getOrigin();String[] resources=request.getResources();
+        if(!"https".equals(origin.getScheme())||!"appassets.androidplatform.net".equals(origin.getHost())||(origin.getPort()!=-1&&origin.getPort()!=443)||resources.length!=1||!PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resources[0])){request.deny();return;}
+        if(pendingMic!=null){request.deny();return;}
+        if(checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)==PackageManager.PERMISSION_GRANTED)request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+        else{pendingMic=request;requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO},41);}
+      });}
+      @Override public void onPermissionRequestCanceled(PermissionRequest request){runOnUiThread(()->{if(pendingMic==request)pendingMic=null;});}
       @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){if(chooser!=null)chooser.onReceiveValue(null);chooser=callback;startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE),10);return true;}
     });
     web.loadUrl("https://appassets.androidplatform.net/");
   }
   static WebResourceResponse missing(){return new WebResourceResponse("text/plain","UTF-8",404,"Not Found",java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));}
-  @Override protected void onResume(){super.onResume();if(web!=null){web.onResume();web.evaluateJavascript("if(typeof tick==='function')tick();if(typeof updateNativeStatus==='function')updateNativeStatus();if(typeof restoreUpdateDownload==='function')restoreUpdateDownload();",null);}AlarmStore.restore(this);}
-  @Override protected void onPause(){if(web!=null){web.evaluateJavascript("if(typeof save==='function')save();",null);web.onPause();}super.onPause();}
+  @Override protected void onResume(){super.onResume();if(web!=null){web.onResume();web.evaluateJavascript("if(typeof tick==='function')tick();if(typeof updateNativeStatus==='function')updateNativeStatus();if(typeof restoreUpdateDownload==='function')restoreUpdateDownload();if(typeof autoCheckForUpdate==='function')autoCheckForUpdate(true);",null);}AlarmStore.restore(this);}
+  @Override protected void onPause(){if(web!=null){web.evaluateJavascript("if(typeof stopAudioRecording==='function')stopAudioRecording();if(typeof save==='function')save();",null);web.onPause();}super.onPause();}
   @Override public void onBackPressed(){if(web.getUrl()!=null&&web.getUrl().startsWith("https://appassets.androidplatform.net/help.html")){if(web.canGoBack())web.goBack();else web.loadUrl("https://appassets.androidplatform.net/");return;}web.evaluateJavascript("if(document.querySelector('#memorial-dialog')?.open){}else if(document.querySelector('#wipe-dialog')?.open&&typeof cancelWipeFlow==='function')cancelWipeFlow();else if(document.querySelector('#education-dialog')?.open)document.querySelector('#education-dialog').close();else if(document.querySelector('#about-dialog')&&document.querySelector('#about-dialog').open)document.querySelector('#about-dialog').close();else if(document.querySelector('#settings-dialog').open)document.querySelector('#settings-dialog').close();else if(document.querySelector('#dialog').open)dismissModal();else{tab='today';render();}",null);}
   @Override protected void onActivityResult(int request,int result,Intent data){
     super.onActivityResult(request,result,data);
@@ -50,6 +58,7 @@ public class MainActivity extends Activity {
     if(request==30&&ringtoneKind!=null){if(result==RESULT_OK&&data!=null){Uri uri=data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);SoundSettings.save(this,ringtoneKind,uri);if(uri!=null)try{getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);}catch(Exception ignored){}}ringtoneKind=null;web.evaluateJavascript("if(typeof updateNativeSounds==='function')updateNativeSounds();",null);}
     if(request==31&&pendingInstall){pendingInstall=false;if(getPackageManager().canRequestPackageInstalls())installDownloadedUpdate();else callback("onNativeInstall","{\"ok\":false,\"error\":\"اجازهٔ نصب داده نشد. فایل APK همچنان در دانلودها موجود است.\"}");}
   }
+  @Override protected void onDestroy(){if(pendingMic!=null){pendingMic.deny();pendingMic=null;}if(web!=null)web.destroy();super.onDestroy();}
   void dictationResult(String id,String text,String error,boolean cancelled){try{JSONObject result=new JSONObject();result.put("requestId",id);result.put("cancelled",cancelled);if(text!=null)result.put("text",text);if(error!=null)result.put("error",error);callback("onNativeTaskVoice",result.toString());}catch(JSONException ignored){}}
   void startTaskDictation(String id){
     if(id==null||!id.matches("[a-fA-F0-9-]{36}")||dictationRequestId!=null)return;
@@ -83,7 +92,7 @@ public class MainActivity extends Activity {
     },"zaman-open-installer").start();
   }
   void chooseSound(String kind){if(!SoundSettings.validKind(kind))return;ringtoneKind=kind;Intent intent=new Intent(RingtoneManager.ACTION_RINGTONE_PICKER).putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,RingtoneManager.TYPE_ALL).putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,"countdown".equals(kind)?"صدای تایمر معکوس":"صدای یادآورها").putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT,true).putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT,true).putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI,RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)).putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,SoundSettings.selected(this,kind));try{startActivityForResult(intent,30);}catch(ActivityNotFoundException ignored){toast("انتخاب صدای سیستم در این گوشی در دسترس نیست.");}}
-  @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==20&&results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)permissions();if(request==21){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED&&pendingDownloadUrl!=null)callback("onNativeDownload",UpdateStore.start(this,pendingDownloadUrl,pendingDownloadHash));else callback("onNativeDownload","{\"ok\":false,\"error\":\"مجوز ذخیرهٔ فایل داده نشد.\"}");pendingDownloadUrl=null;pendingDownloadHash=null;}}
+  @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==41&&pendingMic!=null){PermissionRequest mic=pendingMic;pendingMic=null;if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)mic.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});else mic.deny();}if(request==20&&results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)permissions();if(request==21){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED&&pendingDownloadUrl!=null)callback("onNativeDownload",UpdateStore.start(this,pendingDownloadUrl,pendingDownloadHash));else callback("onNativeDownload","{\"ok\":false,\"error\":\"مجوز ذخیرهٔ فایل داده نشد.\"}");pendingDownloadUrl=null;pendingDownloadHash=null;}}
   void permissions(){if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},20);return;}if(!AlarmStore.exact(this)){startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,Uri.parse("package:"+getPackageName())));return;}startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName()));}
   public final class Bridge {
     @JavascriptInterface public void startTaskDictation(String requestId){runOnUiThread(()->MainActivity.this.startTaskDictation(requestId));}
@@ -120,9 +129,9 @@ public class MainActivity extends Activity {
       }catch(Exception e){return "{\"ok\":false,\"error\":\"پاک‌کردن همهٔ تنظیمات اندروید کامل نشد؛ دوباره تلاش کنید.\"}";}
     }
     @JavascriptInterface public void openDownloads(){runOnUiThread(()->{try{startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS));}catch(ActivityNotFoundException ignored){toast("پوشهٔ Downloads را در فایل‌های گوشی باز کنید.");}});}
-    @JavascriptInterface public void openHelpSection(String section){if(section==null||!section.matches("today|journey|timers|projects|reports|settings|updates|answers"))return;runOnUiThread(()->web.loadUrl("https://appassets.androidplatform.net/help.html#"+section));}
+    @JavascriptInterface public void openHelpSection(String section){if(section==null||!section.matches("today|journey|timers|projects|audio|reports|settings|updates|answers"))return;runOnUiThread(()->web.loadUrl("https://appassets.androidplatform.net/help.html#"+section));}
     @JavascriptInterface public void openHelp(){runOnUiThread(()->web.loadUrl("https://appassets.androidplatform.net/help.html"));}
     @JavascriptInterface public void openGuide(){runOnUiThread(()->{try{startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/pdf").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"ali-mirza-user-guide.pdf"),12);}catch(ActivityNotFoundException ignored){toast("ذخیره‌ساز فایل در دسترس نیست.");}});}
-    @JavascriptInterface public void export(String text){if(text.length()>5000000)return;runOnUiThread(()->{exportText=text;startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"zaman-backup.json"),11);});}
+    @JavascriptInterface public void export(String text){if(text.length()>104857600)return;runOnUiThread(()->{exportText=text;startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"zaman-backup.json"),11);});}
   }
 }

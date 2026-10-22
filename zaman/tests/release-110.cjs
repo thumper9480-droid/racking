@@ -25,7 +25,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  const neutral=values=>Math.max(...values)-Math.min(...values)<=18;
  const warm=values=>values[0]>values[1]&&values[1]>values[2];
  assert(neutral(rgb(await page.locator('.due-project-tasks .section-toggle').evaluate(el=>getComputedStyle(el).color))),'Today task heading is gray');
- for(const selector of ['.journey .section-toggle','.day-chart .section-toggle'])assert(warm(rgb(await page.locator(selector).evaluate(el=>getComputedStyle(el).color))),'daily summaries have warm brown headings');
+ for(const selector of ['.journey .section-toggle'])assert(warm(rgb(await page.locator(selector).evaluate(el=>getComputedStyle(el).color))),'daily summaries have warm brown headings');
+ const teal=rgb(await page.locator('.day-chart .section-toggle').evaluate(el=>getComputedStyle(el).color));assert(teal[1]>teal[0]&&teal[2]>teal[0],'share heading is teal');
  for(const tab of ['today','alarms','projects','activities']){
   await page.locator(`[data-tab=${tab}]`).click();
   assert(await page.locator('#today-header').isVisible(),'masthead remains on '+tab);assert(await page.locator('#today-brand').isVisible(),'logo remains on '+tab);

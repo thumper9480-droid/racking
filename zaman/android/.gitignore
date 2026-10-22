@@ -1,3 +1,8 @@
 build/
 *.keystore
 *.jks
+
+*.jks
+*.keystore
+keys/
+owner-private/
