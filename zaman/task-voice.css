@@ -1,0 +1,4 @@
+.task-voice-row { display:flex; align-items:center; gap:9px; margin:6px 0 12px; }
+.task-voice-button { flex-shrink:0; border:1px solid #9cc2ab; background:#e9f4ed; color:#225d3d; font-weight:750; }
+.task-voice-button.listening { background:#f9e6e2; color:#9e3a30; }
+#task-voice-status { font-size:11px; line-height:1.7; }

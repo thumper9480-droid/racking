@@ -151,42 +151,99 @@ nav .settings-nav { background:#f5f7f4; }
 .education-gallery figcaption { margin-top:7px; font-size:12px; color:#587963; }
 @media(max-width:350px) { .header-education { width:42px; height:42px; font-size:11px; } }
 
-/* Date card shares the activity card's columns so both circles line up. */
-#date { max-width:680px; margin-inline:auto; grid-template-columns:minmax(0,1.6fr) minmax(92px,1fr); column-gap:var(--session-column-gap); row-gap:5px; padding:var(--session-block-padding) var(--session-inline-padding); }
-#date .date-line { grid-column:1; grid-row:1; font-size:17px; font-weight:750; line-height:1.8; gap:0 5px; min-width:0; }
-#date .gregorian-date { grid-column:1; grid-row:2; font-size:14px; font-weight:600; line-height:1.7; color:#5c7067; }
-#date .day-reset-panel { grid-column:1; grid-row:3; min-width:0; }
-#date .reset-day-button { min-height:44px; font-size:11px; line-height:1.8; padding:7px 6px; }
-#date #wall-clock { grid-column:2; grid-row:1 / 4; justify-self:center; }
-@media(max-width:650px) { #date .date-line { font-size:15px; } #date .gregorian-date { font-size:13px; } }
-@media(max-width:350px) { #date .date-line { font-size:14px; } #date .gregorian-date { font-size:12px; } #date .reset-day-button { font-size:10px; } }
-
-/* Today finish: retain all content, geometry and the established color groups. */
-.is-today nav { box-shadow:inset 0 0 0 1px #e5ebe5,0 4px 16px #203c350b; }
-.is-today #date { border-color:#dfe7de; background:linear-gradient(135deg,#fff,#fcfdfa); box-shadow:0 4px 16px #173e360c; }
-.is-today #date .reset-day-button { background:#fcf7ef; border-color:#d7c6ad; color:#755034; }
-.is-today .activity-session { background:linear-gradient(120deg,#f0f8ec,#f9fcf5); border-color:#c9decb; box-shadow:0 4px 16px #284e2d09; }
-.is-today .circle-action { background:linear-gradient(135deg,#40ad74,#147647); box-shadow:0 4px 10px #17734620,0 0 0 7px #e2f1de,0 0 0 13px #eff8e9; }
-.is-today .countdown:not(.is-running) { background:linear-gradient(115deg,#f5effb,#faf7fd); border-color:#dfcceb; box-shadow:0 3px 12px #6a3d8b07; }
-.is-today .countdown:not(.is-running) .primary { background:linear-gradient(135deg,#a175cc,#8355af); }
-.is-today .due-project-tasks { background:linear-gradient(120deg,#eef0f1,#fafbfb); border-color:#c2c9cc; box-shadow:0 3px 12px #42494d09; }
-.is-today .journey,.is-today .day-chart { background:linear-gradient(120deg,#fff9ed,#fffdf8); border-color:#dbc5a3; box-shadow:0 3px 12px #9c6a2409; }
-.is-today .day-chart .chart-legend { background:#ffffffb3; border-color:#e2d4c0; }
-.is-today .history-table thead th { background:#fbf0d8; }
-.is-today .history-table tbody td { border-bottom-color:#dfd0ba; }
-.is-today .history-table tfoot th,.is-today .history-table tfoot td { background:#f8e5b9; }
-
-/* Clock and dates now belong to the masthead; the logo and all labels are retained. */
-.is-today #today-header { display:grid; grid-template-columns:clamp(104px,30vw,124px) minmax(0,1fr) 45px; align-items:center; column-gap:8px; row-gap:9px; max-width:680px; margin-inline:auto; margin-bottom:10px; }
-.is-today #header-clock { grid-column:1; grid-row:1; justify-self:center; }
-.is-today #header-clock .analog-clock { width:clamp(104px,30vw,124px); height:clamp(104px,30vw,124px); }
-.is-today #today-brand { grid-column:2; grid-row:1; width:100%; min-width:0; height:100px; margin:0; }
-.is-today #today-brand img { width:min(calc(100% + 40px),320px); top:50%; left:50%; transform:translate(-50%,-50%); }
-.is-today .header-education { position:static; grid-column:3; grid-row:1; justify-self:center; }
-.is-today #date { grid-column:1 / -1; grid-row:2; width:100%; margin:0; padding:9px 12px; grid-template-columns:minmax(0,1fr); gap:3px; border-radius:14px; }
-.is-today #date .date-line { grid-column:1; grid-row:1; font-size:16px; line-height:1.7; }
-.is-today #date .gregorian-date { grid-column:1; grid-row:2; font-size:14px; line-height:1.6; }
-.is-today #date .day-reset-panel { grid-column:1; grid-row:3; margin-top:3px; }
-.is-today #date .reset-day-button { min-height:38px; font-size:11px; }
+/* Approved HH:MM masthead: dates directly beneath the clock, reset immediately below. */
+main { max-width:728px; padding-top:4px; }
+.is-today #today-header { display:grid; grid-template-columns:clamp(126px,38vw,190px) minmax(0,1fr) 44px; grid-template-rows:auto auto auto; align-items:center; column-gap:9px; row-gap:3px; margin:0 auto 8px; }
+.is-today #header-clock { grid-column:1; grid-row:1; width:100%; align-self:end; }
+.is-today #today-brand { grid-column:2; grid-row:1 / 3; width:100%; min-width:0; height:105px; margin:0; }
+.is-today #today-brand img { width:calc(100% + 30px); max-width:335px; top:50%; left:50%; transform:translate(-50%,-50%); }
+.is-today .header-education { position:static; grid-column:3; grid-row:1 / 3; width:40px; height:40px; font-size:11px; justify-self:center; background:#f5f9f3; border-color:#bdd5c5; }
+.is-today #date { grid-column:1; grid-row:2; display:block; min-width:0; width:100%; margin:0; padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; align-self:start; }
+.is-today #date .date-line { display:flex; flex-wrap:nowrap; justify-content:center; gap:3px; white-space:nowrap; font-size:clamp(9.3px,2.65vw,12px); font-weight:800; line-height:1.8; color:#195b42; }
+.is-today #date .date-line b { color:inherit; }
+.is-today #date .gregorian-date { margin:0; font-size:clamp(9px,2.5vw,11px); color:#7c8079; font-weight:650; line-height:1.7; }
+.is-today .day-reset-panel { grid-column:1 / -1; grid-row:3; margin-top:2px; }
+.is-today .reset-day-button { min-height:34px; padding:5px 8px; font-size:11px; color:#22614b; border:1px solid #518870; border-radius:9px; background:linear-gradient(110deg,#f6faf5,#fff); }
+main:not(.is-today) #header-clock,main:not(.is-today) #date,main:not(.is-today) .day-reset-panel { display:none; }
 #update-banner { max-width:680px; margin-inline:auto; }
-@media(max-width:350px) { .is-today #today-header { grid-template-columns:104px minmax(0,1fr) 42px; column-gap:6px; } .is-today #date .date-line { font-size:14px; } .is-today #date .gregorian-date { font-size:13px; } }
+nav { gap:3px; padding:4px; border:1px solid #e3e8e2; border-radius:12px; background:#fff; box-shadow:0 3px 10px #143a2b0b; }
+nav [data-tab] { background:#fafbf9; color:#4e5450; padding:8px 3px; font-size:11px; font-weight:750; gap:4px; white-space:nowrap; }
+nav [data-tab] span { filter:grayscale(1); font-size:17px; }
+nav [data-tab=projects] { flex:1.23; }
+nav [data-tab=alarms] { flex:.84; font-size:10px; }
+nav [data-tab=today] { flex:.9; }
+nav [data-tab].selected { background:#185f48; color:#fff; border-color:#185f48; box-shadow:0 2px 4px #174b3420; }
+nav .settings-nav { flex:0 0 32px; background:#f6f8f4; }
+.is-today .activity-session { background:linear-gradient(125deg,#eaf5e9,#f7fbf3); border-color:#c9ddcc; border-radius:15px; }
+.is-today .session-caption { font-size:12px; color:#536b5a; margin-bottom:7px; }
+.is-today .session-clock .clock { font-weight:900; color:#0b4d36; }
+.is-today .circle-action { background:linear-gradient(130deg,#247d51,#0d5137); border-color:#165d3d; box-shadow:0 4px 11px #174d3422,0 0 0 6px #deeddf; }
+.is-today .countdown:not(.is-running) { background:linear-gradient(115deg,#f5effb,#faf7fd); border-color:#d9c7e8; }
+.is-today .countdown:not(.is-running) .primary { background:linear-gradient(135deg,#825aaf,#633d89); }
+.is-today .due-project-tasks { background:linear-gradient(120deg,#efedeb,#fafafa); border-color:#d8d2ce; }
+.is-today .due-project-tasks .section-toggle { color:#44433f; }
+.is-today .due-project-tasks .section-toggle::before { content:'📁'; filter:grayscale(1); }
+.is-today .journey,.is-today .day-chart { background:linear-gradient(115deg,#fff9f1,#fffdf9); border-color:#e4a15c; }
+.is-today .journey .section-toggle,.is-today .day-chart .section-toggle { color:#985018; }
+.is-today .history-table thead th { background:#f9eddf; color:#8a4619; }
+.is-today .history-table tbody td { border-bottom-color:#e2cdb8; }
+.is-today .history-table tfoot th,.is-today .history-table tfoot td { background:#fae8d5; color:#854315; }
+.day-chart .chart-legend { padding:0; border:0; background:transparent; }
+.day-chart .legend-item { grid-template-columns:8px minmax(0,1fr) auto auto; gap:4px 6px; padding:8px 0; align-items:center; }
+.day-chart .legend-dot { grid-column:1; grid-row:1; }
+.day-chart .legend-name { grid-column:2; grid-row:1; font-size:12px; }
+.day-chart .legend-duration { grid-column:3; grid-row:1; font-size:11px; white-space:nowrap; direction:ltr; }
+.day-chart .legend-percent { grid-column:4; grid-row:1; min-width:28px; font-size:11px; text-align:left; }
+/* Project rows stay narrow until the user opens their arrow. */
+.projects-screen { --project-ink:#8d4816; --project-line:#e2af77; background:linear-gradient(135deg,#fff0dc,#fff9ef); border-color:var(--project-line); padding:12px; }
+.projects-screen[data-project-theme=done] { --project-ink:#236840; --project-line:#a6cbb0; background:linear-gradient(135deg,#e6f4e8,#f4faf3); }
+.projects-screen[data-project-theme=deleted] { --project-ink:#665e56; --project-line:#c8bfb5; background:#f2efea; }
+.projects-screen .projects-heading { margin-bottom:12px; }
+.projects-screen .projects-heading .primary,.projects-screen .project-detail .primary { background:var(--project-ink); }
+.projects-screen .project-status-tabs { margin-bottom:10px; }
+.projects-screen .project-status-tabs button.selected { color:var(--project-ink); border-color:var(--project-line); background:#ffffff8c; }
+.projects-screen .project-list { gap:5px; margin-bottom:12px; }
+.projects-screen .project-list-row { flex-direction:column; align-items:stretch; gap:0; padding:3px 7px; border-radius:10px; border-color:var(--project-line); background:#ffffffb5; }
+.projects-screen .project-list-row.selected { background:#ffffffd9; border-color:var(--project-ink); }
+.projects-screen .project-list-button { flex:none; width:100%; min-height:43px; padding:2px 0; }
+.projects-screen .project-summary { display:flex; align-items:center; justify-content:space-between; gap:7px; }
+.projects-screen .project-summary b { font-size:12px; line-height:1.7; }
+.projects-screen .project-summary small { font-size:9px; color:#786b5a; }
+.projects-screen .project-number { width:22px; height:25px; border-radius:7px; color:var(--project-ink); background:#00000006; }
+.projects-screen .project-chevron { min-height:31px; }
+.projects-screen .project-row-actions { max-width:none; padding:7px 0 5px; border-top:1px solid var(--project-line); gap:5px; }
+.projects-screen .project-row-actions button { flex:1; min-height:34px; font-size:10px; padding:5px; }
+.projects-screen .project-row-actions button:not(.danger) { color:var(--project-ink); background:#00000006; }
+.projects-screen .project-detail { margin-top:10px; padding:12px; border-color:var(--project-line); }
+.projects-screen .task-key { background:#ffffffa8; border-color:var(--project-line); }
+.projects-screen[data-project-theme=done] .task-key { background:#f1f8f0; }
+@media(max-width:650px) {
+ main { padding:4px 10px 24px; }
+ :root { --session-block-padding:17px; }
+ nav [data-tab] { font-size:10px; gap:3px; }
+ nav [data-tab=alarms] { font-size:9px; }
+ .is-today #today-brand { height:92px; }
+ .is-today .session-clock .clock { font-size:clamp(28px,8.5vw,37px); }
+ .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 112px; gap:9px; }
+ .day-chart .donut { width:112px; }
+ .projects-screen .project-summary { display:block; }
+ .projects-screen .project-summary b { display:inline; }
+ .projects-screen .project-summary small { margin-inline-start:8px; }
+}
+@media(max-width:350px) {
+ .is-today #today-header { grid-template-columns:126px minmax(0,1fr) 34px; column-gap:5px; }
+ .is-today .header-education { width:34px; height:34px; font-size:10px; }
+ .is-today #today-brand img { width:calc(100% + 22px); }
+ .is-today #today-brand { height:81px; }
+ nav [data-tab] { font-size:9px; gap:2px; padding-inline:2px; }
+ nav [data-tab=alarms] { font-size:8px; }
+ nav [data-tab] span { font-size:14px; }
+ nav .settings-nav { flex-basis:26px; }
+ .day-chart .chart-layout { grid-template-columns:minmax(0,1fr) 92px; gap:6px; }
+ .day-chart .donut { width:92px; }
+ .day-chart .legend-item { gap:3px 4px; }
+ .day-chart .legend-name,.day-chart .legend-duration,.day-chart .legend-percent { font-size:10px; }
+ .projects-screen .project-row-actions button { font-size:9px; }
+}
+
+.arc-percent { font-family:Vazirmatn,Tahoma,sans-serif; font-size:9px; font-weight:850; fill:#fff; paint-order:stroke; stroke:#00000015; stroke-width:.7px; }

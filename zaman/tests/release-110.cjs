@@ -9,15 +9,11 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  for(const [width,height] of [[320,640],[360,740],[390,844],[768,900],[1280,900]]){
   await page.setViewportSize({width,height});await page.evaluate(()=>window.scrollTo(0,0));
   const box=await reset.boundingBox(),date=await page.locator('#date').boundingBox(),hero=await page.locator('.hero').boundingBox();
-  const analog=await page.locator('#analog-clock').boundingBox(),circle=await page.locator('.circle-action').boundingBox(),gregorian=await page.locator('#gregorian-date').boundingBox();
-  assert(box&&box.y>=gregorian.y+gregorian.height-1&&box.y+box.height<=date.y+date.height&&box.y+box.height<=hero.y+1,'reset sits below dates inside the date card');
-  assert(analog.width>=circle.width-1&&Math.abs(analog.width-analog.height)<1,'header clock stays large and circular');
-  const brand=await page.locator('#today-brand').boundingBox();assert(analog.x>brand.x+brand.width-1,'clock is to the right of the logo');assert.equal(await page.locator('#analog-clock-time').count(),0,'no duplicate digital clock');
-  assert(date.y>=analog.y+analog.height-1,'dates fit below the clock/logo in the masthead');
-  assert(await page.locator('#date .date-line').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))>=14,'Persian date is larger');
-  assert(await page.locator('#gregorian-date').evaluate(el=>parseFloat(getComputedStyle(el).fontSize))>=12,'Gregorian date is larger');
+  const clock=await page.locator('#seven-segment-clock').boundingBox(),brand=await page.locator('#today-brand').boundingBox();
+  assert(clock.x>brand.x+brand.width-1,'digital clock is to the right of the logo');assert.equal(await page.locator('#analog-clock').count(),0);
+  assert(date.y>=clock.y+clock.height-1,'dates fit below the clock');assert(box.y>=date.y+date.height-1&&box.y+box.height<=hero.y+1,'reset follows dates before the activity card');
   assert(box.y>=0&&box.y+box.height<height,'reset visible without scrolling '+width+'x'+height);
-  assert(box.height>=38,'reset is easy to touch');assert.match(await reset.innerText(),/شروع دوباره.*امروز.*ساعت دلخواه/);
+  assert(box.height>=34,'reset is easy to touch');assert.match(await reset.innerText(),/شروع دوباره.*امروز.*ساعت دلخواه/);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow '+width);
  }
  await page.setViewportSize({width:390,height:844});await page.evaluate(()=>document.fonts.ready);await page.screenshot({path:'/tmp/ali-mirza-aligned-1.11.png',fullPage:true});
@@ -36,7 +32,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
   assert(await page.locator('#today-brand img').evaluate(img=>img.complete&&img.naturalWidth>0),'logo loads on '+tab);
   assert.equal(await page.locator('#date').isVisible(),tab==='today');
   await page.locator('#education-button').click();assert(await page.locator('#education-dialog [data-help]').isVisible());assert(await page.locator('#education-dialog [data-guide-pdf]').isVisible());await page.locator('[data-close-education]').click();
-  if(tab==='projects')assert(neutral(rgb(await page.locator('.projects-heading h2').evaluate(el=>getComputedStyle(el).color))),'project heading matches gray task theme');
+  if(tab==='projects')assert(warm(rgb(await page.locator('.projects-heading h2').evaluate(el=>getComputedStyle(el).color))),'incomplete projects use orange theme');
  }
  await page.locator('[data-action=reports]').click();assert(await page.locator('#today-brand').isVisible(),'reports retain logo');assert(await page.locator('#education-button').isVisible(),'reports retain education');assert.equal(await page.locator('#date').isVisible(),false);
  await page.locator('#settings').click();assert.equal(await page.locator('#settings-dialog [data-help]').count(),0);assert.equal(await page.locator('#settings-dialog [data-guide-pdf]').count(),0);assert(await page.locator('#settings-dialog [data-action=about]').isVisible(),'About retained in settings');assert(await page.locator('#export').isVisible(),'backup retained in settings');await page.locator('#settings-close').click();

@@ -1,0 +1,4 @@
+#wall-clock.has-segment-clock { display:flex; align-items:center; justify-content:center; width:100%; min-width:0; margin:0; padding:6px 9px; border:1px solid #cbded0; border-radius:12px; background:linear-gradient(145deg,#f7faf5,#eef5ef); box-shadow:0 3px 10px #224d3620; direction:ltr; line-height:1; }
+#seven-segment-clock { display:block; width:100%; max-width:176px; height:auto; overflow:visible; }
+.wall-digit polygon { fill:#cbded0; opacity:.16; }
+.wall-digit polygon.lit,.wall-colon { fill:#115a43; opacity:1; }

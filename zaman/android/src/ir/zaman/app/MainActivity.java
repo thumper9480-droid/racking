@@ -8,12 +8,13 @@ import android.media.RingtoneManager;
 import android.os.*;
 import android.provider.Settings;
 import android.webkit.*;
+import android.speech.RecognizerIntent;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import org.json.*;
 
 public class MainActivity extends Activity {
-  WebView web; ValueCallback<Uri[]> chooser; String exportText,ringtoneKind,pendingDownloadUrl,pendingDownloadHash;
+  WebView web; ValueCallback<Uri[]> chooser; String exportText,ringtoneKind,pendingDownloadUrl,pendingDownloadHash,dictationRequestId;
   volatile int appDataGeneration=0; volatile boolean pendingInstall=false,installBusy=false;
   @Override public void onCreate(Bundle saved) {
     super.onCreate(saved);
@@ -42,11 +43,19 @@ public class MainActivity extends Activity {
   @Override public void onBackPressed(){if(web.getUrl()!=null&&web.getUrl().startsWith("https://appassets.androidplatform.net/help.html")){if(web.canGoBack())web.goBack();else web.loadUrl("https://appassets.androidplatform.net/");return;}web.evaluateJavascript("if(document.querySelector('#memorial-dialog')?.open){}else if(document.querySelector('#wipe-dialog')?.open&&typeof cancelWipeFlow==='function')cancelWipeFlow();else if(document.querySelector('#education-dialog')?.open)document.querySelector('#education-dialog').close();else if(document.querySelector('#about-dialog')&&document.querySelector('#about-dialog').open)document.querySelector('#about-dialog').close();else if(document.querySelector('#settings-dialog').open)document.querySelector('#settings-dialog').close();else if(document.querySelector('#dialog').open)dismissModal();else{tab='today';render();}",null);}
   @Override protected void onActivityResult(int request,int result,Intent data){
     super.onActivityResult(request,result,data);
+    if(request==40&&dictationRequestId!=null){String id=dictationRequestId;dictationRequestId=null;String text=null;if(result==RESULT_OK&&data!=null){java.util.ArrayList<String> words=data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);if(words!=null&&!words.isEmpty())text=words.get(0);}dictationResult(id,text,null,result!=RESULT_OK);}
     if(request==10&&chooser!=null){chooser.onReceiveValue(result==RESULT_OK&&data!=null?new Uri[]{data.getData()}:null);chooser=null;}
     if(request==11){if(result==RESULT_OK&&data!=null&&exportText!=null)try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out==null)throw new IOException();out.write(exportText.getBytes(StandardCharsets.UTF_8));}catch(Exception e){toast("ذخیرهٔ فایل انجام نشد");}exportText=null;}
     if(request==12&&result==RESULT_OK&&data!=null&&data.getData()!=null){Uri destination=data.getData();boolean stored=false;try(InputStream in=getAssets().open("user-guide.pdf");OutputStream out=getContentResolver().openOutputStream(destination)){if(out==null)throw new IOException();byte[] block=new byte[32768];int n;while((n=in.read(block))!=-1)out.write(block,0,n);stored=true;}catch(Exception e){toast("ذخیرهٔ جزوه انجام نشد");}if(stored){toast("جزوهٔ PDF ذخیره شد");try{startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(destination,"application/pdf").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION));}catch(ActivityNotFoundException ignored){toast("فایل ذخیره شد؛ برای خواندن، نمایشگر PDF نصب کنید.");}}}
     if(request==30&&ringtoneKind!=null){if(result==RESULT_OK&&data!=null){Uri uri=data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);SoundSettings.save(this,ringtoneKind,uri);if(uri!=null)try{getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);}catch(Exception ignored){}}ringtoneKind=null;web.evaluateJavascript("if(typeof updateNativeSounds==='function')updateNativeSounds();",null);}
     if(request==31&&pendingInstall){pendingInstall=false;if(getPackageManager().canRequestPackageInstalls())installDownloadedUpdate();else callback("onNativeInstall","{\"ok\":false,\"error\":\"اجازهٔ نصب داده نشد. فایل APK همچنان در دانلودها موجود است.\"}");}
+  }
+  void dictationResult(String id,String text,String error,boolean cancelled){try{JSONObject result=new JSONObject();result.put("requestId",id);result.put("cancelled",cancelled);if(text!=null)result.put("text",text);if(error!=null)result.put("error",error);callback("onNativeTaskVoice",result.toString());}catch(JSONException ignored){}}
+  void startTaskDictation(String id){
+    if(id==null||!id.matches("[a-fA-F0-9-]{36}")||dictationRequestId!=null)return;
+    dictationRequestId=id;
+    Intent speech=new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,RecognizerIntent.LANGUAGE_MODEL_FREE_FORM).putExtra(RecognizerIntent.EXTRA_LANGUAGE,"fa-IR").putExtra(RecognizerIntent.EXTRA_PROMPT,"کار پروژه را بگویید").putExtra(RecognizerIntent.EXTRA_MAX_RESULTS,1);
+    try{startActivityForResult(speech,40);}catch(Exception e){dictationRequestId=null;dictationResult(id,null,"سرویس تشخیص گفتار در این گوشی در دسترس نیست؛ از میکروفن صفحه‌کلید استفاده کنید.",false);}
   }
   void toast(String message){runOnUiThread(()->android.widget.Toast.makeText(this,message,1).show());}
   void callback(String name,String json){runOnUiThread(()->web.evaluateJavascript("if(typeof window."+name+"==='function')window."+name+"("+json+");",null));}
@@ -77,6 +86,7 @@ public class MainActivity extends Activity {
   @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==20&&results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)permissions();if(request==21){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED&&pendingDownloadUrl!=null)callback("onNativeDownload",UpdateStore.start(this,pendingDownloadUrl,pendingDownloadHash));else callback("onNativeDownload","{\"ok\":false,\"error\":\"مجوز ذخیرهٔ فایل داده نشد.\"}");pendingDownloadUrl=null;pendingDownloadHash=null;}}
   void permissions(){if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},20);return;}if(!AlarmStore.exact(this)){startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,Uri.parse("package:"+getPackageName())));return;}startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName()));}
   public final class Bridge {
+    @JavascriptInterface public void startTaskDictation(String requestId){runOnUiThread(()->MainActivity.this.startTaskDictation(requestId));}
     @JavascriptInterface public void sync(String json){try{AlarmStore.sync(MainActivity.this,json);}catch(Exception e){runOnUiThread(()->android.widget.Toast.makeText(MainActivity.this,"تنظیم زنگ انجام نشد؛ مجوزها را بررسی کنید",1).show());}}
     @JavascriptInterface public void permissions(){runOnUiThread(()->MainActivity.this.permissions());}
     @JavascriptInterface public String status(){return "{\"exact\":"+AlarmStore.exact(MainActivity.this)+",\"notifications\":"+getSystemService(NotificationManager.class).areNotificationsEnabled()+"}";}
@@ -100,7 +110,7 @@ public class MainActivity extends Activity {
     @JavascriptInterface public String installDownloadedUpdate(){runOnUiThread(()->MainActivity.this.installDownloadedUpdate());return "{\"ok\":true,\"scheduled\":true}";}
     @JavascriptInterface public String clearAppData(){
       try{
-        appDataGeneration++;pendingInstall=false;pendingDownloadUrl=null;pendingDownloadHash=null;exportText=null;ringtoneKind=null;
+        appDataGeneration++;dictationRequestId=null;pendingInstall=false;pendingDownloadUrl=null;pendingDownloadHash=null;exportText=null;ringtoneKind=null;
         AlarmStore.clear(MainActivity.this);
         stopService(new Intent(MainActivity.this,AlarmService.class));
         getSystemService(NotificationManager.class).cancel(1);

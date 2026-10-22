@@ -4,7 +4,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  const page=await browser.newPage({viewport:{width:390,height:844}}),errors=[];
  page.on('pageerror',error=>errors.push(error.message));await page.clock.install();
  await page.addInitScript(()=>{
-  const release={ok:true,versionCode:14,versionName:'1.12.0',apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.12.0.apk',sha256:'a'.repeat(64)};
+  const release={ok:true,versionCode:15,versionName:'1.13.0',apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.13.0.apk',sha256:'a'.repeat(64)};
   window.AndroidZaman={fireDue(){},checkForUpdate(){setTimeout(()=>onNativeUpdate(release),0);},downloadStatus(){return localStorage.getItem('native-test-download')||JSON.stringify({status:'idle'});},downloadUpdate(){localStorage.setItem('native-test-starts',String(Number(localStorage.getItem('native-test-starts')||0)+1));const result={ok:true,status:'downloading',message:'دریافت فایل نصب شروع شد…',sha256:release.sha256};localStorage.setItem('native-test-download',JSON.stringify(result));return JSON.stringify(result);},installDownloadedUpdate(){localStorage.setItem('native-test-install','yes');return JSON.stringify({ok:true,scheduled:true});}};
  });
  await page.goto('http://127.0.0.1:4173/zaman/');await page.locator('#update-banner [data-download-update]').click();

@@ -1,0 +1,15 @@
+.time-picker-control { display:grid; grid-template-columns:minmax(0,1fr) 36px; gap:5px; align-items:start; margin-top:5px; }
+.time-picker-control > input { margin:0; min-width:0; font-size:16px; text-align:center; font-variant-numeric:tabular-nums; }
+.time-wheel-toggle { min-height:43px; padding:5px; border:1px solid #c9dbcf; background:#edf5ef; color:#245e46; font-size:23px; }
+.shared-time-picker { display:block; grid-column:1/-1; margin:4px 0 10px; padding:8px 5px; border:1px solid #d2e2d7; border-radius:12px; background:#f7faf6; }
+.shared-time-wheels { display:grid; grid-template-columns:minmax(0,1fr) 10px minmax(0,1fr); gap:3px; align-items:center; }
+.shared-wheel-column,.shared-wheel-label,.shared-wheel-frame { display:block; min-width:0; text-align:center; }
+.shared-wheel-label { font-size:11px; color:#4c705c; margin-bottom:4px; }
+.shared-wheel-frame { position:relative; }
+.shared-wheel-frame::before { content:''; position:absolute; inset-inline:0; top:40px; height:40px; background:#e1f0e7; border:1px solid #abcdb7; border-radius:8px; pointer-events:none; }
+.shared-time-wheel { display:block; position:relative; height:120px; padding:40px 0; overflow:auto; overscroll-behavior:contain; scroll-snap-type:y mandatory; scrollbar-width:thin; touch-action:pan-y; direction:ltr; }
+.shared-time-wheel [role=option] { display:block; height:40px; line-height:40px; scroll-snap-align:center; font-size:19px; color:#8b9d90; cursor:pointer; }
+.shared-time-wheel [aria-selected=true] { color:#145b3b; font-size:25px; font-weight:850; }
+.shared-time-wheel:focus-visible { outline:2px solid #5b9a73; border-radius:8px; }
+.shared-wheel-colon { padding-top:18px; font-size:20px; color:#54785e; }
+.time-picker-control:has(input:disabled) .shared-time-picker { display:none; }
