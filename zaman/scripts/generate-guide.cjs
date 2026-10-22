@@ -9,7 +9,7 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox','--use-fake-ui-for-media-stream','--use-fake-device-for-media-stream']});
  const context=await browser.newContext({viewport:{width:390,height:880},deviceScaleFactor:1.5,timezoneId:'Asia/Tehran',permissions:['microphone']}),p=await context.newPage(),errors=[],failed=[];
  p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
- await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.12.2',versionCode:16,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.12.2.apk',sha256:'0'.repeat(64)})}));
+ await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.12.3',versionCode:17,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.12.3.apk',sha256:'0'.repeat(64)})}));
  if(!process.argv.includes('--pdf-only')){
   await p.clock.install({time:new Date('2026-10-22T13:30:00+03:30')});await p.clock.pauseAt(new Date('2026-10-22T13:30:01+03:30'));
   await p.goto(base);await p.evaluate(()=>document.fonts.ready);

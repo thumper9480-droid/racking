@@ -22,11 +22,11 @@ cp ../fonts/Vazirmatn-Variable.ttf build/assets/fonts/
 python3 - <<'PY'
 from pathlib import Path
 p=Path('build/assets/index.html')
-s=p.read_text().replace('<script defer src="app.js?v=1.12.2"></script>','<script defer src="app.js?v=1.12.2"></script><script defer src="native.js"></script>')
+s=p.read_text().replace('<script defer src="app.js?v=1.12.3"></script>','<script defer src="app.js?v=1.12.3"></script><script defer src="native.js"></script>')
 p.write_text(s)
 PY
 "$TOOLS/aapt2" compile --dir res -o build/resources.zip
-"$TOOLS/aapt2" link -o build/base.apk -I "$PLATFORM" --manifest AndroidManifest.xml --min-sdk-version 26 --target-sdk-version 35 --version-code 16 --version-name 1.12.2 -A build/assets build/resources.zip
+"$TOOLS/aapt2" link -o build/base.apk -I "$PLATFORM" --manifest AndroidManifest.xml --min-sdk-version 26 --target-sdk-version 35 --version-code 17 --version-name 1.12.3 -A build/assets build/resources.zip
 find src -name '*.java' > build/sources.txt
 "${JAVA_HOME:+$JAVA_HOME/bin/}javac" --release 17 -classpath "$PLATFORM" -d build/classes @build/sources.txt
 find build/classes -name '*.class' > build/classes.txt
@@ -39,8 +39,8 @@ with ZipFile('build/base.apk','a',ZIP_DEFLATED) as apk:
         apk.write(dex,dex.name)
 PY
 "$TOOLS/zipalign" -f -p 4 build/base.apk build/aligned.apk
-"$TOOLS/apksigner" sign --ks "$SIGNING_DIR/zaman-development.jks" --ks-pass env:ZAMAN_STORE_PASSWORD --key-pass env:ZAMAN_KEY_PASSWORD --ks-key-alias "$ZAMAN_KEY_ALIAS" --out build/zaman-1.12.2.apk build/aligned.apk
-"$TOOLS/apksigner" verify --verbose build/zaman-1.12.2.apk
-"$TOOLS/zipalign" -c -p 4 build/zaman-1.12.2.apk
-"$TOOLS/aapt" dump badging build/zaman-1.12.2.apk
-sha256sum build/zaman-1.12.2.apk
+"$TOOLS/apksigner" sign --ks "$SIGNING_DIR/zaman-development.jks" --ks-pass env:ZAMAN_STORE_PASSWORD --key-pass env:ZAMAN_KEY_PASSWORD --ks-key-alias "$ZAMAN_KEY_ALIAS" --out build/zaman-1.12.3.apk build/aligned.apk
+"$TOOLS/apksigner" verify --verbose build/zaman-1.12.3.apk
+"$TOOLS/zipalign" -c -p 4 build/zaman-1.12.3.apk
+"$TOOLS/aapt" dump badging build/zaman-1.12.3.apk
+sha256sum build/zaman-1.12.3.apk

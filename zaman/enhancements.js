@@ -1,5 +1,5 @@
 'use strict';
-const APP_VERSION='1.12.2',APP_VERSION_CODE=16,MEMORIAL_KEY='ali-mirza-memorial-v1',MEMORIAL_INTERVAL=30*86400000;
+const APP_VERSION='1.12.3',APP_VERSION_CODE=17,MEMORIAL_KEY='ali-mirza-memorial-v1',MEMORIAL_INTERVAL=30*86400000;
 const UPDATE_CACHE_KEY='ali-mirza-update-v1',UPDATE_INTERVAL=300000;
 let lastUpdateCheckAt=0,updateCheckTimeout=null;
 let memorialRecord=null,availableUpdate=null,checkingUpdate=false,downloadPoll=null,updateDownloaded=false,downloadBusy=false,updateMessage='',wipeStage=0,wipeBusy=false;

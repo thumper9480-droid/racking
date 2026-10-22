@@ -12,7 +12,7 @@ async function pruneVoiceNotes(){const refs=voiceRefs(),db=await openVoiceDataba
 function taskAudioMarkup(editable=true){return `<section class="task-audio"><div class="task-audio-heading"><h3>صداهای کار</h3>${editable?'<button type="button" class="small" data-audio-record>🎙 ضبط ویس</button><button type="button" class="small audio-stop" data-audio-stop hidden>■ پایان ضبط</button>':''}</div><p id="task-audio-status" role="status" aria-live="polite"></p><div id="task-audio-list"></div></section>`;}
 function audioStatus(text){const status=document.querySelector('#task-audio-status');if(status)status.textContent=text;}
 function releaseAudioPlayers(){if(taskAudioView){for(const player of taskAudioView.players)player.pause();for(const url of taskAudioView.urls)URL.revokeObjectURL(url);}taskAudioView=null;}
-function closeTaskAudio(){const draft=taskAudioDraft;taskAudioDraft=null;if(draft){draft.closed=true;clearTimeout(draft.timer);if(draft.recorder?.state==='recording')draft.recorder.stop();draft.stream?.getTracks().forEach(track=>track.stop());if(!draft.committed)for(const id of draft.created)deleteVoice(id).catch(()=>{});}releaseAudioPlayers();}
+function closeTaskAudio(){const draft=taskAudioDraft;taskAudioDraft=null;if(draft){draft.closed=true;clearTimeout(draft.timer);if(draft.nativeId)try{AndroidZaman.cancelVoiceRecording(draft.nativeId);}catch{}if(draft.recorder?.state==='recording')draft.recorder.stop();draft.stream?.getTracks().forEach(track=>track.stop());if(!draft.committed)for(const id of draft.created)deleteVoice(id).catch(()=>{});}releaseAudioPlayers();}
 function setupTaskAudio(task,editable){closeTaskAudio();if(editable)taskAudioDraft={notes:(task?.voiceNotes||[]).map(n=>({...n})),created:new Set(),status:'idle',closed:false,committed:false};renderTaskAudio(task?.voiceNotes||[],editable);}
 async function renderTaskAudio(notes=taskAudioDraft?.notes||[],editable=!!taskAudioDraft){
  releaseAudioPlayers();const list=document.querySelector('#task-audio-list');if(!list)return;
@@ -29,9 +29,10 @@ async function renderTaskAudio(notes=taskAudioDraft?.notes||[],editable=!!taskAu
 function updateAudioButtons(){const draft=taskAudioDraft,record=document.querySelector('[data-audio-record]'),stop=document.querySelector('[data-audio-stop]');if(!record||!stop)return;record.disabled=!!draft&&draft.status!=='idle';stop.hidden=draft?.status!=='recording';document.querySelectorAll('[data-audio-delete]').forEach(button=>button.disabled=draft?.status!=='idle');}
 function taskAudioCanSave(){if(taskAudioDraft?.status!=='idle'&&taskAudioDraft){toast('ابتدا ضبط ویس را پایان دهید و تا آماده‌شدن صدا صبر کنید.');return false;}return true;}
 function commitTaskAudio(task){if(!taskAudioDraft)return;const draft=taskAudioDraft;if(draft.notes.length)task.voiceNotes=draft.notes.map(n=>({...n}));else delete task.voiceNotes;draft.committed=true;setTimeout(()=>pruneVoiceNotes().catch(()=>{}),0);}
-function stopAudioRecording(){const draft=taskAudioDraft;if(draft?.recorder?.state==='recording'){draft.status='saving';clearTimeout(draft.timer);draft.recorder.stop();updateAudioButtons();audioStatus('در حال آماده‌کردن ویس…');}}
+function stopAudioRecording(){const draft=taskAudioDraft;if(draft?.nativeId&&draft.status==='recording'){draft.status='saving';clearTimeout(draft.timer);updateAudioButtons();audioStatus('در حال آماده‌کردن ویس…');try{AndroidZaman.stopVoiceRecording(draft.nativeId);}catch{nativeAudioFailure(draft,'ارتباط ضبط صدا برقرار نشد؛ دوباره تلاش کنید.');}return;}if(draft?.recorder?.state==='recording'){draft.status='saving';clearTimeout(draft.timer);draft.recorder.stop();updateAudioButtons();audioStatus('در حال آماده‌کردن ویس…');}}
 async function startAudioRecording(){
  const draft=taskAudioDraft;if(!draft||draft.status!=='idle')return;if(draft.notes.length>=1000){audioStatus('تعداد ویس‌های این کار به سقف مجاز رسیده است.');return;}
+ if(typeof window.AndroidZaman?.startVoiceRecording==='function'){draft.nativeId=crypto.randomUUID();draft.nativeParts=[];draft.nativeBytes=0;draft.status='requesting';updateAudioButtons();audioStatus('در انتظار اجازهٔ میکروفن…');try{AndroidZaman.startVoiceRecording(draft.nativeId);}catch{nativeAudioFailure(draft,'شروع ضبط صدا انجام نشد؛ دوباره تلاش کنید.');}return;}
  if(typeof MediaRecorder==='undefined'||!navigator.mediaDevices?.getUserMedia){audioStatus('ضبط صدا در این مرورگر در دسترس نیست؛ از نسخهٔ اندروید یا Chrome به‌روز استفاده کنید.');return;}
  draft.status='requesting';updateAudioButtons();audioStatus('در انتظار اجازهٔ میکروفن…');
  try{
@@ -50,8 +51,27 @@ async function startAudioRecording(){
    finally{if(!draft.closed&&taskAudioDraft===draft){draft.status='idle';updateAudioButtons();}}
   };
   recorder.start(1000);draft.status='recording';draft.timer=setTimeout(stopAudioRecording,VOICE_RECORD_LIMIT);for(const track of stream.getAudioTracks())track.onended=stopAudioRecording;updateAudioButtons();audioStatus('در حال ضبط… برای ذخیرهٔ صدا «پایان ضبط» را بزنید.');
- }catch{draft.stream?.getTracks().forEach(track=>track.stop());if(taskAudioDraft===draft&&!draft.closed){draft.status='idle';updateAudioButtons();audioStatus('میکروفن باز نشد؛ اجازهٔ میکروفن را در تنظیمات بررسی کنید.');}}
+ }catch(error){draft.stream?.getTracks().forEach(track=>track.stop());if(taskAudioDraft===draft&&!draft.closed){draft.status='idle';updateAudioButtons();audioStatus(error?.name==='NotAllowedError'?'اجازهٔ میکروفن داده نشد؛ مجوز مرورگر را بررسی کنید.':error?.name==='NotReadableError'?'میکروفن در دسترس نیست؛ برنامهٔ ضبط دیگر و کلید میکروفن گوشی را بررسی کنید.':'شروع ضبط در این مرورگر انجام نشد؛ مرورگر را به‌روز کنید یا از نسخهٔ اندروید استفاده کنید.');}}
 }
+function nativeAudioFailure(draft,message){if(taskAudioDraft!==draft||draft.closed)return;clearTimeout(draft.timer);if(draft.nativeId)try{AndroidZaman.cancelVoiceRecording(draft.nativeId);}catch{}draft.nativeId=null;draft.nativeParts=[];draft.nativeBytes=0;draft.status='idle';updateAudioButtons();audioStatus(message);}
+window.onNativeVoiceChunk=result=>{
+ const draft=taskAudioDraft;if(!draft?.nativeId||draft.nativeId!==result?.requestId||draft.closed)return;
+ try{if(!Number.isInteger(result.index)||result.index!==draft.nativeParts.length||typeof result.data!=='string'||result.data.length>32768)throw Error();const bytes=Uint8Array.from(atob(result.data),c=>c.charCodeAt(0));draft.nativeBytes+=bytes.length;if(draft.nativeBytes>VOICE_CLIP_LIMIT)throw Error();draft.nativeParts.push(bytes);}catch{nativeAudioFailure(draft,'فایل صدا ناقص دریافت شد؛ دوباره ضبط کنید.');}
+};
+window.onNativeVoiceResult=async result=>{
+ const draft=taskAudioDraft;if(!draft?.nativeId||draft.nativeId!==result?.requestId||draft.closed){if(result?.status==='recording')try{AndroidZaman.cancelVoiceRecording(result.requestId);}catch{}return;}
+ if(result.status==='error'){nativeAudioFailure(draft,result.error||'ضبط صدا انجام نشد؛ دوباره تلاش کنید.');return;}
+ if(result.status==='recording'){draft.status='recording';draft.timer=setTimeout(stopAudioRecording,VOICE_RECORD_LIMIT);updateAudioButtons();audioStatus('در حال ضبط… برای ذخیرهٔ صدا «پایان ضبط» را بزنید.');return;}
+ if(result.status==='saving'){draft.status='saving';clearTimeout(draft.timer);updateAudioButtons();audioStatus('در حال آماده‌کردن ویس…');return;}
+ if(result.status!=='finished'||draft.finishingNative)return;
+ draft.finishingNative=true;draft.status='saving';clearTimeout(draft.timer);updateAudioButtons();
+ try{
+  if(result.chunks!==draft.nativeParts.length||result.size!==draft.nativeBytes||result.mimeType!=='audio/mp4')throw Error();
+  const blob=new Blob(draft.nativeParts,{type:result.mimeType}),note={id:crypto.randomUUID(),size:blob.size,mimeType:blob.type,createdAt:Date.now(),durationMs:result.durationMs};if(!validVoiceMeta(note))throw Error();
+  await putVoice(note.id,blob);if(draft.closed||taskAudioDraft!==draft){await deleteVoice(note.id);return;}draft.created.add(note.id);draft.notes.push(note);await renderTaskAudio();audioStatus('');
+ }catch{if(!draft.closed&&taskAudioDraft===draft)audioStatus('ذخیرهٔ فایل صدا انجام نشد؛ فضای خالی گوشی را بررسی کنید.');}
+ finally{draft.nativeId=null;draft.nativeParts=[];draft.nativeBytes=0;draft.finishingNative=false;if(taskAudioDraft===draft&&!draft.closed){draft.status='idle';updateAudioButtons();}}
+};
 async function voiceBlobBase64(blob){const buffer=new Uint8Array(await blob.arrayBuffer());let text='';for(let i=0;i<buffer.length;i+=16384)text+=String.fromCharCode(...buffer.subarray(i,i+16384));return btoa(text);}
 async function buildVoiceBackup(){const backup=JSON.parse(JSON.stringify(state)),refs=voiceRefs(backup);if(refs.size){backup.voiceAttachments=[];let size=0;for(const note of refs.values()){const record=await getVoice(note.id);if(!record?.blob||record.blob.size!==note.size)throw Error('یک ویس در دسترس نیست؛ ابتدا پشتیبان کامل آن را بازیابی کنید.');size+=record.blob.size;if(size>BACKUP_LIMIT*.7)throw Error('حجم ویس‌ها برای پشتیبان JSON بیش از حد است.');backup.voiceAttachments.push({id:note.id,data:await voiceBlobBase64(record.blob)});}}return backup;}
 async function exportAppBackup(native=false){if(backupBusy)return;backupBusy=true;try{const backup=await buildVoiceBackup(),text=JSON.stringify(backup,null,2);if(new Blob([text]).size>BACKUP_LIMIT)throw Error('حجم پشتیبان بیش از ۱۰۰ مگابایت است.');if(native&&typeof window.AndroidZaman?.export==='function'){AndroidZaman.export(text);return;}const url=URL.createObjectURL(new Blob([text],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='zaman-backup.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}catch(error){toast(error.message||'دریافت پشتیبان انجام نشد.');}finally{backupBusy=false;}}

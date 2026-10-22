@@ -14,10 +14,12 @@ import java.nio.charset.StandardCharsets;
 import org.json.*;
 
 public class MainActivity extends Activity {
+  NativeVoiceRecorder nativeVoice; String pendingVoiceId; boolean voicePermissionPending=false,voiceResumed=false;
   WebView web; PermissionRequest pendingMic; ValueCallback<Uri[]> chooser; String exportText,ringtoneKind,pendingDownloadUrl,pendingDownloadHash,dictationRequestId;
   volatile int appDataGeneration=0; volatile boolean pendingInstall=false,installBusy=false;
   @Override public void onCreate(Bundle saved) {
     super.onCreate(saved);
+    nativeVoice=new NativeVoiceRecorder(this,(name,json)->callback(name,json));
     web=new WebView(this);web.setBackgroundColor(0xfff5f4ef);
     android.widget.FrameLayout frame=new android.widget.FrameLayout(this);frame.setBackgroundColor(0xfff5f4ef);frame.addView(web,new android.widget.FrameLayout.LayoutParams(-1,-1));
     frame.setOnApplyWindowInsetsListener((v,insets)->{if(Build.VERSION.SDK_INT>=30){android.graphics.Insets safe=insets.getInsets(android.view.WindowInsets.Type.systemBars()|android.view.WindowInsets.Type.displayCutout()|android.view.WindowInsets.Type.ime());v.setPadding(safe.left,safe.top,safe.right,safe.bottom);return android.view.WindowInsets.CONSUMED;}v.setPadding(insets.getSystemWindowInsetLeft(),insets.getSystemWindowInsetTop(),insets.getSystemWindowInsetRight(),insets.getSystemWindowInsetBottom());return insets.consumeSystemWindowInsets();});
@@ -46,8 +48,8 @@ public class MainActivity extends Activity {
     web.loadUrl("https://appassets.androidplatform.net/");
   }
   static WebResourceResponse missing(){return new WebResourceResponse("text/plain","UTF-8",404,"Not Found",java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));}
-  @Override protected void onResume(){super.onResume();if(web!=null){web.onResume();web.evaluateJavascript("if(typeof tick==='function')tick();if(typeof updateNativeStatus==='function')updateNativeStatus();if(typeof restoreUpdateDownload==='function')restoreUpdateDownload();if(typeof autoCheckForUpdate==='function')autoCheckForUpdate(true);",null);}AlarmStore.restore(this);}
-  @Override protected void onPause(){if(web!=null){web.evaluateJavascript("if(typeof stopAudioRecording==='function')stopAudioRecording();if(typeof save==='function')save();",null);web.onPause();}super.onPause();}
+  @Override protected void onResume(){super.onResume();voiceResumed=true;if(web!=null){web.onResume();web.evaluateJavascript("if(typeof tick==='function')tick();if(typeof updateNativeStatus==='function')updateNativeStatus();if(typeof restoreUpdateDownload==='function')restoreUpdateDownload();if(typeof autoCheckForUpdate==='function')autoCheckForUpdate(true);",null);}startPendingVoice();AlarmStore.restore(this);}
+  @Override protected void onPause(){voiceResumed=false;if(nativeVoice!=null)nativeVoice.stopCurrent();if(web!=null){web.evaluateJavascript("if(typeof stopAudioRecording==='function')stopAudioRecording();if(typeof save==='function')save();",null);web.onPause();}super.onPause();}
   @Override public void onBackPressed(){if(web.getUrl()!=null&&web.getUrl().startsWith("https://appassets.androidplatform.net/help.html")){if(web.canGoBack())web.goBack();else web.loadUrl("https://appassets.androidplatform.net/");return;}web.evaluateJavascript("if(document.querySelector('#memorial-dialog')?.open){}else if(document.querySelector('#wipe-dialog')?.open&&typeof cancelWipeFlow==='function')cancelWipeFlow();else if(document.querySelector('#education-dialog')?.open)document.querySelector('#education-dialog').close();else if(document.querySelector('#about-dialog')&&document.querySelector('#about-dialog').open)document.querySelector('#about-dialog').close();else if(document.querySelector('#settings-dialog').open)document.querySelector('#settings-dialog').close();else if(document.querySelector('#dialog').open)dismissModal();else{tab='today';render();}",null);}
   @Override protected void onActivityResult(int request,int result,Intent data){
     super.onActivityResult(request,result,data);
@@ -58,7 +60,21 @@ public class MainActivity extends Activity {
     if(request==30&&ringtoneKind!=null){if(result==RESULT_OK&&data!=null){Uri uri=data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);SoundSettings.save(this,ringtoneKind,uri);if(uri!=null)try{getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);}catch(Exception ignored){}}ringtoneKind=null;web.evaluateJavascript("if(typeof updateNativeSounds==='function')updateNativeSounds();",null);}
     if(request==31&&pendingInstall){pendingInstall=false;if(getPackageManager().canRequestPackageInstalls())installDownloadedUpdate();else callback("onNativeInstall","{\"ok\":false,\"error\":\"اجازهٔ نصب داده نشد. فایل APK همچنان در دانلودها موجود است.\"}");}
   }
-  @Override protected void onDestroy(){if(pendingMic!=null){pendingMic.deny();pendingMic=null;}if(web!=null)web.destroy();super.onDestroy();}
+  @Override protected void onDestroy(){pendingVoiceId=null;if(nativeVoice!=null)nativeVoice.close();if(pendingMic!=null){pendingMic.deny();pendingMic=null;}if(web!=null)web.destroy();super.onDestroy();}
+  void requestVoice(String id){
+    if(!NativeVoiceRecorder.validId(id))return;
+    if(pendingVoiceId!=null){nativeVoice.error(id,"BUSY","درخواست قبلی میکروفن هنوز پایان نیافته است.");return;}
+    pendingVoiceId=id;
+    if(checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){voicePermissionPending=true;requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO},42);return;}
+    startPendingVoice();
+  }
+  void startPendingVoice(){
+    if(!voiceResumed||voicePermissionPending||pendingVoiceId==null)return;
+    String id=pendingVoiceId;pendingVoiceId=null;
+    if(checkSelfPermission(android.Manifest.permission.RECORD_AUDIO)!=PackageManager.PERMISSION_GRANTED){nativeVoice.error(id,"PERMISSION_DENIED","اجازهٔ میکروفن داده نشد؛ مجوز میکروفن برنامه را در تنظیمات گوشی فعال کنید.");return;}
+    nativeVoice.start(id);
+  }
+  void cancelVoice(String id){if(id!=null&&id.equals(pendingVoiceId)){pendingVoiceId=null;voicePermissionPending=false;}nativeVoice.cancel(id);}
   void dictationResult(String id,String text,String error,boolean cancelled){try{JSONObject result=new JSONObject();result.put("requestId",id);result.put("cancelled",cancelled);if(text!=null)result.put("text",text);if(error!=null)result.put("error",error);callback("onNativeTaskVoice",result.toString());}catch(JSONException ignored){}}
   void startTaskDictation(String id){
     if(id==null||!id.matches("[a-fA-F0-9-]{36}")||dictationRequestId!=null)return;
@@ -67,7 +83,7 @@ public class MainActivity extends Activity {
     try{startActivityForResult(speech,40);}catch(Exception e){dictationRequestId=null;dictationResult(id,null,"سرویس تشخیص گفتار در این گوشی در دسترس نیست؛ از میکروفن صفحه‌کلید استفاده کنید.",false);}
   }
   void toast(String message){runOnUiThread(()->android.widget.Toast.makeText(this,message,1).show());}
-  void callback(String name,String json){runOnUiThread(()->web.evaluateJavascript("if(typeof window."+name+"==='function')window."+name+"("+json+");",null));}
+  void callback(String name,String json){runOnUiThread(()->{if(web!=null&&!isFinishing()&&!isDestroyed())web.evaluateJavascript("if(typeof window."+name+"==='function')window."+name+"("+json+");",null);});}
   void installDownloadedUpdate(){
     if(installBusy)return;installBusy=true;final int generation=appDataGeneration;
     new Thread(()->{
@@ -92,9 +108,12 @@ public class MainActivity extends Activity {
     },"zaman-open-installer").start();
   }
   void chooseSound(String kind){if(!SoundSettings.validKind(kind))return;ringtoneKind=kind;Intent intent=new Intent(RingtoneManager.ACTION_RINGTONE_PICKER).putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,RingtoneManager.TYPE_ALL).putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,"countdown".equals(kind)?"صدای تایمر معکوس":"صدای یادآورها").putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT,true).putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT,true).putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI,RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)).putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,SoundSettings.selected(this,kind));try{startActivityForResult(intent,30);}catch(ActivityNotFoundException ignored){toast("انتخاب صدای سیستم در این گوشی در دسترس نیست.");}}
-  @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==41&&pendingMic!=null){PermissionRequest mic=pendingMic;pendingMic=null;if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)mic.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});else mic.deny();}if(request==20&&results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)permissions();if(request==21){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED&&pendingDownloadUrl!=null)callback("onNativeDownload",UpdateStore.start(this,pendingDownloadUrl,pendingDownloadHash));else callback("onNativeDownload","{\"ok\":false,\"error\":\"مجوز ذخیرهٔ فایل داده نشد.\"}");pendingDownloadUrl=null;pendingDownloadHash=null;}}
+  @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==42){voicePermissionPending=false;if(pendingVoiceId!=null){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)startPendingVoice();else{String id=pendingVoiceId;pendingVoiceId=null;nativeVoice.error(id,"PERMISSION_DENIED","اجازهٔ میکروفن داده نشد؛ مجوز میکروفن برنامه را در تنظیمات گوشی فعال کنید.");}}}if(request==41&&pendingMic!=null){PermissionRequest mic=pendingMic;pendingMic=null;if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)mic.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});else mic.deny();}if(request==20&&results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)permissions();if(request==21){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED&&pendingDownloadUrl!=null)callback("onNativeDownload",UpdateStore.start(this,pendingDownloadUrl,pendingDownloadHash));else callback("onNativeDownload","{\"ok\":false,\"error\":\"مجوز ذخیرهٔ فایل داده نشد.\"}");pendingDownloadUrl=null;pendingDownloadHash=null;}}
   void permissions(){if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},20);return;}if(!AlarmStore.exact(this)){startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,Uri.parse("package:"+getPackageName())));return;}startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName()));}
   public final class Bridge {
+    @JavascriptInterface public void startVoiceRecording(String id){runOnUiThread(()->requestVoice(id));}
+    @JavascriptInterface public void stopVoiceRecording(String id){runOnUiThread(()->nativeVoice.stop(id));}
+    @JavascriptInterface public void cancelVoiceRecording(String id){runOnUiThread(()->cancelVoice(id));}
     @JavascriptInterface public void startTaskDictation(String requestId){runOnUiThread(()->MainActivity.this.startTaskDictation(requestId));}
     @JavascriptInterface public void sync(String json){try{AlarmStore.sync(MainActivity.this,json);}catch(Exception e){runOnUiThread(()->android.widget.Toast.makeText(MainActivity.this,"تنظیم زنگ انجام نشد؛ مجوزها را بررسی کنید",1).show());}}
     @JavascriptInterface public void permissions(){runOnUiThread(()->MainActivity.this.permissions());}
