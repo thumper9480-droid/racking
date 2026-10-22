@@ -1,4 +1,4 @@
-# Ali Mirza Time Management Android 1.10.0
+# Ali Mirza Time Management Android 1.11.0
 
 Locally bundled Android package `ir.zaman.app`, separate from the existing Raval app. Minimum API 26, target/compile API 35; pure Java, no third-party Android libraries or Gradle dependencies.
 
@@ -14,7 +14,7 @@ JAVA_HOME=/path/to/jdk ANDROID_SDK_ROOT=/path/to/sdk ANDROID_BUILD_TOOLS=/path/t
 
 The local defaults match the SDK prepared for this task (`/workspace/android-sdk`, build-tools extracted under `android-15`). The official Google SDK repository metadata was downloaded over verified TLS; platform-35_r02.zip and build-tools_r35_linux.zip SHA-1 values matched that metadata. The downloaded JDK was verified against its official SHA-256. No verification was disabled.
 
-Output: `build/zaman-1.10.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
+Output: `build/zaman-1.11.0.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
 
 ## Native alarms
 
@@ -30,7 +30,7 @@ Output: `build/zaman-1.10.0.apk`. The script compiles resources/Java/DEX, aligns
 - The actual native recurrence method is exercised on the JVM by `tests/AlarmStoreTest.java`, including missed repeats and daylight-saving changes. Compile against `build/classes` and Android 35's android.jar and run `ir.zaman.app.AlarmStoreTest` with the same classpath.
 - No Android emulator or physical phone was available for runtime installation, document picker, background audio, reboot recovery or lock-screen testing. These checks remain for a real device; package compilation alone does not prove them.
 
-Distribution: `downloads/zaman-android-1.10.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
+Distribution: `downloads/zaman-android-1.11.0.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
 
 Version 1.1.0 uses versionCode 2 and the same development signing key as 1.0.0, so it can update the installed app without clearing its local data. Its compact home screen shows colored navigation, Persian/Gregorian dates, a live clock, a minute-only countdown and a daily activity table. Backup controls and native alarm settings are in the settings dialog.
 
@@ -107,3 +107,13 @@ A prominent red Today update notice leads to the existing allowlisted, SHA-256-v
 The task/project dashboard card and Projects screen share a gray theme; daily activity share uses a brown theme matching the journey. The approved masthead and education entry appear on all main application tabs, while the date/clock card remains Today-only. Duplicate guide/PDF controls were removed from Settings; the education library remains available.
 
 Reset-day access moved directly below the Today date card and above the live activity timer, retaining its confirmation and preservation behavior. Active countdowns show only numeric minutes:seconds. At expiry a readable neutral Stop control and a Restart action are available; restarting stops the alert and immediately starts the configured duration without changing the daily activity timer. Reminder-only alerts do not offer countdown restart. The native adapter retains alarm silencing and scheduling integration. Package/signing identity and data schema remain unchanged. Physical device audio and installation are still unverified.
+
+
+## Version 1.11.0 (versionCode 13)
+
+The readable analog clock sits to the right of the logo in the masthead, with enlarged Persian/Gregorian dates and the existing reset action below them. The duplicate digital clock caption and separate reset row were removed. Existing data schema, reset confirmation, native alarm logic, package identity and upgrade signing certificate are retained.
+
+
+The update retry uses a unique public filename, reuses a verified matching file, and exposes progress/paused/failure details to Today. Foreground/reload resumes status polling. The actual phone's failure cannot be reconstructed without its DownloadManager status; duplicate-file collision and hidden-status defects are fixed and covered by policy/mock tests. Existing SHA-256 checks and Android installation consent are retained.
+
+Calendar-day/manual accounting is shared with the web build: range records, duration-only records without invented times, exact local-midnight closure/reconciliation on reopen, and recoverable unassigned tails. JSON version1 and all original record data remain supported. Native alarms/countdown continue independently.

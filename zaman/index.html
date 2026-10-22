@@ -9,21 +9,30 @@
   <link rel="apple-touch-icon" href="logo.png">
   <meta name="application-name" content="مدیریت زمان علی میرزا">
   <link rel="preload" href="fonts/Vazirmatn-Variable.ttf" as="font" type="font/ttf" crossorigin>
-  <link rel="stylesheet" href="style.css?v=1.10.0">
-  <link rel="stylesheet" href="reports.css?v=1.10.0">
-  <link rel="stylesheet" href="enhancements.css?v=1.10.0">
-  <link rel="stylesheet" href="approved.css?v=1.10.0">
-  <link rel="stylesheet" href="analog-clock.css?v=1.10.0">
-  <link rel="stylesheet" href="reset-time.css?v=1.10.0">
-  <script defer src="analog-clock.js?v=1.10.0"></script>
-  <script defer src="reset-time.js?v=1.10.0"></script>
-  <script defer src="reports.js?v=1.10.0"></script>
-  <script defer src="enhancements.js?v=1.10.0"></script>
-  <script defer src="app.js?v=1.10.0"></script>
+  <link rel="stylesheet" href="style.css?v=1.11.0">
+  <link rel="stylesheet" href="reports.css?v=1.11.0">
+  <link rel="stylesheet" href="enhancements.css?v=1.11.0">
+  <link rel="stylesheet" href="approved.css?v=1.11.0">
+  <link rel="stylesheet" href="analog-clock.css?v=1.11.0">
+  <link rel="stylesheet" href="reset-time.css?v=1.11.0">
+  <script defer src="analog-clock.js?v=1.11.0"></script>
+  <script defer src="reset-time.js?v=1.11.0"></script>
+  <link rel="stylesheet" href="journal.css?v=1.11.0">
+  <script defer src="journal.js?v=1.11.0"></script>
+  <script defer src="reports.js?v=1.11.0"></script>
+  <script defer src="enhancements.js?v=1.11.0"></script>
+  <script defer src="app.js?v=1.11.0"></script>
 </head>
 <body>
   <main>
-    <div id="today-header"><button type="button" id="education-button" class="header-education" data-education aria-label="آموزش نرم‌افزار">آموزش</button><div id="today-brand" role="img" aria-label="علی میرزا — مدیریت زمان"><img src="wordmark.png" alt="علی میرزا — مدیریت زمان" width="2172" height="724"></div></div>
+    <aside id="update-banner" role="status" aria-live="polite" hidden></aside>
+    <div id="today-header"><div id="header-clock"><time id="wall-clock" class="wall-clock" aria-label="ساعت دستگاه"></time></div><button type="button" id="education-button" class="header-education" data-education aria-label="آموزش نرم‌افزار">آموزش</button><div id="today-brand" role="img" aria-label="علی میرزا — مدیریت زمان"><img src="wordmark.png" alt="علی میرزا — مدیریت زمان" width="2172" height="724"></div>
+    <section id="date" class="date-panel" aria-label="تاریخ و ساعت امروز">
+      <div class="date-line"><b id="weekday"></b><span id="persian-date"></span></div>
+      <div id="gregorian-date" class="gregorian-date"></div>
+      <section class="day-reset-panel"><button type="button" class="reset-day-button" data-action="reset-day">↻ شروع دوبارهٔ امروز از ساعت دلخواه</button></section>
+    </section>
+</div>
     <nav aria-label="صفحه‌ها">
       <button data-tab="today" class="selected"><span aria-hidden="true">☀</span> امروز</button>
       <button data-tab="alarms"><span aria-hidden="true">🔔</span> یادآورها</button>
@@ -31,27 +40,21 @@
       <button data-tab="activities"><span aria-hidden="true">☷</span> فعالیت‌ها</button>
       <button id="settings" class="settings-nav" data-action="settings" aria-label="تنظیمات">⚙<small>تنظیمات</small></button>
     </nav>
-    <aside id="update-banner" role="status" aria-live="polite" hidden></aside>
-    <section id="date" class="date-panel" aria-label="تاریخ و ساعت امروز">
-      <div class="date-line"><b id="weekday"></b><span id="persian-date"></span></div>
-      <div id="gregorian-date" class="gregorian-date"></div>
-      <time id="wall-clock" class="wall-clock" aria-label="ساعت دستگاه"></time>
-    </section>
     <div id="warning"></div>
     <section id="view"></section>
   </main>
   <dialog id="settings-dialog" aria-labelledby="settings-title">
     <div class="row"><h2 id="settings-title">تنظیمات</h2><button id="settings-close" class="icon-button" aria-label="بستن تنظیمات">×</button></div>
     <section id="web-alarm-settings"><h3>اعلان و صدا</h3><p class="muted">انتخاب زنگ‌های گوشی در نسخهٔ اندروید در دسترس است.</p><button class="small" data-action="permission">فعال‌سازی اعلان و آزمایش صدا</button></section>
-    <section class="app-identity"><img src="logo.png" alt="لوگوی مدیریت زمان علی میرزا" width="56" height="56"><b>مدیریت زمان علی میرزا</b><small>نسخهٔ ۱.۱۰.۰</small></section>
+    <section class="app-identity"><img src="logo.png" alt="لوگوی مدیریت زمان علی میرزا" width="56" height="56"><b>مدیریت زمان علی میرزا</b><small>نسخهٔ ۱.۱۱.۰</small></section>
     <section class="settings-about"><h3>دربارهٔ نرم‌افزار</h3><div class="actions"><button class="small" data-action="about">دربارهٔ نرم‌افزار</button></div></section>
-    <section class="settings-updates"><h3>به‌روزرسانی</h3><button class="small" data-check-update>بررسی نسخهٔ جدید</button><p id="update-status" class="muted">نسخهٔ ۱.۱۰.۰</p></section>
+    <section class="settings-updates"><h3>به‌روزرسانی</h3><button class="small" data-check-update>بررسی نسخهٔ جدید</button><p id="update-status" class="muted">نسخهٔ ۱.۱۱.۰</p></section>
     <section class="backup-settings"><h3>پشتیبان اطلاعات</h3><div class="actions"><button id="export" class="primary">دریافت پشتیبان</button><label class="import" tabindex="0" role="button">بازیابی پشتیبان<input id="import" type="file" accept="application/json" hidden></label></div></section>
     <section class="settings-wipe"><h3>پاک‌کردن اطلاعات</h3><p class="muted">همهٔ فعالیت‌ها، پروژه‌ها، یادآورها و تنظیمات برنامه پاک می‌شوند. ابتدا می‌توانید پشتیبان بگیرید.</p><button type="button" class="danger" data-wipe-all>پاک‌کردن همهٔ اطلاعات</button></section>
   </dialog>
   <dialog id="wipe-dialog" aria-labelledby="wipe-title" aria-describedby="wipe-message"><h2 id="wipe-title"></h2><p id="wipe-stage" class="wipe-stage"></p><p id="wipe-message"></p><div class="actions"><button type="button" class="danger" data-wipe-confirm></button><button type="button" data-wipe-cancel>انصراف</button></div></dialog>
   <dialog id="dialog"><form id="form"></form></dialog>
-  <dialog id="about-dialog" aria-labelledby="about-title"><div class="row"><h2 id="about-title">دربارهٔ نرم‌افزار</h2><button class="small" data-close-about>بستن</button></div><img class="about-logo" src="logo.png" alt="لوگوی نرم‌افزار"><h3>مدیریت زمان علی میرزا</h3><p>نسخهٔ ۱.۱۰.۰</p><p>این نرم‌افزار توسط <b>امین نقدی پور</b> برای ثبت و مدیریت زمان روزانه، سامان‌دادن به پروژه‌ها و پیگیری کارها طراحی شده است.</p><p>این نرم‌افزار رایگان است. هر ۳۰ روز، برای شادی روح <b>آقای علی میرزا نقدی پور</b>، درخواست فرستادن ده صلوات یا خواندن فاتحه نمایش داده می‌شود.</p><p class="designer-contact">شماره تماس طراح: <a href="tel:09131693134" dir="ltr">09131693134</a></p><div class="actions"><button class="primary" data-help>آموزش کاربردی</button><button data-guide-pdf>دریافت جزوهٔ PDF</button></div></dialog>
+  <dialog id="about-dialog" aria-labelledby="about-title"><div class="row"><h2 id="about-title">دربارهٔ نرم‌افزار</h2><button class="small" data-close-about>بستن</button></div><img class="about-logo" src="logo.png" alt="لوگوی نرم‌افزار"><h3>مدیریت زمان علی میرزا</h3><p>نسخهٔ ۱.۱۱.۰</p><p>این نرم‌افزار توسط <b>امین نقدی پور</b> برای ثبت و مدیریت زمان روزانه، سامان‌دادن به پروژه‌ها و پیگیری کارها طراحی شده است.</p><p>این نرم‌افزار رایگان است. هر ۳۰ روز، برای شادی روح <b>آقای علی میرزا نقدی پور</b>، درخواست فرستادن ده صلوات یا خواندن فاتحه نمایش داده می‌شود.</p><p class="designer-contact">شماره تماس طراح: <a href="tel:09131693134" dir="ltr">09131693134</a></p><div class="actions"><button class="primary" data-help>آموزش کاربردی</button><button data-guide-pdf>دریافت جزوهٔ PDF</button></div></dialog>
   <dialog id="education-dialog" aria-labelledby="education-title"><div class="row"><h2 id="education-title">آموزش نرم‌افزار</h2><button type="button" class="small" data-close-education aria-label="بستن آموزش">بستن</button></div><div id="education-contents"></div></dialog>
   <dialog id="memorial-dialog" aria-labelledby="memorial-title" aria-describedby="memorial-message"><h2 id="memorial-title">یادبود علی میرزا نقدی پور</h2><p id="memorial-message">برای شادی روح <b>علی میرزا نقدی پور</b>، لطفاً ده صلوات بفرستید یا فاتحه‌ای بخوانید.</p><p class="muted">پس از انجام، تأیید کنید تا برنامه باز شود.</p><button class="primary wide" id="memorial-confirm">فرستادم / خواندم</button><button class="small memorial-stop" id="memorial-silence">قطع زنگ</button></dialog>
   <div id="toast" role="status"></div>

@@ -1,5 +1,5 @@
 /* Approved Ali Mirza layout: jade clock, gray projects and warm brown journey/share panels. */
-:root { --project-ink:#444b50; --project-line:#b9bfc2; --journey-ink:#96500e; --journey-line:#efbd67; --chart-ink:var(--journey-ink); --chart-line:var(--journey-line); background:#f7f8f3; }
+:root { --project-ink:#444b50; --project-line:#b9bfc2; --journey-ink:#96500e; --journey-line:#efbd67; --chart-ink:var(--journey-ink); --chart-line:var(--journey-line); background:#f7f8f3; --session-circle-size:clamp(96px,28vw,124px); --session-column-gap:18px; --session-inline-padding:18px; --session-block-padding:21px; }
 main { padding-top:6px; }
 #today-brand { position:relative; width:240px; height:93px; margin:0 auto 4px; overflow:hidden; }
 #today-brand img { position:absolute; width:320px; max-width:none; height:auto; left:50%; top:-10px; transform:translateX(-50%); }
@@ -13,12 +13,12 @@ nav .settings-nav { background:#f5f7f4; }
 .wall-clock { font-size:34px; font-weight:850; letter-spacing:0; color:#064c49; }
 .today-layout { gap:9px; }
 .hero.card { padding:0; border:0; border-radius:0; background:transparent; box-shadow:none; display:grid; gap:8px; }
-.activity-session { grid-template-columns:minmax(0,1.6fr) minmax(92px,1fr); gap:18px; padding:21px 18px; background:linear-gradient(120deg,#eff9e9,#f6fcf3); border:1px solid #c7e4cf; border-radius:17px; box-shadow:0 3px 11px #284e2d0a; }
+.activity-session { grid-template-columns:minmax(0,1.6fr) minmax(92px,1fr); gap:var(--session-column-gap); padding:var(--session-block-padding) var(--session-inline-padding); background:linear-gradient(120deg,#eff9e9,#f6fcf3); border:1px solid #c7e4cf; border-radius:17px; box-shadow:0 3px 11px #284e2d0a; }
 .session-caption { margin:0 0 12px; font-size:14px; font-weight:750; color:#185747; }
 .session-clock .clock { color:#064b42; font-size:clamp(31px,7.9vw,48px); letter-spacing:0; line-height:1.3; margin:0 0 17px; font-weight:850; }
 .day-total { padding-top:10px; border-top:1px solid #cce2d1; font-size:11px; font-weight:600; color:#7b9286; }
 .session-actions { justify-items:center; }
-.session-actions .circle-action { width:clamp(96px,28vw,124px); height:auto; aspect-ratio:1; max-width:100%; margin:0; padding:15px 8px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; border:1px solid #37a36f; color:#fff; background:linear-gradient(135deg,#48bb81,#08783f); box-shadow:0 4px 9px #1773462e,0 0 0 7px #dff4e1,0 0 0 13px #edf9e9; font-size:17px; font-weight:800; line-height:1.55; }
+.session-actions .circle-action { width:var(--session-circle-size); height:auto; aspect-ratio:1; max-width:100%; margin:0; padding:15px 8px; border-radius:50%; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px; border:1px solid #37a36f; color:#fff; background:linear-gradient(135deg,#48bb81,#08783f); box-shadow:0 4px 9px #1773462e,0 0 0 7px #dff4e1,0 0 0 13px #edf9e9; font-size:17px; font-weight:800; line-height:1.55; }
 .circle-action span { display:block; }
 .circle-action:active { transform:scale(.98); }
 .countdown { background:linear-gradient(115deg,#f3e8ff,#f7f0fe); border:1px solid #d8b8fc; margin:0; padding:10px 11px; border-radius:14px; box-shadow:0 3px 9px #6a3d8b09; }
@@ -78,7 +78,7 @@ nav .settings-nav { background:#f5f7f4; }
 @media(max-width:650px) {
  main { padding-top:3px; }
  #today-brand { margin-bottom:2px; }
- .activity-session { gap:15px; padding:20px 15px; }
+ :root { --session-column-gap:15px; --session-inline-padding:15px; --session-block-padding:20px; }
  .session-caption { font-size:12px; }
  .session-clock .clock { font-size:clamp(26px,8.3vw,36px); }
  .session-actions .circle-action { font-size:16px; }
@@ -91,8 +91,8 @@ nav .settings-nav { background:#f5f7f4; }
 }
 @media(max-width:350px) {
  nav [data-tab] { padding-inline:3px; font-size:9px; }
- .activity-session { padding:18px 12px; gap:12px; }
- .session-actions .circle-action { width:93px; font-size:14px; }
+ :root { --session-circle-size:93px; --session-column-gap:12px; --session-inline-padding:12px; --session-block-padding:18px; }
+ .session-actions .circle-action { width:var(--session-circle-size); font-size:14px; }
  .day-total { font-size:9px; }
  .wall-clock { font-size:28px; }
  .session-clock .clock { font-size:26px; }
@@ -101,8 +101,8 @@ nav .settings-nav { background:#f5f7f4; }
  .journey .history-nav button { font-size:10px; padding:5px; }
 }
 /* Keep the action genuinely circular at narrow mobile widths as well. */
-.session-actions .circle-action { height:clamp(96px,28vw,124px); padding:8px 5px; line-height:1.45; gap:0; }
-@media(max-width:350px) { .session-actions .circle-action { height:93px; } }
+.session-actions .circle-action { height:var(--session-circle-size); padding:8px 5px; line-height:1.45; gap:0; }
+@media(max-width:350px) { .session-actions .circle-action { height:var(--session-circle-size); } }
 .donut-center strong { max-width:65%; line-height:1.4; text-align:center; overflow-wrap:anywhere; }
 
 /* Compact Today: reset entry first, three foldable rows, then end day. */
@@ -150,3 +150,43 @@ nav .settings-nav { background:#f5f7f4; }
 .education-gallery img { display:block; width:100%; height:auto; max-height:430px; object-fit:contain; }
 .education-gallery figcaption { margin-top:7px; font-size:12px; color:#587963; }
 @media(max-width:350px) { .header-education { width:42px; height:42px; font-size:11px; } }
+
+/* Date card shares the activity card's columns so both circles line up. */
+#date { max-width:680px; margin-inline:auto; grid-template-columns:minmax(0,1.6fr) minmax(92px,1fr); column-gap:var(--session-column-gap); row-gap:5px; padding:var(--session-block-padding) var(--session-inline-padding); }
+#date .date-line { grid-column:1; grid-row:1; font-size:17px; font-weight:750; line-height:1.8; gap:0 5px; min-width:0; }
+#date .gregorian-date { grid-column:1; grid-row:2; font-size:14px; font-weight:600; line-height:1.7; color:#5c7067; }
+#date .day-reset-panel { grid-column:1; grid-row:3; min-width:0; }
+#date .reset-day-button { min-height:44px; font-size:11px; line-height:1.8; padding:7px 6px; }
+#date #wall-clock { grid-column:2; grid-row:1 / 4; justify-self:center; }
+@media(max-width:650px) { #date .date-line { font-size:15px; } #date .gregorian-date { font-size:13px; } }
+@media(max-width:350px) { #date .date-line { font-size:14px; } #date .gregorian-date { font-size:12px; } #date .reset-day-button { font-size:10px; } }
+
+/* Today finish: retain all content, geometry and the established color groups. */
+.is-today nav { box-shadow:inset 0 0 0 1px #e5ebe5,0 4px 16px #203c350b; }
+.is-today #date { border-color:#dfe7de; background:linear-gradient(135deg,#fff,#fcfdfa); box-shadow:0 4px 16px #173e360c; }
+.is-today #date .reset-day-button { background:#fcf7ef; border-color:#d7c6ad; color:#755034; }
+.is-today .activity-session { background:linear-gradient(120deg,#f0f8ec,#f9fcf5); border-color:#c9decb; box-shadow:0 4px 16px #284e2d09; }
+.is-today .circle-action { background:linear-gradient(135deg,#40ad74,#147647); box-shadow:0 4px 10px #17734620,0 0 0 7px #e2f1de,0 0 0 13px #eff8e9; }
+.is-today .countdown:not(.is-running) { background:linear-gradient(115deg,#f5effb,#faf7fd); border-color:#dfcceb; box-shadow:0 3px 12px #6a3d8b07; }
+.is-today .countdown:not(.is-running) .primary { background:linear-gradient(135deg,#a175cc,#8355af); }
+.is-today .due-project-tasks { background:linear-gradient(120deg,#eef0f1,#fafbfb); border-color:#c2c9cc; box-shadow:0 3px 12px #42494d09; }
+.is-today .journey,.is-today .day-chart { background:linear-gradient(120deg,#fff9ed,#fffdf8); border-color:#dbc5a3; box-shadow:0 3px 12px #9c6a2409; }
+.is-today .day-chart .chart-legend { background:#ffffffb3; border-color:#e2d4c0; }
+.is-today .history-table thead th { background:#fbf0d8; }
+.is-today .history-table tbody td { border-bottom-color:#dfd0ba; }
+.is-today .history-table tfoot th,.is-today .history-table tfoot td { background:#f8e5b9; }
+
+/* Clock and dates now belong to the masthead; the logo and all labels are retained. */
+.is-today #today-header { display:grid; grid-template-columns:clamp(104px,30vw,124px) minmax(0,1fr) 45px; align-items:center; column-gap:8px; row-gap:9px; max-width:680px; margin-inline:auto; margin-bottom:10px; }
+.is-today #header-clock { grid-column:1; grid-row:1; justify-self:center; }
+.is-today #header-clock .analog-clock { width:clamp(104px,30vw,124px); height:clamp(104px,30vw,124px); }
+.is-today #today-brand { grid-column:2; grid-row:1; width:100%; min-width:0; height:100px; margin:0; }
+.is-today #today-brand img { width:min(calc(100% + 40px),320px); top:50%; left:50%; transform:translate(-50%,-50%); }
+.is-today .header-education { position:static; grid-column:3; grid-row:1; justify-self:center; }
+.is-today #date { grid-column:1 / -1; grid-row:2; width:100%; margin:0; padding:9px 12px; grid-template-columns:minmax(0,1fr); gap:3px; border-radius:14px; }
+.is-today #date .date-line { grid-column:1; grid-row:1; font-size:16px; line-height:1.7; }
+.is-today #date .gregorian-date { grid-column:1; grid-row:2; font-size:14px; line-height:1.6; }
+.is-today #date .day-reset-panel { grid-column:1; grid-row:3; margin-top:3px; }
+.is-today #date .reset-day-button { min-height:38px; font-size:11px; }
+#update-banner { max-width:680px; margin-inline:auto; }
+@media(max-width:350px) { .is-today #today-header { grid-template-columns:104px minmax(0,1fr) 42px; column-gap:6px; } .is-today #date .date-line { font-size:14px; } .is-today #date .gregorian-date { font-size:13px; } }

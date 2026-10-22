@@ -1,0 +1,10 @@
+.journal-toolbar { display:flex; align-items:center; justify-content:flex-start; margin:7px 0; }
+.journal-toolbar button { border:1px solid #d8c39f; background:#fff9ed; color:#79532b; }
+.journal-start-controls { display:flex; gap:7px; flex-wrap:wrap; }
+.journal-start-controls button { flex:1; color:#456753; background:#f1f6ee; border:1px solid #d5e1d0; }
+.journal-mode { display:flex; gap:12px; flex-wrap:wrap; padding:13px 0 5px; }
+.journal-mode label { display:flex; align-items:center; gap:6px; margin:0; font-size:12px; }
+.journal-mode input,.journal-time-fields + .check input { width:auto; }
+.journal-time-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.journal-gaps { display:grid; gap:5px; margin:6px 0; }
+.journal-gaps button { text-align:right; border:1px dashed #ceb890; background:#fff8e9; color:#79532b; }

@@ -15,7 +15,7 @@ function reportRange(mode=reportMode,anchor=reportAnchor??Date.now()){
 function reportData(range=reportRange(),now=Date.now()){
  const groups=new Map();let total=0,intervals=0;
  function add(name,start,end){const duration=Math.max(0,Math.min(end,range.end,now)-Math.max(start,range.start));if(!duration)return;const key=normalizeActivity(name),item=groups.get(key)||{name,duration:0,count:0};item.duration+=duration;item.count++;groups.set(key,item);total+=duration;intervals++;}
- if(range){for(const h of state.history)add(h.name,h.start,h.end);const pending=state.pendingSegment;if(pending)add('در انتظار ثبت',pending.start,pending.end);if(state.day&&!pending?.ending)add('فعالیت جاری',state.day.segment,now);}
+ if(range){for(const h of state.history){if(h.durationOnly){if(h.start>=range.start&&h.start<range.end&&h.start<=now){const key=normalizeActivity(h.name),item=groups.get(key)||{name:h.name,duration:0,count:0};item.duration+=h.durationMs;item.count++;groups.set(key,item);total+=h.durationMs;intervals++;}}else add(h.name,h.start,h.end);}const pending=state.pendingSegment;if(pending)add('در انتظار ثبت',pending.start,pending.end);if(state.day&&!(pending?.ending&&!pending.detached))add('فعالیت جاری',state.day.segment,journalLiveEnd(now));}
  const entries=[...groups.values()].sort((a,b)=>b.duration-a.duration||a.name.localeCompare(b.name,'fa'));return {entries,total,intervals};
 }
 function reportDate(value){return new Date(value).toLocaleDateString('fa-IR',{year:'numeric',month:'2-digit',day:'2-digit'});}

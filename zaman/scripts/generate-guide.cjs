@@ -9,9 +9,9 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
  const browser=await chromium.launch({executablePath:process.env.CHROMIUM_PATH||'/usr/bin/chromium',args:['--no-sandbox']});
  const context=await browser.newContext({viewport:{width:390,height:880},deviceScaleFactor:1.5,timezoneId:'Asia/Tehran'}),p=await context.newPage(),errors=[],failed=[];
  p.on('pageerror',e=>errors.push(e.message));p.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
- await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.10.0',versionCode:12,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.10.0.apk',sha256:'0'.repeat(64)})}));
+ await p.route('**/release.json?*',route=>route.fulfill({contentType:'application/json',body:JSON.stringify({versionName:'1.11.0',versionCode:13,apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.11.0.apk',sha256:'0'.repeat(64)})}));
  if(!process.argv.includes('--pdf-only')){
-  await p.clock.install({time:new Date('2026-10-21T13:30:00+03:30')});await p.clock.pauseAt(new Date('2026-10-21T13:30:01+03:30'));
+  await p.clock.install({time:new Date('2026-10-22T13:30:00+03:30')});await p.clock.pauseAt(new Date('2026-10-22T13:30:01+03:30'));
   await p.goto(base);await p.evaluate(()=>document.fonts.ready);
   await p.evaluate(()=>{
    const midnight=new Date();midnight.setHours(0,0,0,0);const d=midnight.getTime(),m=60000;
@@ -25,7 +25,7 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
    state.collapsedSections={'project-tasks':true,journey:true,chart:true};state.todayPanelsLayout=1;tab='today';save();render();
   });
   async function image(name,selector){const el=p.locator(selector);await el.waitFor({state:'visible'});await el.screenshot({path:path.join(root,'guide-assets',name+'.png'),animations:'disabled'});}
-  const masthead=await p.locator('#today-brand').boundingBox(),hero=await p.locator('.hero').boundingBox();
+  const masthead=await p.locator('#today-header').boundingBox(),hero=await p.locator('.hero').boundingBox();
   if(masthead&&hero)await p.screenshot({path:path.join(root,'guide-assets','today.png'),clip:{x:hero.x,y:masthead.y,width:hero.width,height:hero.y+hero.height-masthead.y},animations:'disabled'});else await image('today','.hero');
   // Preserve the compact task/journey/share rows and end-day control; reset is now above the activity card.
   await p.locator('#today-project-tasks').scrollIntoViewIfNeeded();
@@ -33,6 +33,7 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
   if(compactTop&&compactBottom)await p.screenshot({path:path.join(root,'guide-assets','today-compact.png'),clip:{x:compactTop.x,y:compactTop.y,width:compactTop.width,height:compactBottom.y+compactBottom.height-compactTop.y},animations:'disabled'});
   for(const id of ['project-tasks','journey','chart']){const button=p.locator(`[data-toggle-section="${id}"]`);if(await button.getAttribute('aria-expanded')==='false')await button.click();}
   await image('journey','.journey');await image('chart','.day-chart');
+  await p.locator('[data-action=manual-history]').click();await p.locator('[name=name]').fill('مطالعه');await image('manual-history','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-action=reset-day]').click();await p.locator('[data-reset-wheel-toggle]').click();await image('reset-time','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-action=segment]').click();await p.locator('#activity-input').fill('مطالعه');await image('segment','#dialog');await p.locator('#cancel').click();
   await p.locator('[data-action=duration]').click();await image('countdown','#dialog');await p.locator('#cancel').click();
@@ -42,16 +43,16 @@ const root=path.resolve(__dirname,'..'),base=process.env.ZAMAN_GUIDE_BASE||'http
   await p.locator('#settings[data-action=settings]').click();await image('settings','#settings-dialog');
   await p.locator('[data-wipe-all]').click();await image('wipe-confirmation','#wipe-dialog');await p.locator('[data-wipe-cancel]').click();await p.locator('#settings-close').click();
   await p.locator('[data-tab=today]').click();
-  await p.evaluate(()=>applyUpdateResult({ok:true,versionCode:APP_VERSION_CODE+1,versionName:'1.11.0',apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.11.0.apk',sha256:'0'.repeat(64)}));
+  await p.evaluate(()=>applyUpdateResult({ok:true,versionCode:APP_VERSION_CODE+1,versionName:'1.12.0',apkUrl:'https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/downloads/zaman-android-1.12.0.apk',sha256:'0'.repeat(64)}));
   await image('update-banner','#update-banner');
  }
  const guide=await context.newPage();guide.on('pageerror',e=>errors.push(e.message));guide.on('response',r=>{if(r.status()>=400)failed.push(`${r.status()} ${r.url()}`);});
  await guide.setViewportSize({width:1000,height:1200});await guide.goto(new URL('help.html',base).href);await guide.evaluate(()=>document.fonts.ready);
  await guide.locator('.screen img').evaluateAll(images=>Promise.all(images.map(image=>image.decode())));
- assert.equal(await guide.locator('.guide-page').count(),8);
+ assert.equal(await guide.locator('.guide-page').count(),9);
  await guide.evaluate(()=>document.querySelectorAll('details').forEach(el=>el.open=true));
  await guide.pdf({path:path.join(root,'user-guide.pdf'),format:'A4',printBackground:true,preferCSSPageSize:true,displayHeaderFooter:false,tagged:true,outline:true});
  assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
  await guide.setViewportSize({width:390,height:844});assert(await guide.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'HTML guide must fit mobile');
- await browser.close();console.log('PASS actual-app demo screenshots, offline linked HTML guide, eight instructional sections, mobile layout and generated Persian PDF');
+ await browser.close();console.log('PASS actual-app demo screenshots, offline linked HTML guide, nine instructional sections, mobile layout and generated Persian PDF');
 })().catch(e=>{console.error(e);process.exit(1)});
