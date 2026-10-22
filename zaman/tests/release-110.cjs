@@ -30,11 +30,11 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
   await page.locator(`[data-tab=${tab}]`).click();
   assert(await page.locator('#today-header').isVisible(),'masthead remains on '+tab);assert(await page.locator('#today-brand').isVisible(),'logo remains on '+tab);
   assert(await page.locator('#today-brand img').evaluate(img=>img.complete&&img.naturalWidth>0),'logo loads on '+tab);
-  assert.equal(await page.locator('#date').isVisible(),tab==='today');
+  assert.equal(await page.locator('#date').isVisible(),true);assert(await page.locator('#header-clock').isVisible(),'clock remains on '+tab);assert.equal(await page.locator('.day-reset-panel').isVisible(),tab==='today');
   await page.locator('#education-button').click();assert(await page.locator('#education-dialog [data-help]').isVisible());assert(await page.locator('#education-dialog [data-guide-pdf]').isVisible());await page.locator('[data-close-education]').click();
   if(tab==='projects')assert(warm(rgb(await page.locator('.projects-heading h2').evaluate(el=>getComputedStyle(el).color))),'incomplete projects use orange theme');
  }
- await page.locator('[data-action=reports]').click();assert(await page.locator('#today-brand').isVisible(),'reports retain logo');assert(await page.locator('#education-button').isVisible(),'reports retain education');assert.equal(await page.locator('#date').isVisible(),false);
+ await page.locator('[data-action=reports]').click();assert(await page.locator('#today-brand').isVisible(),'reports retain logo');assert(await page.locator('#education-button').isVisible(),'reports retain education');assert.equal(await page.locator('#date').isVisible(),true);
  await page.locator('#settings').click();assert.equal(await page.locator('#settings-dialog [data-help]').count(),0);assert.equal(await page.locator('#settings-dialog [data-guide-pdf]').count(),0);assert(await page.locator('#settings-dialog [data-action=about]').isVisible(),'About retained in settings');assert(await page.locator('#export').isVisible(),'backup retained in settings');await page.locator('#settings-close').click();
  assert.deepEqual(errors,[]);await browser.close();console.log('PASS aligned date card: readable clock right of logo, larger dates and reset inside masthead, safe cancellation, gray projects/Today tasks, brown summaries, logo and education on all tabs/reports, settings duplicate help removed with backup/About retained');
 })().catch(error=>{console.error(error);process.exit(1)});
