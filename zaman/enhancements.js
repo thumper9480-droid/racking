@@ -1,5 +1,7 @@
 'use strict';
-const APP_VERSION='1.12.3',APP_VERSION_CODE=17,MEMORIAL_KEY='ali-mirza-memorial-v1',MEMORIAL_INTERVAL=30*86400000;
+const APP_VERSION='1.12.4',APP_VERSION_CODE=18,MEMORIAL_KEY='ali-mirza-memorial-v1',MEMORIAL_INTERVAL=30*86400000;
+function bazaarDistribution(){try{return window.AndroidZaman?.distributionChannel?.()==='bazaar';}catch{return false;}}
+function openBazaarUpdate(){try{const result=JSON.parse(AndroidZaman.openStore());setUpdateStatus(result.ok?'به‌روزرسانی را در صفحهٔ برنامه در بازار بررسی کنید.':result.error||'بازار باز نشد.');}catch{setUpdateStatus('بازار را باز کنید و مدیریت زمان علی میرزا را جست‌وجو کنید.');}}
 const UPDATE_CACHE_KEY='ali-mirza-update-v1',UPDATE_INTERVAL=300000;
 let lastUpdateCheckAt=0,updateCheckTimeout=null;
 let memorialRecord=null,availableUpdate=null,checkingUpdate=false,downloadPoll=null,updateDownloaded=false,downloadBusy=false,updateMessage='',wipeStage=0,wipeBusy=false;
@@ -15,23 +17,24 @@ function downloadGuide(){if(window.AndroidZaman&&typeof AndroidZaman.openGuide==
 function validRelease(data){if(!data||!Number.isInteger(data.versionCode)||data.versionCode<1||!/^[0-9]+\.[0-9]+\.[0-9]+$/.test(data.versionName)||!/^[a-f0-9]{64}$/i.test(data.sha256))return false;try{const url=new URL(data.apkUrl);return url.protocol==='https:'&&url.hostname==='raw.githubusercontent.com'&&!url.username&&!url.password&&!url.search&&!url.hash&&/^\/thumper9480-droid\/racking\/gh-pages\/downloads\/zaman-android-[0-9]+\.[0-9]+\.[0-9]+\.apk$/.test(url.pathname);}catch{return false;}}
 function setUpdateStatus(message){updateMessage=message;for(const id of ['#update-status','#update-banner-status']){const status=document.querySelector(id);if(status&&status.textContent!==message)status.textContent=message;}}
 function updateBannerVisibility(){
- const banner=document.querySelector('#update-banner');if(!banner)return;banner.hidden=!availableUpdate||tab!=='today';
+ const banner=document.querySelector('#update-banner');if(!banner)return;if(bazaarDistribution()){banner.hidden=true;return;}banner.hidden=!availableUpdate||tab!=='today';
  if(availableUpdate)banner.innerHTML=`<span><b>آپدیت جدید ${fa(availableUpdate.versionName)} آماده است</b><small id="update-banner-status" role="status">${esc(updateMessage||(updateDownloaded?'فایل نصب بررسی شد؛ نصب را تأیید کنید.':'برای دریافت نسخهٔ جدید، دکمه را بزنید.'))}</small></span><button type="button" class="primary" ${downloadBusy?'disabled':updateDownloaded?'data-install-update':'data-download-update'}>${downloadBusy?'در حال دریافت…':updateDownloaded?'نصب آپدیت':'دریافت آپدیت'}</button>`;
 }
 function setDownloadBusy(value){const changed=downloadBusy!==value;downloadBusy=value;if(changed)updateBannerVisibility();}
 function stopDownloadPoll(){clearInterval(downloadPoll);downloadPoll=null;}
 function ensureDownloadPoll(){if(!downloadBusy||downloadPoll||typeof window.AndroidZaman?.downloadStatus!=='function')return;downloadPoll=setInterval(()=>{try{showDownloadState(JSON.parse(AndroidZaman.downloadStatus()));}catch{stopDownloadPoll();setDownloadBusy(false);setUpdateStatus('وضعیت دانلود خوانده نشد؛ دوباره دریافت کنید.');}},1500);}
-function restoreUpdateDownload(){if(!availableUpdate||typeof window.AndroidZaman?.downloadStatus!=='function')return;try{const result=JSON.parse(AndroidZaman.downloadStatus());if(result.status&&result.status!=='idle'){showDownloadState(result);ensureDownloadPoll();}}catch{}}
-function applyUpdateResult(result){checkingUpdate=false;clearTimeout(updateCheckTimeout);if(!result?.ok||!validRelease(result)){setUpdateStatus(result?.error||'بررسی نسخه انجام نشد؛ اتصال اینترنت را بررسی کنید.');return;}const previous=availableUpdate;availableUpdate=result.versionCode>APP_VERSION_CODE?result:null;if(previous?.sha256!==availableUpdate?.sha256){updateDownloaded=false;document.querySelector('.update-file-actions')?.remove();}try{if(availableUpdate)localStorage.setItem(UPDATE_CACHE_KEY,JSON.stringify(availableUpdate));else localStorage.removeItem(UPDATE_CACHE_KEY);}catch{}setUpdateStatus(availableUpdate?'نسخهٔ جدید '+fa(result.versionName)+' آمادهٔ دانلود است.':'نسخهٔ '+fa(APP_VERSION)+' به‌روز است.');updateBannerVisibility();restoreUpdateDownload();}
+function restoreUpdateDownload(){if(bazaarDistribution()||!availableUpdate||typeof window.AndroidZaman?.downloadStatus!=='function')return;try{const result=JSON.parse(AndroidZaman.downloadStatus());if(result.status&&result.status!=='idle'){showDownloadState(result);ensureDownloadPoll();}}catch{}}
+function applyUpdateResult(result){if(bazaarDistribution()){checkingUpdate=false;clearTimeout(updateCheckTimeout);return;}checkingUpdate=false;clearTimeout(updateCheckTimeout);if(!result?.ok||!validRelease(result)){setUpdateStatus(result?.error||'بررسی نسخه انجام نشد؛ اتصال اینترنت را بررسی کنید.');return;}const previous=availableUpdate;availableUpdate=result.versionCode>APP_VERSION_CODE?result:null;if(previous?.sha256!==availableUpdate?.sha256){updateDownloaded=false;document.querySelector('.update-file-actions')?.remove();}try{if(availableUpdate)localStorage.setItem(UPDATE_CACHE_KEY,JSON.stringify(availableUpdate));else localStorage.removeItem(UPDATE_CACHE_KEY);}catch{}setUpdateStatus(availableUpdate?'نسخهٔ جدید '+fa(result.versionName)+' آمادهٔ دانلود است.':'نسخهٔ '+fa(APP_VERSION)+' به‌روز است.');updateBannerVisibility();restoreUpdateDownload();}
 window.onNativeUpdate=applyUpdateResult;
 async function checkForUpdate(manual=false){
+ if(bazaarDistribution()){checkingUpdate=false;clearTimeout(updateCheckTimeout);if(manual)openBazaarUpdate();else setUpdateStatus('نسخهٔ '+fa(APP_VERSION)+' · به‌روزرسانی از بازار');return;}
  if(checkingUpdate)return;checkingUpdate=true;lastUpdateCheckAt=Date.now();if(manual)setUpdateStatus('در حال بررسی نسخهٔ جدید…');
  clearTimeout(updateCheckTimeout);updateCheckTimeout=setTimeout(()=>{if(checkingUpdate){checkingUpdate=false;setUpdateStatus('بررسی نسخه انجام نشد؛ اتصال اینترنت را بررسی کنید.');}},20000);
  if(window.AndroidZaman){try{if(typeof AndroidZaman.checkForUpdate==='function')AndroidZaman.checkForUpdate();else{checkingUpdate=false;clearTimeout(updateCheckTimeout);}}catch{applyUpdateResult({ok:false});}return;}
  const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);try{const response=await fetch('release.json?v='+Date.now(),{cache:'no-store',signal:controller.signal});if(!response.ok)throw Error();applyUpdateResult({...(await response.json()),ok:true});}catch{applyUpdateResult({ok:false,error:'بررسی نسخه انجام نشد؛ اتصال اینترنت را بررسی کنید.'});}finally{clearTimeout(timeout);}
 }
-function autoCheckForUpdate(resumed=false){if(document.hidden||checkingUpdate)return;if(Date.now()-lastUpdateCheckAt>=(resumed?30000:UPDATE_INTERVAL))checkForUpdate();}
-function restoreCachedUpdate(){try{const cached=JSON.parse(localStorage.getItem(UPDATE_CACHE_KEY)||'null');if(validRelease(cached)&&cached.versionCode>APP_VERSION_CODE){availableUpdate=cached;updateBannerVisibility();restoreUpdateDownload();}else localStorage.removeItem(UPDATE_CACHE_KEY);}catch{}}
+function autoCheckForUpdate(resumed=false){if(bazaarDistribution()||document.hidden||checkingUpdate)return;if(Date.now()-lastUpdateCheckAt>=(resumed?30000:UPDATE_INTERVAL))checkForUpdate();}
+function restoreCachedUpdate(){try{if(bazaarDistribution()){localStorage.removeItem(UPDATE_CACHE_KEY);availableUpdate=null;updateBannerVisibility();return;}const cached=JSON.parse(localStorage.getItem(UPDATE_CACHE_KEY)||'null');if(validRelease(cached)&&cached.versionCode>APP_VERSION_CODE){availableUpdate=cached;updateBannerVisibility();restoreUpdateDownload();}else localStorage.removeItem(UPDATE_CACHE_KEY);}catch{}}
 function showDownloadState(result){
  if(result?.permissionPending){setDownloadBusy(true);setUpdateStatus('مجوز ذخیرهٔ فایل را در پیام گوشی تأیید کنید.');return;}
  if(result?.ok===false||result?.status==='failed'){stopDownloadPoll();setDownloadBusy(false);updateDownloaded=false;document.querySelector('.update-file-actions')?.remove();setUpdateStatus(result.error||result.message||'دانلود انجام نشد؛ دوباره دریافت کنید.');updateBannerVisibility();return;}
@@ -46,6 +49,7 @@ function showDownloadState(result){
 }
 window.onNativeDownload=result=>{showDownloadState(result);if(!result?.permissionPending)ensureDownloadPoll();};
 function downloadUpdate(){
+ if(bazaarDistribution()){openBazaarUpdate();return;}
  if(!availableUpdate||downloadBusy)return;
  if(window.AndroidZaman){
   if(typeof AndroidZaman.downloadUpdate!=='function'){setUpdateStatus('دریافت آپدیت در این نسخه در دسترس نیست؛ فایل نصب را از لینک انتشار دریافت کنید.');return;}
@@ -54,7 +58,7 @@ function downloadUpdate(){
  }else{const a=document.createElement('a');a.href=availableUpdate.apkUrl;a.download='ali-mirza-'+availableUpdate.versionName+'.apk';document.body.append(a);a.click();a.remove();setUpdateStatus('فایل نصب را از دانلودهای مرورگر باز و نصب را تأیید کنید.');}
 }
 window.onNativeInstall=result=>{setUpdateStatus(result?.message||result?.error||(result?.ok?'نصب‌کننده باز می‌شود؛ نصب را در پیام اندروید تأیید کنید.':'بازکردن نصب‌کننده انجام نشد.'));if(result?.permissionPending)toast('مجوز نصب این برنامه را در تنظیمات اندروید تأیید کنید.');};
-function installUpdate(){if(typeof window.AndroidZaman?.installDownloadedUpdate==='function'){try{window.onNativeInstall(JSON.parse(AndroidZaman.installDownloadedUpdate()));}catch{setUpdateStatus('نصب‌کننده باز نشد؛ فایل نصب را از دانلودها باز کنید.');}}else if(typeof window.AndroidZaman?.openDownloads==='function')AndroidZaman.openDownloads();else toast('فایل نصب را از دانلودهای مرورگر باز کنید.');}
+function installUpdate(){if(bazaarDistribution()){openBazaarUpdate();return;}if(typeof window.AndroidZaman?.installDownloadedUpdate==='function'){try{window.onNativeInstall(JSON.parse(AndroidZaman.installDownloadedUpdate()));}catch{setUpdateStatus('نصب‌کننده باز نشد؛ فایل نصب را از دانلودها باز کنید.');}}else if(typeof window.AndroidZaman?.openDownloads==='function')AndroidZaman.openDownloads();else toast('فایل نصب را از دانلودهای مرورگر باز کنید.');}
 
 function showWipeStage(){
  const titles=['پاک‌کردن همهٔ اطلاعات؟','از پاک‌کردن اطلاعات مطمئنید؟','تأیید نهایی پاک‌کردن'];

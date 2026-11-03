@@ -15,10 +15,11 @@ import org.json.*;
 
 public class MainActivity extends Activity {
   NativeVoiceRecorder nativeVoice; String pendingVoiceId; boolean voicePermissionPending=false,voiceResumed=false;
-  WebView web; PermissionRequest pendingMic; ValueCallback<Uri[]> chooser; String exportText,ringtoneKind,pendingDownloadUrl,pendingDownloadHash,dictationRequestId;
-  volatile int appDataGeneration=0; volatile boolean pendingInstall=false,installBusy=false;
+  AppUpdates updates;
+  WebView web; PermissionRequest pendingMic; ValueCallback<Uri[]> chooser; String exportText,ringtoneKind,dictationRequestId;
   @Override public void onCreate(Bundle saved) {
     super.onCreate(saved);
+    updates=new AppUpdates(this);
     nativeVoice=new NativeVoiceRecorder(this,(name,json)->callback(name,json));
     web=new WebView(this);web.setBackgroundColor(0xfff5f4ef);
     android.widget.FrameLayout frame=new android.widget.FrameLayout(this);frame.setBackgroundColor(0xfff5f4ef);frame.addView(web,new android.widget.FrameLayout.LayoutParams(-1,-1));
@@ -58,7 +59,7 @@ public class MainActivity extends Activity {
     if(request==11){if(result==RESULT_OK&&data!=null&&exportText!=null)try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out==null)throw new IOException();out.write(exportText.getBytes(StandardCharsets.UTF_8));}catch(Exception e){toast("ذخیرهٔ فایل انجام نشد");}exportText=null;}
     if(request==12&&result==RESULT_OK&&data!=null&&data.getData()!=null){Uri destination=data.getData();boolean stored=false;try(InputStream in=getAssets().open("user-guide.pdf");OutputStream out=getContentResolver().openOutputStream(destination)){if(out==null)throw new IOException();byte[] block=new byte[32768];int n;while((n=in.read(block))!=-1)out.write(block,0,n);stored=true;}catch(Exception e){toast("ذخیرهٔ جزوه انجام نشد");}if(stored){toast("جزوهٔ PDF ذخیره شد");try{startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(destination,"application/pdf").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION));}catch(ActivityNotFoundException ignored){toast("فایل ذخیره شد؛ برای خواندن، نمایشگر PDF نصب کنید.");}}}
     if(request==30&&ringtoneKind!=null){if(result==RESULT_OK&&data!=null){Uri uri=data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);SoundSettings.save(this,ringtoneKind,uri);if(uri!=null)try{getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);}catch(Exception ignored){}}ringtoneKind=null;web.evaluateJavascript("if(typeof updateNativeSounds==='function')updateNativeSounds();",null);}
-    if(request==31&&pendingInstall){pendingInstall=false;if(getPackageManager().canRequestPackageInstalls())installDownloadedUpdate();else callback("onNativeInstall","{\"ok\":false,\"error\":\"اجازهٔ نصب داده نشد. فایل APK همچنان در دانلودها موجود است.\"}");}
+    updates.onActivityResult(request,result,data);
   }
   @Override protected void onDestroy(){pendingVoiceId=null;if(nativeVoice!=null)nativeVoice.close();if(pendingMic!=null){pendingMic.deny();pendingMic=null;}if(web!=null)web.destroy();super.onDestroy();}
   void requestVoice(String id){
@@ -84,31 +85,9 @@ public class MainActivity extends Activity {
   }
   void toast(String message){runOnUiThread(()->android.widget.Toast.makeText(this,message,1).show());}
   void callback(String name,String json){runOnUiThread(()->{if(web!=null&&!isFinishing()&&!isDestroyed())web.evaluateJavascript("if(typeof window."+name+"==='function')window."+name+"("+json+");",null);});}
-  void installDownloadedUpdate(){
-    if(installBusy)return;installBusy=true;final int generation=appDataGeneration;
-    new Thread(()->{
-      try{
-        Uri uri=UpdateStore.verifiedUri(this);
-        runOnUiThread(()->{
-          installBusy=false;if(generation!=appDataGeneration)return;
-          try{
-            if(!getPackageManager().canRequestPackageInstalls()){
-              pendingInstall=true;
-              startActivityForResult(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,Uri.parse("package:"+getPackageName())),31);
-              callback("onNativeInstall","{\"ok\":false,\"permissionPending\":true,\"message\":\"برای نصب به‌روزرسانی، اجازهٔ نصب از این برنامه را در تنظیمات گوشی تأیید کنید.\"}");
-              return;
-            }
-            Intent installer=new Intent(Intent.ACTION_VIEW).setDataAndType(uri,"application/vnd.android.package-archive").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            installer.setClipData(ClipData.newRawUri("verified-update",uri));
-            startActivity(installer);
-            callback("onNativeInstall","{\"ok\":true,\"installerOpened\":true,\"message\":\"صفحهٔ نصب اندروید باز شد؛ نصب را در گوشی تأیید کنید.\"}");
-          }catch(Exception e){pendingInstall=false;callback("onNativeInstall","{\"ok\":false,\"error\":\"نصب‌کننده باز نشد؛ فایل APK را از پوشهٔ دانلودها باز کنید.\"}");}
-        });
-      }catch(Exception e){runOnUiThread(()->{installBusy=false;if(generation==appDataGeneration)callback("onNativeInstall","{\"ok\":false,\"error\":\"فایل نصب موجود یا معتبر نیست؛ دوباره دانلود کنید.\"}");});}
-    },"zaman-open-installer").start();
-  }
   void chooseSound(String kind){if(!SoundSettings.validKind(kind))return;ringtoneKind=kind;Intent intent=new Intent(RingtoneManager.ACTION_RINGTONE_PICKER).putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE,RingtoneManager.TYPE_ALL).putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE,"countdown".equals(kind)?"صدای تایمر معکوس":"صدای یادآورها").putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_DEFAULT,true).putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT,true).putExtra(RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI,RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)).putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,SoundSettings.selected(this,kind));try{startActivityForResult(intent,30);}catch(ActivityNotFoundException ignored){toast("انتخاب صدای سیستم در این گوشی در دسترس نیست.");}}
-  @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==42){voicePermissionPending=false;if(pendingVoiceId!=null){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)startPendingVoice();else{String id=pendingVoiceId;pendingVoiceId=null;nativeVoice.error(id,"PERMISSION_DENIED","اجازهٔ میکروفن داده نشد؛ مجوز میکروفن برنامه را در تنظیمات گوشی فعال کنید.");}}}if(request==41&&pendingMic!=null){PermissionRequest mic=pendingMic;pendingMic=null;if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)mic.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});else mic.deny();}if(request==20&&results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)permissions();if(request==21){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED&&pendingDownloadUrl!=null)callback("onNativeDownload",UpdateStore.start(this,pendingDownloadUrl,pendingDownloadHash));else callback("onNativeDownload","{\"ok\":false,\"error\":\"مجوز ذخیرهٔ فایل داده نشد.\"}");pendingDownloadUrl=null;pendingDownloadHash=null;}}
+  @Override public void onRequestPermissionsResult(int request,String[] permissions,int[] results){super.onRequestPermissionsResult(request,permissions,results);if(request==42){voicePermissionPending=false;if(pendingVoiceId!=null){if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)startPendingVoice();else{String id=pendingVoiceId;pendingVoiceId=null;nativeVoice.error(id,"PERMISSION_DENIED","اجازهٔ میکروفن داده نشد؛ مجوز میکروفن برنامه را در تنظیمات گوشی فعال کنید.");}}}if(request==41&&pendingMic!=null){PermissionRequest mic=pendingMic;pendingMic=null;if(results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)mic.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});else mic.deny();}if(request==20&&results.length>0&&results[0]==PackageManager.PERMISSION_GRANTED)permissions();updates.onRequestPermissionsResult(request,results);}
+
   void permissions(){if(Build.VERSION.SDK_INT>=33&&checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)!=PackageManager.PERMISSION_GRANTED){requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS},20);return;}if(!AlarmStore.exact(this)){startActivity(new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,Uri.parse("package:"+getPackageName())));return;}startActivity(new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS).putExtra(Settings.EXTRA_APP_PACKAGE,getPackageName()));}
   public final class Bridge {
     @JavascriptInterface public void startVoiceRecording(String id){runOnUiThread(()->requestVoice(id));}
@@ -128,21 +107,19 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void chooseSound(String kind){if(SoundSettings.validKind(kind))runOnUiThread(()->MainActivity.this.chooseSound(kind));}
     @JavascriptInterface public String soundStatus(){return SoundSettings.status(MainActivity.this);}
     @JavascriptInterface public void testSound(String kind){if(SoundSettings.validKind(kind))runOnUiThread(()->startForegroundService(new Intent(MainActivity.this,AlarmService.class).putExtra("title","آزمایش صدای زنگ").putExtra("kind",kind)));}
-    @JavascriptInterface public void checkForUpdate(){new Thread(()->{try{callback("onNativeUpdate",UpdateStore.fetch(MainActivity.this).toString());}catch(Exception e){callback("onNativeUpdate","{\"ok\":false,\"error\":\"بررسی نسخه انجام نشد؛ اتصال اینترنت را بررسی کنید.\"}");}},"zaman-update-check").start();}
-    @JavascriptInterface public String downloadUpdate(String url,String hash){
-      if(!UpdateStore.validApk(url)||!UpdateStore.validHash(hash))return "{\"ok\":false,\"error\":\"نشانی یا اثر انگشت فایل معتبر نیست.\"}";
-      if(Build.VERSION.SDK_INT<29&&checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED){pendingDownloadUrl=url;pendingDownloadHash=hash;runOnUiThread(()->requestPermissions(new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},21));return "{\"ok\":false,\"permissionPending\":true,\"error\":\"مجوز ذخیرهٔ فایل را در پیام گوشی تأیید کنید.\"}";}
-      return UpdateStore.start(MainActivity.this,url,hash);
-    }
-    @JavascriptInterface public String downloadStatus(){return UpdateStore.status(MainActivity.this);}
-    @JavascriptInterface public String installDownloadedUpdate(){runOnUiThread(()->MainActivity.this.installDownloadedUpdate());return "{\"ok\":true,\"scheduled\":true}";}
+    @JavascriptInterface public String distributionChannel(){return updates.channel();}
+    @JavascriptInterface public String openStore(){return updates.openStore();}
+    @JavascriptInterface public void checkForUpdate(){updates.check();}
+    @JavascriptInterface public String downloadUpdate(String url,String hash){return updates.download(url,hash);}
+    @JavascriptInterface public String downloadStatus(){return updates.status();}
+    @JavascriptInterface public String installDownloadedUpdate(){updates.install();return "{\"ok\":true,\"scheduled\":true}";}
     @JavascriptInterface public String clearAppData(){
       try{
-        appDataGeneration++;dictationRequestId=null;pendingInstall=false;pendingDownloadUrl=null;pendingDownloadHash=null;exportText=null;ringtoneKind=null;
+        dictationRequestId=null;exportText=null;ringtoneKind=null;
         AlarmStore.clear(MainActivity.this);
         stopService(new Intent(MainActivity.this,AlarmService.class));
         getSystemService(NotificationManager.class).cancel(1);
-        UpdateStore.clear(MainActivity.this);
+        updates.clear();
         if(!SoundSettings.prefs(MainActivity.this).edit().clear().commit())throw new IOException("sound settings were not cleared");
         return "{\"ok\":true}";
       }catch(Exception e){return "{\"ok\":false,\"error\":\"پاک‌کردن همهٔ تنظیمات اندروید کامل نشد؛ دوباره تلاش کنید.\"}";}

@@ -1,4 +1,4 @@
-# Ali Mirza Time Management Android 1.12.3
+# Ali Mirza Time Management Android 1.12.4
 
 Locally bundled Android package `ir.zaman.app`, separate from the existing Raval app. Minimum API 26, target/compile API 35; pure Java, no third-party Android libraries or Gradle dependencies.
 
@@ -14,7 +14,7 @@ JAVA_HOME=/path/to/jdk ANDROID_SDK_ROOT=/path/to/sdk ANDROID_BUILD_TOOLS=/path/t
 
 The local defaults match the SDK prepared for this task (`/workspace/android-sdk`, build-tools extracted under `android-15`). The official Google SDK repository metadata was downloaded over verified TLS; platform-35_r02.zip and build-tools_r35_linux.zip SHA-1 values matched that metadata. The downloaded JDK was verified against its official SHA-256. No verification was disabled.
 
-Output: `build/zaman-1.12.3.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
+Output: `build/zaman-1.12.4.apk`. The script compiles resources/Java/DEX, aligns the APK and signs it, then verifies signature and alignment and prints package metadata. The development keystore lives outside the repository in `ZAMAN_SIGNING_DIR` (default `/workspace/zaman-signing`). Preserve it privately for installable future updates; do not commit the key. This is development signing, not a production signing setup.
 
 ## Native alarms
 
@@ -30,7 +30,7 @@ Output: `build/zaman-1.12.3.apk`. The script compiles resources/Java/DEX, aligns
 - The actual native recurrence method is exercised on the JVM by `tests/AlarmStoreTest.java`, including missed repeats and daylight-saving changes. Compile against `build/classes` and Android 35's android.jar and run `ir.zaman.app.AlarmStoreTest` with the same classpath.
 - No Android emulator or physical phone was available for runtime installation, document picker, background audio, reboot recovery or lock-screen testing. These checks remain for a real device; package compilation alone does not prove them.
 
-Distribution: `downloads/zaman-android-1.12.3.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
+Distribution: `downloads/zaman-android-1.12.4.apk`, with SHA-256 companion; user-facing instructions are in `zaman/android.html`.
 
 Version 1.1.0 uses versionCode 2 and the same development signing key as 1.0.0, so it can update the installed app without clearing its local data. Its compact home screen shows colored navigation, Persian/Gregorian dates, a live clock, a minute-only countdown and a daily activity table. Backup controls and native alarm settings are in the settings dialog.
 
@@ -138,6 +138,17 @@ Approved rectangular action and slate/brown/teal Today cards. Voice attachments 
 The build requires the existing signing file and supports ZAMAN_STORE_PASSWORD, ZAMAN_KEY_PASSWORD and ZAMAN_KEY_ALIAS environment variables. It never creates a replacement signing key. Read ../MAINTENANCE.fa.md to recover/release without chat history.
 
 
-## Version 1.12.3 (versionCode 17)
+## Version 1.12.4 (versionCode 17)
 
 Android voice notes use native MediaRecorder (mono AAC/MPEG-4) with runtime RECORD_AUDIO permission and foreground lifecycle handling. NativeVoiceRecorder releases the microphone on stop/cancel/pause/destroy, deletes private cache files, and streams bounded Base64 chunks through VoiceTransfer to existing IndexedDB storage. JS binds callbacks to the active draft, rejects corrupt/out-of-order transfer, and preserves existing playback/backup. The browser retains its MediaRecorder path. MODIFY_AUDIO_SETTINGS is declared for audio compatibility. Permission denial and recorder/device errors are reported separately. Physical device recording remains untested in this workspace.
+
+
+## نسخهٔ مخصوص کافه‌بازار — ۱.۱۲.۴ / کد ۱۸
+
+برای ساخت نسخهٔ بازار، `ZAMAN_CHANNEL=bazaar bash zaman/android/build.sh` را اجرا کنید. خروجی `build/zaman-1.12.4-bazaar.apk` است. ساخت پیش‌فرض بدون این متغیر، نسخهٔ نصب مستقیم را می‌سازد. پیش از بسته‌سازی با `prepare-release.py` هر دو خروجی را بسازید.
+
+ساخت، نسخه و کد را از `enhancements.js` می‌خواند. در مسیر `android/channels/`، کلاس `AppUpdates` مخصوص همان کانال انتخاب می‌شود. در بازار، مجوز نصب و WRITE_EXTERNAL_STORAGE و UpdateReceiver از manifest تولیدشده حذف و UpdateStore/UpdateReceiver از کامپایل کنار گذاشته می‌شوند. کد دانلود و نصب APK داخل DEX نسخهٔ بازار نیست. JS با `distributionChannel()` مسیر بازار را تشخیص می‌دهد؛ کش آپدیت مستقیم نادیده گرفته می‌شود، درخواست manifest و دانلود مستقیم انجام نمی‌شود و بررسی دستی فقط صفحهٔ برنامه در بازار را باز می‌کند. برنامه ادعا نمی‌کند آخرین نسخهٔ تأییدشدهٔ بازار را از GitHub می‌داند. به‌روزرسانی خودکار تابع تنظیمات بازار است.
+
+فایل `BAZAAR-PUBLISH.fa.txt` متن کامل معرفی، پاسخ بررسی‌کننده و راهنمای ارسال است. بستهٔ آیکون/اسکرین‌شات قبلی هنوز قابل استفاده است. مجوز RECORD_AUDIO و ضبط بومی و هشدارها در هر دو خروجی حفظ شده‌اند. شناسه، امضا و مبدأ WebView تغییر نکرده‌اند. هیچ داده‌ای هنگام تغییر کانال پاک نمی‌شود؛ حذف خود برنامه اطلاعات محلی را حذف می‌کند، پس APK جدید را روی قبلی نصب کنید.
+
+اسکریپت بسته‌سازی، نبود مجوز نصب و کلاس‌ها/فراخوانی‌های نصب مستقیم در DEX بازار، حفظ ضبط صوت، نام بسته، کد، گواهی و تطبیق تمام دارایی‌های هر دو APK را کنترل می‌کند. برای آزمون مسیر رابط بازار `node zaman/tests/bazaar-updates.cjs` را اجرا کنید. تایید نهایی انتشار در اختیار کافه‌بازار است.
