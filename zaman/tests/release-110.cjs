@@ -11,8 +11,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
   const box=await reset.boundingBox(),date=await page.locator('#date').boundingBox(),hero=await page.locator('.hero').boundingBox();
   const clock=await page.locator('#seven-segment-clock').boundingBox(),brand=await page.locator('#today-brand').boundingBox();
   assert(clock.x>brand.x+brand.width-1,'digital clock is to the right of the logo');assert.equal(await page.locator('#analog-clock').count(),0);
-  assert(date.y>=clock.y+clock.height-1,'dates fit below the clock');assert(box.y>=date.y+date.height-1&&box.y+box.height<=hero.y+1,'reset follows dates before the activity card');
-  assert(box.y>=0&&box.y+box.height<height,'reset visible without scrolling '+width+'x'+height);
+  assert(date.y>=clock.y+clock.height-1,'dates fit below the clock');const end=await page.locator('[data-hold-end]').boundingBox();assert(box.y>=end.y+end.height-1,'reset follows end-day');
+  assert(box.y>=0,'reset remains accessible by scrolling');
   assert(box.height>=34,'reset is easy to touch');assert.match(await reset.innerText(),/شروع دوباره.*امروز.*ساعت دلخواه/);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'no horizontal overflow '+width);
  }

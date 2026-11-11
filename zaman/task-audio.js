@@ -13,7 +13,7 @@ function taskAudioMarkup(editable=true){return `<section class="task-audio"><div
 function audioStatus(text){const status=document.querySelector('#task-audio-status');if(status)status.textContent=text;}
 function releaseAudioPlayers(){if(taskAudioView){for(const player of taskAudioView.players)player.pause();for(const url of taskAudioView.urls)URL.revokeObjectURL(url);}taskAudioView=null;}
 function closeTaskAudio(){const draft=taskAudioDraft;taskAudioDraft=null;if(draft){draft.closed=true;clearTimeout(draft.timer);if(draft.nativeId)try{AndroidZaman.cancelVoiceRecording(draft.nativeId);}catch{}if(draft.recorder?.state==='recording')draft.recorder.stop();draft.stream?.getTracks().forEach(track=>track.stop());if(!draft.committed)for(const id of draft.created)deleteVoice(id).catch(()=>{});}releaseAudioPlayers();}
-function setupTaskAudio(task,editable){closeTaskAudio();if(editable)taskAudioDraft={notes:(task?.voiceNotes||[]).map(n=>({...n})),created:new Set(),status:'idle',closed:false,committed:false};renderTaskAudio(task?.voiceNotes||[],editable);}
+function setupTaskAudio(task,editable){stopProjectAudio();closeTaskAudio();if(editable)taskAudioDraft={notes:(task?.voiceNotes||[]).map(n=>({...n})),created:new Set(),status:'idle',closed:false,committed:false};renderTaskAudio(task?.voiceNotes||[],editable);}
 async function renderTaskAudio(notes=taskAudioDraft?.notes||[],editable=!!taskAudioDraft){
  releaseAudioPlayers();const list=document.querySelector('#task-audio-list');if(!list)return;
  const view={urls:[],players:[]};taskAudioView=view;list.replaceChildren();
@@ -21,6 +21,7 @@ async function renderTaskAudio(notes=taskAudioDraft?.notes||[],editable=!!taskAu
   const row=document.createElement('div');row.className='task-audio-note';row.dataset.voiceId=note.id;
   const title=document.createElement('span');title.textContent='ویس '+fa(index+1)+' · '+fa(Math.max(1,Math.round(note.durationMs/1000)))+' ثانیه';row.append(title);
   const player=document.createElement('audio');player.controls=true;player.preload='metadata';player.setAttribute('aria-label','پخش ویس '+fa(index+1));row.append(player);view.players.push(player);
+  const rate=document.createElement('label');rate.className='task-audio-rate';rate.textContent='سرعت پخش';const select=document.createElement('select');select.setAttribute('aria-label','سرعت پخش ویس '+fa(index+1));for(const value of [1,1.5,2]){const option=document.createElement('option');option.value=String(value);option.textContent=value+'×';select.append(option);}select.onchange=()=>{player.defaultPlaybackRate=Number(select.value);player.playbackRate=Number(select.value);};player.onloadedmetadata=()=>player.playbackRate=Number(select.value);rate.append(select);row.append(rate);
   if(editable){const remove=document.createElement('button');remove.type='button';remove.className='small danger';remove.dataset.audioDelete=note.id;remove.textContent='حذف';remove.setAttribute('aria-label','حذف ویس '+fa(index+1));row.append(remove);}
   list.append(row);
   try{const record=await getVoice(note.id);if(taskAudioView!==view)return;if(!record?.blob)throw Error();const url=URL.createObjectURL(record.blob);view.urls.push(url);player.src=url;}catch{if(taskAudioView===view){player.remove();const missing=document.createElement('small');missing.textContent='فایل صدا در دسترس نیست؛ پشتیبان کامل را بازیابی کنید.';row.append(missing);}}
@@ -80,6 +81,6 @@ async function restoreVoiceBackup(backup){
  const records=[],seen=new Set();for(const item of attachments){const note=refs.get(item?.id);if(!note||seen.has(item.id)||typeof item.data!=='string'||item.data.length>Math.ceil(VOICE_CLIP_LIMIT/3)*4||/[^A-Za-z0-9+/=]/.test(item.data))throw Error('فایل ویس معتبر نیست.');seen.add(item.id);const bytes=Uint8Array.from(atob(item.data),c=>c.charCodeAt(0));if(bytes.length!==note.size)throw Error('فایل ویس ناقص است.');records.push({id:note.id,blob:new Blob([bytes],{type:note.mimeType})});}
  if(records.length)await voiceStore('readwrite',store=>{for(const record of records)store.put(record);});return next;
 }
-async function clearVoiceNotes(){closeTaskAudio();await voiceStore('readwrite',store=>store.clear());}
+async function clearVoiceNotes(){stopProjectAudio();closeTaskAudio();await voiceStore('readwrite',store=>store.clear());}
 document.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.hasAttribute('data-audio-record')){stopTaskVoice();startAudioRecording();}else if(button.hasAttribute('data-audio-stop'))stopAudioRecording();else if(button.dataset.audioDelete&&taskAudioDraft?.status==='idle'){taskAudioDraft.notes=taskAudioDraft.notes.filter(note=>note.id!==button.dataset.audioDelete);renderTaskAudio();}});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)stopAudioRecording();});

@@ -20,7 +20,7 @@ fi
 # Drop stale generated assets/classes so removed UI modules never ship in an update.
 rm -rf build/assets build/classes build/dex
 mkdir -p build/assets/fonts build/classes build/dex "$SIGNING_DIR"
-cp ../index.html ../app.js ../style.css ../logo.png ../wordmark.png ../approved.css ../wall-clock.js ../wall-clock.css ../reset-time.js ../reset-time.css ../time-picker.js ../time-picker.css ../task-voice.js ../task-voice.css ../task-audio.js ../task-audio.css ../journal.js ../journal.css ../reports.js ../reports.css ../enhancements.js ../enhancements.css ../help.html ../guide.css ../guide.js ../user-guide.pdf build/assets/
+cp ../ios-support.js ../manifest.webmanifest ../project-tools.js ../project-tools.css ../index.html ../app.js ../style.css ../logo.png ../wordmark.png ../approved.css ../wall-clock.js ../wall-clock.css ../reset-time.js ../reset-time.css ../time-picker.js ../time-picker.css ../task-voice.js ../task-voice.css ../task-audio.js ../task-audio.css ../journal.js ../journal.css ../reports.js ../reports.css ../enhancements.js ../enhancements.css ../help.html ../guide.css ../guide.js ../user-guide.pdf build/assets/
 cp -R ../guide-assets build/assets/
 cp native.js build/assets/
 cp ../fonts/Vazirmatn-Variable.ttf build/assets/fonts/

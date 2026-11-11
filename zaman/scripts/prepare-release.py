@@ -73,7 +73,16 @@ with ZipFile(source_zip) as archive:
         assert archive.read(prefix+str(path)) == path.read_bytes()
 pdf = downloads/f'ali-mirza-user-guide-{version}.pdf'
 pdf.write_bytes(Path('zaman/user-guide.pdf').read_bytes())
-parts = {apk_public.name: apk_public, bazaar_public.name: bazaar_public, source_zip.name: source_zip, pdf.name: pdf, 'BAZAAR-PUBLISH.fa.txt':Path('zaman/BAZAAR-PUBLISH.fa.txt'), 'today-top.png': Path('zaman/guide-assets/today.png'), 'today-compact.png': Path('zaman/guide-assets/today-compact.png')}
+ios_zip=downloads/f'ali-mirza-ios-source-{version}.zip'
+with ZipFile(ios_zip,'w',ZIP_DEFLATED) as archive:
+    for source in Path('zaman/ios').rglob('*'):
+        if source.is_file() and 'build' not in source.parts:
+            archive.write(source, f'ali-mirza-ios-{version}/'+str(source.relative_to('zaman')))
+    archive.write('zaman/logo.png',f'ali-mirza-ios-{version}/logo.png')
+    archive.write('zaman/iphone.html',f'ali-mirza-ios-{version}/iphone.html')
+with ZipFile(ios_zip) as archive:
+    assert archive.testzip() is None
+parts = {ios_zip.name:ios_zip, apk_public.name: apk_public, bazaar_public.name: bazaar_public, source_zip.name: source_zip, pdf.name: pdf, 'BAZAAR-PUBLISH.fa.txt':Path('zaman/BAZAAR-PUBLISH.fa.txt'), 'today-top.png': Path('zaman/guide-assets/today.png'), 'today-compact.png': Path('zaman/guide-assets/today-compact.png')}
 preview = downloads/f'ali-mirza-today-{version}.png'
 if preview.exists():
     parts['today-full.png'] = preview
@@ -82,7 +91,8 @@ readme = f'''مدیریت زمان علی میرزا — {version}
 APK را روی نسخهٔ قبلی نصب کنید؛ برنامهٔ قبلی را حذف نکنید.
 بسته شامل اندروید، سورس کامل، جزوهٔ PDF و تصاویر واقعی است.
 فایل دارای پسوند -bazaar.apk مخصوص بارگذاری در کافه‌بازار است؛ مجوز نصب بسته‌ها و کد نصب مستقیم ندارد و به‌روزرسانی آن از بازار انجام می‌شود. فایل بدون این پسوند برای نصب مستقیم است. نام بسته و امضای هر دو یکسان است.
-این نسخه طرح تأییدشده با دکمهٔ مستطیلی و سه تم مشخص، ضبط و پخش ویس در کار پروژه و بررسی خودکار آپدیت در امروز دارد.
+پروژهٔ iOS همراه بسته، سورس Xcode است و IPA امضاشده نیست؛ استفادهٔ فوری روی آیفون از Safari و Add to Home Screen انجام می‌شود. ساخت IPA به Mac/Xcode و گواهی اپل نیاز دارد.
+این نسخه رنگ پروژه و کارها، ثبت کار فقط با ویس، سرعت و صف پخش، زمان ایجاد و سابقهٔ وضعیت و منوی تازه دارد. این نسخه طرح تأییدشده با دکمهٔ مستطیلی و سه تم مشخص، ضبط و پخش ویس در کار پروژه و بررسی خودکار آپدیت در امروز دارد.
 برای ویس، «ضبط ویس»، سپس «پایان ضبط» و بعد «ذخیره» را بزنید. میکروفن فقط هنگام ضبط فعال می‌شود. هر ویس حداکثر پنج دقیقه است.
 پشتیبان JSON متن‌ها و صداها را با هم نگه می‌دارد؛ سقف فایل پشتیبان ۱۰۰ مگابایت است. فایل‌های ناقص پذیرفته نمی‌شوند.
 آپدیت در شروع، برگشت به برنامه و هر پنج دقیقه هنگام بازبودن بررسی می‌شود. دریافت و نصب از هشدار صفحهٔ امروز انجام می‌شود؛ تأیید نهایی نصب با اندروید است.
@@ -111,10 +121,10 @@ with ZipFile(market_bundle) as archive:
     assert archive.testzip() is None
     # Image bundle may not be available when building from an extracted source ZIP.
     assert archive.read(bazaar_public.name) == bazaar_public.read_bytes()
-for path in [apk_public, bazaar_public, source_zip, pdf, bundle, market_bundle, preview]:
+for path in [apk_public, bazaar_public, source_zip, pdf, ios_zip, bundle, market_bundle, preview]:
     if path.exists():
         path.chmod(0o644)
 (downloads/f'zaman-android-{version}.sha256').write_text(digest+'  '+apk_public.name+'\n')
 (downloads/f'zaman-android-{version}-bazaar.sha256').write_text(hashlib.sha256(bazaar_public.read_bytes()).hexdigest()+'  '+bazaar_public.name+'\n')
-(downloads/f'ali-mirza-time-{version}.sha256').write_text(''.join(hashlib.sha256(path.read_bytes()).hexdigest()+'  '+path.name+'\n' for path in [apk_public, bazaar_public, source_zip, pdf, bundle, market_bundle]))
+(downloads/f'ali-mirza-time-{version}.sha256').write_text(''.join(hashlib.sha256(path.read_bytes()).hexdigest()+'  '+path.name+'\n' for path in [apk_public, bazaar_public, source_zip, pdf, ios_zip, bundle, market_bundle]))
 print(f'PASS {version} ({code}): both APK channels/assets/certificates, Bazaar permission and DEX exclusions, {len(sources)} source files, PDF, manifest and bundles verified; direct SHA-256 {digest}; Bazaar SHA-256 {hashlib.sha256(bazaar_public.read_bytes()).hexdigest()}')

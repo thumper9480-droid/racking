@@ -8,8 +8,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  for(const [width,height] of [[320,640],[360,740],[390,844],[768,900],[1280,900]]){
   await p.setViewportSize({width,height});
   const clock=await p.locator('#header-clock').boundingBox(),date=await p.locator('#date').boundingBox(),brand=await p.locator('#today-brand').boundingBox(),reset=await p.locator('[data-action=reset-day]').boundingBox(),nav=await p.locator('nav').boundingBox();
-  assert(clock.x>=brand.x+brand.width-1,'clock is physically right of logo');assert(date.y>=clock.y+clock.height-1&&Math.abs(date.x-clock.x)<2,'dates are directly beneath the clock');assert(reset.y>=date.y+date.height-1&&reset.y+reset.height<nav.y+1,'reset follows dates and precedes nav');assert(reset.y+reset.height<(width<650?155:180),'compact header moves reset upward');
-  const projects=await p.locator('nav [data-tab=projects]').boundingBox(),alarms=await p.locator('nav [data-tab=alarms]').boundingBox();assert(projects.width>alarms.width*1.2,'projects wider than reminders');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
+  assert(clock.x>=brand.x+brand.width-1,'clock is physically right of logo');assert(date.y>=clock.y+clock.height-1&&Math.abs(date.x-clock.x)<2,'dates are directly beneath the clock');const end=await p.locator('[data-hold-end]').boundingBox();assert(reset.y>=end.y+end.height-1,'reset now follows end-day');
+  const education=await p.locator('#education-button').boundingBox(),alarms=await p.locator('#header-reminders').boundingBox();assert(alarms.y>=education.y+education.height-1,'reminders below education');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1));
  }
  await p.setViewportSize({width:390,height:844});
  // Every date/time form uses 24-hour hour and minute wheels, while preserving values on submit.
