@@ -2,13 +2,10 @@
 #today-header { grid-template-rows:auto auto; }
 .header-education { grid-row:1; align-self:end; }
 #header-reminders { grid-column:3;grid-row:2;align-self:start;margin-top:4px; }
-main:not(.is-today) #header-reminders { display:none; }
-main:not(.is-today) .header-education { grid-row:1 / 3;align-self:center; }
 .header-education svg { width:17px;height:17px; }
 nav .nav-activity-stack { display:grid;grid-template-rows:1fr 1fr;flex:1.55;min-width:0;gap:2px; }
 nav .nav-activity-stack button { min-height:27px;padding:3px 4px;font-size:10px;line-height:1.25;gap:4px;border-radius:7px; }
 nav .nav-activity-stack svg { width:17px;height:17px;flex-shrink:0; }
-.is-today nav [data-tab=alarms] { display:none; }
 .day-reset-panel { padding:0;margin:8px 0 0; }
 .is-today .day-reset-panel { margin-top:8px; }
 .project-color-field { display:flex;align-items:center;justify-content:space-between;gap:12px; }
@@ -37,8 +34,6 @@ nav .nav-activity-stack svg { width:17px;height:17px;flex-shrink:0; }
 .task-audio-rate select { width:78px;padding:5px; }
 @media(max-width:350px){nav .nav-activity-stack button{font-size:9px;}nav .nav-activity-stack svg{width:14px;} .task-entry .project-play{font-size:10px;padding:5px;}}
 .today-layout > .day-reset-panel { grid-row:auto;grid-column:1/-1;order:100; }
-nav #header-reminders { display:flex!important; }
-nav #header-reminders svg { width:17px;height:17px; }
 #today-header>#header-reminders { display:flex; }
 
 dialog.project-tinted { background:var(--project-soft);border:1px solid var(--project-border);border-top:5px solid var(--project-color); }

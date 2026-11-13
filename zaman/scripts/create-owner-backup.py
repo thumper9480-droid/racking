@@ -63,7 +63,7 @@ ZAMAN_CHANNEL=bazaar bash zaman/android/build.sh
 ZAMAN_CHANNEL=direct bash zaman/android/build.sh
 python3 zaman/scripts/prepare-release.py
 ''')
-qa=Path('/tmp/zaman-tests-1130.json')
+qa=Path(os.environ.get('ZAMAN_QA_REPORT',f'/tmp/zaman-tests-{version}.json'))
 if qa.exists():
     results=json.loads(qa.read_text());assert all(r['code']==0 for r in results), 'Fix failed tests before owner backup'
     put('QA-RESULTS.json',qa.read_bytes())

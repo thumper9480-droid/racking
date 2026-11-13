@@ -1,5 +1,4 @@
 'use strict';
-function placeRemindersButton(){const button=document.querySelector('#header-reminders'),nav=document.querySelector('nav');if(!button)return;button.classList.toggle('header-education',tab==='today');if(tab==='today')document.querySelector('#today-header').append(button);else nav.insertBefore(button,nav.querySelector('[data-tab=projects]'));}
 const PROJECT_COLORS=['#4f8068','#4777b6','#835db0','#c58429','#ba596b','#428e93','#687789'];
 function validProjectColor(value){return typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value);}
 function projectStyle(p){const color=validProjectColor(p?.color)?p.color:'#4f8068',rgb=[1,3,5].map(i=>parseInt(color.slice(i,i+2),16)),mix=f=>`rgb(${rgb.map(n=>Math.round(n+(255-n)*f)).join(',')})`;return `--project-color:${color};--project-soft:${mix(.91)};--project-border:${mix(.55)}`;}

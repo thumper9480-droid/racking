@@ -21,6 +21,7 @@ function journalOccupied(day,except=-1,now=Date.now()){
  const ranges=state.history.flatMap((h,i)=>i!==except&&!h.durationOnly&&h.end>day.start&&h.start<day.end?[{start:Math.max(h.start,day.start),end:Math.min(h.end,day.end)}]:[]);
  if(state.day&&!state.pendingSegment?.ending&&state.day.segment<day.end&&journalLiveEnd(now)>day.start)ranges.push({start:Math.max(day.start,state.day.segment),end:Math.min(day.end,journalLiveEnd(now))});
  const pending=state.pendingSegment;if(pending&&pending.start<day.end&&pending.end>day.start)ranges.push({start:Math.max(day.start,pending.start),end:Math.min(day.end,pending.end)});
+ for(const sleep of sleepRanges(state,now))if(sleep.start<day.end&&sleep.end>day.start)ranges.push({start:Math.max(day.start,sleep.start),end:Math.min(day.end,sleep.end)});
  return ranges;
 }
 function journalFirstGap(day,now=Date.now()){
@@ -33,7 +34,7 @@ function journalParseTime(value,day){const match=/^(\d{2}):(\d{2})$/.exec(String
 function journalDateFields(value){const d=new Date(value),p=jalaliParts(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())));return `<div class="persian-date"><label>روز<select name="jday">${Array.from({length:31},(_,i)=>`<option value="${i+1}" ${p.day===i+1?'selected':''}>${fa(i+1)}</option>`).join('')}</select></label><label>ماه<select name="jmonth">${monthNames.map((m,i)=>`<option value="${i+1}" ${p.month===i+1?'selected':''}>${m}</option>`).join('')}</select></label><label>سال<input name="jyear" required inputmode="numeric" maxlength="4" value="${fa(p.year)}"></label></div><p id="weekday-preview" class="weekday-preview"></p>`;}
 function journalUpdateMode(){const form=$('#form'),duration=form.elements.entryMode?.value==='duration';if(!form.elements.entryMode)return;$('#journal-range').hidden=duration;$('#journal-duration').hidden=!duration;for(const input of $('#journal-range').querySelectorAll('input'))input.disabled=duration;form.elements.durationMinutes.disabled=!duration;form.elements.durationMinutes.required=duration;form.elements.toTime.disabled=duration||form.elements.endOfDay.checked;}
 document.addEventListener('change',event=>{if(['entryMode','endOfDay'].includes(event.target.name))journalUpdateMode();});
-function journalTotal(day,except,now){let total=state.history.reduce((sum,h,i)=>sum+(i===except?0:journalDuration(h,day)),0);const pending=state.pendingSegment;if(pending)total+=Math.max(0,Math.min(pending.end,day.end)-Math.max(pending.start,day.start));if(state.day&&!(pending?.ending&&!pending.detached))total+=Math.max(0,Math.min(journalLiveEnd(now),day.end)-Math.max(state.day.segment,day.start));return total;}
+function journalTotal(day,except,now){let total=state.history.reduce((sum,h,i)=>sum+(i===except?0:journalDuration(h,day)),0);const pending=state.pendingSegment;if(pending)total+=Math.max(0,Math.min(pending.end,day.end)-Math.max(pending.start,day.start));if(state.day&&!(pending?.ending&&!pending.detached))total+=Math.max(0,Math.min(journalLiveEnd(now),day.end)-Math.max(state.day.segment,day.start));return total+sleepStats(day,now).total;}
 function manualHistoryForm(index=null,selectedDay=null,chosenGap=null){
  const old=index===null?null:state.history[index];if(index!==null&&!old)return;
  const initialDay=old?journalBounds(old.start):selectedDay||historyDay(),gap=chosenGap||journalFirstGap(initialDay),from=old&&!old.durationOnly?old.start:gap.start,to=old&&!old.durationOnly?old.end:gap.end;
@@ -50,6 +51,7 @@ function manualHistoryForm(index=null,selectedDay=null,chosenGap=null){
    if(unchanged){start=old.start;end=old.end;}
    if(start===null||end===null||end<=start||end>now){toast('بازهٔ گذشته و معتبر وارد کنید؛ پایان باید پس از شروع باشد.');return false;}
    if(!unchanged){
+    if(sleepOverlap(start,end)){toast('این بازه با زمان خواب تداخل دارد؛ خواب یا فعالیت را اصلاح کنید.');return false;}
     if(state.history.some((h,i)=>i!==index&&!h.durationOnly&&h.end>start&&h.start<end)||state.pendingSegment&&state.pendingSegment.end>start&&state.pendingSegment.start<end){toast('این بازه با ثبت دیگری هم‌پوشانی دارد؛ همان سطر را ویرایش کنید.');return false;}
     const live=state.day&&!state.pendingSegment?.ending&&end>state.day.segment&&start<journalLiveEnd(now),removedLive=live?Math.max(0,Math.min(journalLiveEnd(now),end)-state.day.segment):0;
     if(journalTotal(day,index,now)-removedLive+end-start>Math.min(day.end,now)-day.start+1){toast('مدت ثبت‌ها از زمان سپری‌شدهٔ این روز بیشتر می‌شود.');return false;}
@@ -64,11 +66,12 @@ function manualHistoryForm(index=null,selectedDay=null,chosenGap=null){
  if(opened){updatePersianDate();journalUpdateMode();focusActivityInput();}
 }
 function startLiveDay(start){
- const now=Date.now();closeExpiredDay(now);const day=journalBounds(now);if(state.day||state.pendingSegment){toast('ابتدا فعالیت جاری را ثبت یا پایان دهید.');return false;}
+ const now=Date.now();closeExpiredDay(now);if(state.sleepStart!==undefined){toast('ابتدا زمان بیدارشدن را ثبت کنید.');return false;}const day=journalBounds(now);if(state.day||state.pendingSegment){toast('ابتدا فعالیت جاری را ثبت یا پایان دهید.');return false;}
  if(!Number.isFinite(start)||start<day.start||start>now){toast('ساعت شروع باید امروز و پیش از زمان فعلی باشد.');return false;}
+ if(sleepOverlap(start,now)){toast('این زمان با خواب ثبت‌شده تداخل دارد؛ زمان پس از بیداری را انتخاب کنید.');return false;}
  if(state.history.some(h=>!h.durationOnly&&h.end>start&&h.start<now)){toast('این زمان با فعالیت ثبت‌شده هم‌پوشانی دارد؛ زمان پس از آن را انتخاب کنید.');return false;}
  const summaries=state.history.filter(h=>h.durationOnly&&h.start>=day.start&&h.start<day.end).reduce((sum,h)=>sum+h.durationMs,0),before=state.history.filter(h=>!h.durationOnly).reduce((sum,h)=>sum+Math.max(0,Math.min(h.end,start)-Math.max(h.start,day.start)),0);
- if(summaries>start-day.start-before+1){toast('برای حفظ مدت‌های ثبت‌شده، زمان شروع دیرتری انتخاب کنید.');return false;}
+ if(summaries>start-day.start-before-sleepStats({start:day.start,end:start},now).total+1){toast('برای حفظ مدت‌های ثبت‌شده، زمان شروع دیرتری انتخاب کنید.');return false;}
  journalClaimRange(start,now);state.day={start,segment:start,activity:'فعالیت جاری'};return true;
 }
 function startDayForm(){const day=journalBounds(),opened=modal('شروع روز از ساعت دلخواه',resetTimeFields(new Date()),f=>{if(journalBounds().start!==day.start){toast('روز عوض شده؛ دوباره انتخاب کنید.');return false;}const chosen=readResetTime(f),start=chosen.useNow?Date.now():journalParseTime(chosen.value,day);return startLiveDay(start);});if(opened)setupResetTime();}
