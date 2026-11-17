@@ -1,5 +1,119 @@
 .planning-open{border:1px solid #b2c9b8}.plan-help,.plan-data-note{font-size:11px;line-height:1.9;color:#657b70}.plan-data-note{margin-top:18px;padding-top:10px;border-top:1px solid #dce5de}.plan-month-nav{display:grid;grid-template-columns:34px minmax(0,1fr) 85px 34px;gap:7px;margin:12px 0}.plan-month-nav select{margin:0;padding:8px;font-size:13px}.plan-month-nav button{padding:6px}.calendar-week-head,.calendar-week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}.calendar-week-head{font-size:10px;text-align:center;padding:10px 0;color:#637970}.calendar-week{margin-bottom:9px}.calendar-week-label{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:#7a8b80;margin:4px 0}.calendar-week-label button{font-size:10px;padding:4px 7px;background:#f0f5ef;border:1px solid #dce6dd}.calendar-day{min-width:0;min-height:81px;position:relative;padding:6px 1px;border:1px solid #dfe6df;border-radius:10px;background:#fff;display:flex;flex-direction:column;gap:3px;align-items:center;justify-content:center;color:#314c40}.calendar-weekday{font-size:9px;white-space:nowrap}.calendar-date{font-size:20px;line-height:1.2}.calendar-day small{font-size:9px;line-height:1.5}.calendar-day.selected{border:2px solid #30775b;padding:5px 0;background:#eff7f1}.calendar-day.today:not(.selected){box-shadow:inset 0 -3px #b8d1bf}.calendar-day.official-holiday .calendar-weekday,.calendar-day.official-holiday .calendar-date{color:#218449}.holiday-dot{position:absolute;top:4px;left:5px;width:5px;height:5px;border-radius:50%;background:#218449}.calendar-legend{font-size:10px;color:#6a7b6f;line-height:1.8}.calendar-legend span,.selected-holiday{color:#218449}.selected-holiday{font-size:12px;border:1px solid #c4e2cc;background:#eef8f0;padding:8px;border-radius:9px}.calendar-data-note{font-size:11px;line-height:1.9;color:#855d28;background:#fff5df;padding:9px;border-radius:8px}.selected-plan-day{border:1px solid #cadbce;background:#f5f9f4;padding:12px;border-radius:13px;margin-top:12px}.selected-plan-day h3{margin:0;font-size:14px}.selected-plan-day>.row{gap:7px}.selected-plan-day>.row button{font-size:11px;padding:7px}.selected-day-total{font-size:12px}.plan-empty{font-size:11px;color:#708274;line-height:2}.plan-card{padding:10px;background:white;border:1px solid #dce5dd;border-radius:11px;margin:8px 0}.plan-card .row{gap:8px}.plan-card h3{margin:0;font-size:15px}.plan-card .small{font-size:10px;padding:5px 8px}.plan-card.is-complete{background:#e8f7eb;border-color:#75b789;color:#185d35}.plan-target{font-size:11px;display:flex;gap:6px;justify-content:space-between}.plan-slots{display:flex;gap:5px;flex-wrap:wrap;margin:9px 0}.plan-slot{width:34px;height:29px;border:1px solid #dce5de;background:#f2f6f0;border-radius:7px;display:grid;place-items:center;font-size:11px;direction:ltr}.plan-slot.done{background:#2c8b56;border-color:#2c8b56;color:#fff;font-size:18px}.plan-slot.partial{background:#fff0cc;border-color:#e3c277;color:#7f632d;width:52px}.plan-card progress{width:100%;height:8px;accent-color:#2c8b56}.plan-foot{font-size:11px;margin:7px 0 0}.plan-number-fields{display:grid;grid-template-columns:1fr 1fr;gap:10px}.plan-quota-preview{background:#edf5ed;padding:10px;border-radius:8px;color:#34694a;font-size:13px}.week-pattern-row{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:7px;padding:9px 0;border-bottom:1px solid #e0e8df;align-items:center}.week-pattern-row label{font-size:11px;margin:0}.week-pattern-row input[type=number]{padding:7px;margin:0}.week-pattern-row output{grid-column:2/-1;font-size:10px;color:#5d7864}.week-pattern-row .check{gap:4px}.week-pattern-row .check input{width:auto;margin:0}.calendar-empty{min-height:81px}@media(max-width:350px){.calendar-week-head{font-size:8px}.calendar-weekday{font-size:8px}.calendar-week-grid{gap:3px}.calendar-date{font-size:18px}.calendar-day small{font-size:8px}.calendar-day{border-radius:7px}.selected-plan-day{padding:9px}.plan-target{font-size:10px}.plan-card{padding:8px}}
 
 .week-pattern-row.off { opacity:.55; }
-.planner-title{flex-wrap:wrap}.planner-title h2{margin-bottom:0}.planner-title .actions{gap:5px}.planner-title .actions button{font-size:10px;padding:7px}.overview-all-total{padding:13px;background:#edf5ed;border:1px solid #c2d7c7;border-radius:12px;display:grid;gap:7px;font-size:13px}.overview-week{position:relative;isolation:isolate;overflow:hidden;margin:15px 0;padding:12px;background:#f0f4ed;border:1px solid #d2decd;border-radius:14px}.week-watermark{position:absolute;inset-inline-end:15px;top:45px;font-size:48px;font-weight:900;color:#afc2a5;opacity:.15;z-index:-1;pointer-events:none}.overview-week-title{display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px}.overview-week-title h3{margin:0;font-size:16px;color:#426b43}.overview-week-title>span{font-size:10px;color:#718369}.overview-week-total{padding:7px 0 12px;font-size:11px;display:grid;gap:5px}.overview-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;align-items:start}.overview-day{min-width:0;border:1px solid #dae4d6;background:#ffffffb8;border-radius:10px;overflow:hidden}.overview-day-header{width:100%;display:grid;gap:3px;text-align:center;background:#e7eee1;border-radius:0;padding:9px 2px;color:#455e3b}.overview-day-header b{font-size:10px}.overview-day-header span{font-size:10px}.overview-day-header.official-holiday{color:#218449}.overview-task{padding:8px 6px;border-bottom:1px solid #e1e9dc;display:grid;gap:5px;color:#3b5540;font-size:10px;overflow-wrap:anywhere}.overview-task>b{font-size:12px}.overview-task small{font-size:9px;color:#708269}.overview-task.complete{background:#e7f5e8}.overview-progress{display:flex;align-items:center;gap:7px;min-width:0;direction:rtl}.overview-progress>span{font-weight:800;min-width:30px;white-space:nowrap}.overview-progress progress{width:100%;min-width:0;height:9px;accent-color:#418c55}.overview-task .overview-progress{flex-wrap:wrap;gap:3px}.overview-task .overview-progress progress{flex-basis:100%}.overview-empty{font-size:10px;text-align:center;color:#96a48e;padding:12px 0}.overview-day-total{padding:7px;display:grid;gap:4px;font-size:10px;background:#f2f7ed}@media(max-width:650px){.overview-days{grid-template-columns:repeat(2,minmax(0,1fr))}.overview-day-header{display:flex;align-items:center;justify-content:space-between;padding:8px}.overview-day-header b,.overview-day-header span{font-size:12px}.overview-task{padding:9px;font-size:11px}.overview-task>b{font-size:13px}.overview-task small{font-size:10px}.overview-task .overview-progress{flex-wrap:nowrap}.overview-task .overview-progress progress{flex-basis:auto}.week-watermark{font-size:42px}.overview-day:last-child{grid-column:1/-1}.overview-week{padding:9px}.overview-week-title>span{font-size:9px}}
-.monthly-plan-dialog{width:min(640px,96vw);padding:16px;overflow:hidden;max-height:94dvh}.monthly-plan-dialog #form{display:flex;flex-direction:column;max-height:calc(94dvh - 32px)}.monthly-plan-dialog #form>:not(.month-plan-scroll){flex-shrink:0}.monthly-plan-dialog #form>h2{font-size:16px;margin-bottom:10px}.monthly-plan-dialog #form>.plan-help{margin:5px 0;font-size:10px}.monthly-plan-dialog #form>.actions{margin-top:10px;flex-shrink:0}.month-plan-scroll{overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1;border-block:1px solid #dbe5dc;padding-inline-end:5px}.month-total-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;margin:8px 0}.month-total-heading output{background:#e4eefb;color:#315a94;padding:7px 10px;border-radius:8px;font-weight:800;white-space:nowrap}.month-plan-row{display:grid;grid-template-columns:1.1fr 1.5fr .8fr;gap:7px;align-items:center;padding:10px 0;border-bottom:1px solid #e0e8df}.month-day-label{margin:0!important;gap:5px!important;font-size:12px}.month-day-label input{width:auto;margin:0}.month-day-label>span{display:grid;gap:4px}.month-day-label small{font-size:9px;direction:ltr;color:#79698b}.month-day-label.official-holiday b,.month-day-label.official-holiday small{color:#218449}.month-quota-inputs{display:grid;grid-template-columns:1fr 1fr;gap:6px}.month-quota-inputs label{font-size:10px;margin:0}.month-quota-inputs input{padding:6px;min-width:0;margin:3px 0 0}.month-plan-row>output{padding:9px 3px;background:#203e37;color:#fff;border-radius:8px;text-align:center;font-size:11px;font-weight:750}.month-wake{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px;padding-top:3px}.month-wake .check{font-size:11px;margin:0}.month-wake>input,.month-wake .time-picker-control{max-width:130px;margin:0}.month-wake input{padding:6px}.month-wake .time-picker-control>button{padding:6px}.daily-progress-row{border:1px solid #d3e1d6;border-radius:12px;padding:12px;margin:10px 0;background:#f7faf5}.daily-progress-row h3{margin:0 0 10px;font-size:13px;color:#48634d}.daily-progress-activities{display:grid;gap:7px}.daily-progress-activity{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;padding:10px;border:1px solid #e0e9e0;border-radius:10px}.daily-progress-activity>div:first-child{display:grid;gap:5px;min-width:0}.daily-progress-activity b{font-size:13px;overflow-wrap:anywhere}.daily-progress-activity small{font-size:11px;color:#68806c}.progress-ring{flex-shrink:0;position:relative;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#3b9861 var(--ring-progress),#e2e9e3 0)}.progress-ring::before{content:'';position:absolute;inset:7px;border-radius:50%;background:#fff}.progress-ring span{position:relative;font-size:13px;font-weight:850;color:#3a6550}.progress-ring.complete span{color:#1e8748}@media(max-width:350px){.monthly-plan-dialog{padding:12px}.monthly-plan-dialog #form{max-height:calc(94dvh - 24px)}.month-plan-row{grid-template-columns:1.1fr 1.35fr .7fr;gap:4px}.month-day-label{font-size:10px}.month-day-label small{font-size:8px}.month-plan-row>output{font-size:9px}.month-quota-inputs{gap:3px}.month-quota-inputs input{padding:5px;font-size:12px}.month-total-heading{font-size:9px}.progress-ring{width:57px;height:57px}}
+
+/* Shared masthead: one Activities button, reports stay in the Activities page. */
+nav .activities-nav { flex:1.55; }
+nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
+.planner-title { flex-wrap:wrap; }
+.planner-title h2 { margin-bottom:0; }
+.planner-title .actions { gap:5px; }
+.planner-title .actions button { font-size:10px; padding:7px; }
+.overview-all-total { padding:13px; background:#edf5ed; border:1px solid #c2d7c7; border-radius:12px; display:grid; gap:7px; font-size:13px; }
+.overview-week { position:relative; isolation:isolate; overflow:hidden; margin:15px 0; padding:12px; background:#f0f4ed; border:1px solid #d2decd; border-radius:14px; }
+.week-watermark { position:absolute; inset-inline-end:15px; top:45px; font-size:48px; font-weight:900; color:#afc2a5; opacity:.15; z-index:-1; pointer-events:none; }
+.overview-week-title { display:flex; justify-content:space-between; gap:8px; align-items:center; margin-bottom:8px; }
+.overview-week-title h3 { margin:0; font-size:16px; color:#426b43; }
+.overview-week-title>span { font-size:10px; color:#718369; }
+.overview-week-total { padding:7px 0 12px; font-size:11px; display:grid; gap:5px; }
+.overview-progress { display:flex; align-items:center; gap:7px; min-width:0; direction:rtl; }
+.overview-progress>span { font-weight:800; min-width:30px; white-space:nowrap; }
+.overview-progress progress { width:100%; min-width:0; height:9px; accent-color:#418c55; }
+.overview-table-scroll { overflow-x:auto; overscroll-behavior-x:contain; border:1px solid #d8e3d5; border-radius:10px; }
+.overview-table { border-collapse:separate; border-spacing:0; width:100%; table-layout:auto; font-size:11px; }
+.overview-table th,.overview-table td { min-width:104px; padding:10px 7px; border-inline-end:1px solid #e0e8dc; border-bottom:1px solid #e0e8dc; background:#ffffffd9; text-align:center; vertical-align:middle; }
+.overview-table thead th { background:#e7eee1; overflow-wrap:anywhere; max-width:180px; color:#426b43; }
+.overview-table tbody th { position:sticky; right:0; z-index:1; min-width:88px; background:#f3f7ed; padding:5px; }
+.overview-table thead th:first-child { position:sticky; right:0; z-index:2; }
+.overview-table .overview-task.complete { background:#e7f5e8; }
+.overview-task small { display:block; white-space:nowrap; margin-top:5px; font-size:10px; color:#708269; }
+.overview-table .overview-day-total { background:#edf5e7; min-width:90px; }
+.overview-day-header { display:grid; gap:4px; width:100%; padding:8px 3px; background:transparent; color:#455e3b; font-size:11px; }
+.overview-day-header span { font-size:10px; white-space:nowrap; }
+.overview-day-header.official-holiday { color:#218449; }
+.overview-empty { color:#96a48e; }
+/* One compact row: date, wake-up time, daily sum, count and minutes. */
+.monthly-plan-dialog { width:min(760px,96vw); padding:16px; overflow:hidden; max-height:94dvh; }
+.monthly-plan-dialog #form { display:flex; flex-direction:column; max-height:calc(94dvh - 32px); }
+.monthly-plan-dialog #form>:not(.month-plan-scroll) { flex-shrink:0; }
+.monthly-plan-dialog #form>h2 { font-size:16px; margin-bottom:10px; }
+.monthly-plan-dialog #form>.plan-help { margin:5px 0; font-size:10px; }
+.monthly-plan-dialog #form>.actions { margin-top:10px; }
+.month-plan-scroll { overflow:auto; overscroll-behavior:contain; min-height:0; flex:1; border-block:1px solid #dbe5dc; padding-inline-end:5px; }
+.month-total-heading { display:flex; align-items:center; justify-content:space-between; gap:6px; font-size:11px; margin:8px 0; }
+.month-total-heading output { background:#e4eefb; color:#315a94; padding:7px 10px; border-radius:8px; font-weight:800; white-space:nowrap; }
+.month-plan-row { display:grid; grid-template-columns:minmax(67px,1fr) 116px 58px 88px; gap:8px; align-items:center; min-width:353px; padding:9px 0; border-bottom:1px solid #e0e8df; }
+.month-day-label { margin:0!important; gap:4px!important; font-size:11px; }
+.month-day-label input { width:14px; height:14px; margin:0; flex-shrink:0; }
+.month-day-label>span { display:grid; gap:4px; }
+.month-day-label small { font-size:10px; color:#79698b; white-space:nowrap; }
+.month-day-label.official-holiday b,.month-day-label.official-holiday small { color:#218449; }
+.month-quota-inputs { display:grid; grid-template-columns:1fr 1fr; gap:4px; }
+.month-quota-inputs label { font-size:9px; margin:0; }
+.month-quota-inputs input { padding:5px 2px; min-width:0; margin:2px 0 0; font-size:12px; text-align:center; height:29px; }
+.month-plan-row>output { padding:9px 2px; background:#203e37; color:#fff; border-radius:7px; text-align:center; font-size:10px; font-weight:750; white-space:nowrap; }
+.month-wake { display:flex; align-items:center; gap:4px; }
+.month-wake .check { display:grid; justify-items:center; gap:2px; font-size:8px; margin:0; white-space:nowrap; }
+.month-wake .check input { width:14px; height:14px; margin:0; }
+.month-wake .time-picker-control { width:65px; min-width:0; margin:0; display:block; }
+.month-wake .time-picker-control>input { padding:5px 1px; font-size:14px; height:33px; }
+.month-wake .time-wheel-toggle { display:none; }
+.month-wake:has(.shared-time-picker:not([hidden])) { grid-column:2/-1; flex-wrap:wrap; }
+.month-wake .time-picker-control:has(.shared-time-picker:not([hidden])) { width:210px; }
+.month-wake .shared-time-picker { width:210px; margin:5px 0; }
+.month-time-done { width:100%; margin-top:7px; font-size:11px; padding:6px; background:#e2eee5; color:#235e42; }
+.month-wake-status { grid-column:2/-1; color:#8a692f; font-size:9px; }
+.month-form-error,.month-row-error { background:#fff0ed; border:1px solid #e8a69a; color:#9c2d20; padding:6px 8px; border-radius:7px; font-size:11px; margin:4px 0; }
+.month-row-error { grid-column:1/-1; }
+.monthly-plan-dialog [aria-invalid=true] { border:2px solid #c64832; }
+/* Circular progress is shared by the period report and the weekly matrix. */
+.progress-ring { flex-shrink:0; position:relative; width:64px; height:64px; border-radius:50%; display:grid; place-items:center; background:conic-gradient(#3b9861 var(--ring-progress),#e2e9e3 0); }
+.progress-ring::before { content:''; position:absolute; inset:7px; border-radius:50%; background:#fff; }
+.progress-ring span { position:relative; font-size:13px; font-weight:850; color:#3a6550; }
+.progress-ring.complete span { color:#1e8748; }
+.overview-table .progress-ring { width:52px; height:52px; margin:auto; }
+.overview-table .progress-ring::before { inset:6px; }
+.overview-table .progress-ring span { font-size:11px; }
+.daily-progress-row { border:1px solid #d3e1d6; border-radius:12px; padding:12px; margin:10px 0; background:#f7faf5; }
+.daily-progress-activities { display:grid; gap:7px; }
+.daily-progress-activity { display:flex; align-items:center; justify-content:space-between; gap:10px; background:#fff; padding:10px; border:1px solid #e0e9e0; border-radius:10px; }
+.daily-progress-activity>div:first-child,.plan-range-total>div:first-child { display:grid; gap:5px; min-width:0; }
+.daily-progress-activity b { font-size:13px; overflow-wrap:anywhere; }
+.daily-progress-activity small,.plan-range-total small { font-size:11px; color:#68806c; }
+.plan-range-total { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:10px; padding:4px 10px 12px; border-bottom:1px solid #d4e1d4; }
+.plan-report-modes { display:flex; gap:6px; margin-top:12px; }
+.plan-report-modes button { flex:1; background:#eef3eb; color:#4b6c51; border:1px solid #d4e0d3; padding:8px; }
+.plan-report-modes .selected { background:#245f46; color:white; border-color:#245f46; }
+.plan-period-picker { display:flex; gap:7px; align-items:center; padding:8px 0; }
+.plan-period-picker>button { width:30px; padding:6px; }
+#plan-period-wheel { flex:1; height:132px; overflow-y:auto; scroll-snap-type:y mandatory; padding-block:44px; background:#f5f8f2; border:1px solid #d8e3d2; border-radius:10px; scrollbar-width:thin; touch-action:pan-y; overscroll-behavior:contain; }
+#plan-period-wheel>button { display:block; height:44px; min-height:44px; line-height:24px; width:100%; padding:10px 4px; scroll-snap-align:center; background:transparent; color:#80917c; border-radius:7px; font-size:12px; }
+#plan-period-wheel>[aria-selected=true] { font-weight:850; color:#245e42; background:#e1eddf; }
+#plan-period-title { font-size:13px; color:#426b43; margin:8px 0; text-align:center; }
+@media(max-width:450px) {
+ .monthly-plan-dialog { padding:12px; }
+ .monthly-plan-dialog #form { max-height:calc(94dvh - 24px); }
+ .month-plan-row { grid-template-columns:64px 100px 48px 72px; gap:5px; min-width:299px; }
+ .month-day-label { font-size:10px; }
+ .month-day-label small { font-size:9px; }
+ .month-quota-inputs { gap:3px; }
+ .month-quota-inputs input { font-size:11px; }
+ .month-wake .time-picker-control { width:57px; }
+ .month-wake .time-picker-control>input { font-size:13px; }
+ .month-plan-row>output { font-size:9px; }
+ .month-total-heading { font-size:10px; }
+ .overview-week { padding:8px; }
+ .overview-week-title>span { font-size:9px; }
+ .overview-table th,.overview-table td { min-width:94px; padding-inline:5px; }
+ .overview-table tbody th { min-width:75px; }
+}
+@media(max-width:350px) {
+ .month-total-heading { font-size:9px; }
+ .month-plan-row { grid-template-columns:58px 90px 42px 64px; min-width:266px; gap:4px; }
+ .month-day-label { font-size:9px; gap:2px!important; }
+ .month-day-label small { font-size:8px; }
+ .month-wake .time-picker-control { width:51px; }
+ .month-wake .time-picker-control>input { font-size:12px; }
+ .month-wake .check { font-size:7px; }
+ .progress-ring { width:57px; height:57px; }
+}
