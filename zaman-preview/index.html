@@ -23,7 +23,7 @@
   <link rel="stylesheet" href="journal.css?v=1.13.1">
   <script defer src="journal.js?v=calendar6"></script>
   <script defer src="reports.js?v=calendar6"></script>
-  <script defer src="enhancements.js?v=calendar19"></script>
+  <script defer src="enhancements.js?v=calendar20"></script>
   <link rel="stylesheet" href="time-picker.css?v=1.13.1">
   <script defer src="time-picker.js?v=1.13.1"></script>
   <link rel="stylesheet" href="task-voice.css?v=1.13.1">
@@ -45,16 +45,30 @@
   <link rel="stylesheet" href="life-weeks.css?v=calendar15">
   <script defer src="life-weeks.js?v=calendar15"></script>
   <script defer src="app.js?v=calendar19"></script>
-  <script defer src="brand-intro.js?v=1"></script>
+  <script defer src="brand-intro.js?v=2"></script>
   <link rel="stylesheet" href="layout-zaman.css?v=1">
-  <link rel="stylesheet" href="theme-zarbroker.css?v=1">
-  <link rel="stylesheet" href="brand-intro.css?v=1">
+  <link rel="stylesheet" href="theme-zarbroker.css?v=2">
+  <link rel="stylesheet" href="brand-intro.css?v=2">
 </head>
 <body>
   <main>
     <aside id="update-banner" role="status" aria-live="polite" hidden></aside>
     <header id="today-header" class="app-masthead">
-      <div id="today-brand" role="img" aria-label="علی میرزا — مدیریت زمان"><img src="moment-wordmark.png" alt="علی میرزا — مدیریت زمان" width="720" height="240"></div>
+      <div id="today-brand" role="img" aria-label="علی میرزا — مدیریت زمان"><img src="moment-wordmark.png" alt="علی میرزا — مدیریت زمان" width="720" height="240">
+        <div id="brand-intro" hidden aria-hidden="true">
+ <div class="amd-stage">
+  <div class="amd-stars" aria-hidden="true"></div>
+  <div class="amd-mark">
+   <div class="amd-base" aria-hidden="true"></div>
+   <div class="amd-wordmark" aria-hidden="true"></div>
+   <p class="amd-dedication amd-memory">به یاد معدن معرفت</p>
+   <p class="amd-dedication amd-father">پدرم</p>
+   <div class="amd-needle" aria-hidden="true"></div>
+   <div class="amd-bloom" aria-hidden="true"><img alt="" src="moment-rose.png"></div>
+  </div>
+ </div>
+</div>
+      </div>
       <nav class="app-nav" aria-label="صفحه‌ها">
       <button type="button" data-tab="today" class="selected"><svg class="nav-symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10l9-7 9 7v10h-6v-6H9v6H3z"/></svg><span>امروز</span></button>
       <button type="button" data-tab="projects"><svg class="nav-symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg><span>پروژه‌ها</span></button>
@@ -69,19 +83,6 @@
         <button type="button" id="life-weeks-open" data-tab="life-weeks"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v5m10-5v5M3 10h18m-14 4h2m2 0h2m2 0h2m-10 3h2m2 0h2m2 0h2"/></svg><span>هفته‌های باقی‌مانده عمرتان</span></button>
       </div>
     </header>
-    <section id="brand-intro" hidden aria-label="یادبود علی میرزا">
- <div class="amd-stage">
-  <div class="amd-stars" aria-hidden="true"></div>
-  <div class="amd-mark" role="img" aria-label="لوگوی علی میرزا؛ عقربه می‌چرخد، یک گل رز در نشان ظاهر می‌شود و عبارت به یاد معدنی از معرفت پدرم موقتا جای نوشتهٔ لوگو را می‌گیرد">
-   <div class="amd-base" aria-hidden="true"></div>
-   <div class="amd-wordmark" aria-hidden="true"></div>
-   <p class="amd-dedication amd-memory">به یاد معدنی از معرفت</p>
-   <p class="amd-dedication amd-father">پدرم</p>
-   <div class="amd-needle" aria-hidden="true"></div>
-   <div class="amd-bloom" aria-hidden="true"><img alt="" src="moment-rose.png"></div>
-  </div>
- </div>
-</section>
     <div id="warning"></div><section id="project-player" hidden aria-label="پخش ویس‌های پروژه"></section>
     <section id="view"></section>
   </main>
