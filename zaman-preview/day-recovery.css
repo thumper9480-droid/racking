@@ -29,3 +29,13 @@
 [data-recovery-unknown-now] { width:100%; background:#f7eddb; color:#7c5c27; margin-top:8px; }
 @media(max-width:450px) { .activities-toolbar { gap:3px; } .activities-toolbar button { font-size:9px; padding:4px 2px; } .recovery-dialog { padding:16px; } }
 @media(max-width:350px) { .activities-toolbar button { font-size:8px; min-height:52px; } .today-plan-item small { font-size:9px; } .recovery-totals { font-size:9px; gap:5px 8px; } }
+/* Three permanent actions share the space beside the session timer. */
+.is-today .activity-session { grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr); gap:12px; }
+.session-actions.session-quick-actions { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; align-items:stretch; justify-items:stretch; }
+.session-quick-button { display:flex; flex-direction:column; align-items:center; justify-content:center; min-width:0; min-height:96px; padding:8px 3px; border-radius:12px; border:1px solid #398669; background:#287b58; color:#fff; font-size:12px; font-weight:800; line-height:1.8; box-shadow:0 3px 8px #194f3520; }
+.session-quick-button span { display:block; }
+.session-quick-button.past-quick { background:#337d70; border-color:#337d70; }
+.session-quick-button.segment-quick { background:#175e42; border-color:#175e42; }
+.session-quick-button:disabled { color:#85998a; background:#e8efe5; border-color:#d2dfcf; box-shadow:none; opacity:1; }
+@media(max-width:450px) { .is-today .activity-session { gap:9px; padding-inline:10px; } .session-quick-button { font-size:10px; min-height:98px; border-radius:10px; padding-inline:2px; } .session-actions.session-quick-actions { gap:4px; } .is-today .session-clock .clock { font-size:clamp(24px,7.1vw,32px); } }
+@media(max-width:350px) { .session-quick-button { font-size:9px; } .is-today .activity-session { gap:6px; } .session-actions.session-quick-actions { gap:3px; } .is-today .session-clock .clock { font-size:24px; } }

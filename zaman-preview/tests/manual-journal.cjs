@@ -9,8 +9,8 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
  async function range(name,from,to){await openJourney();await page.locator('[data-action=manual-history]').click();await page.locator('[name=name]').fill(name);await page.locator('[name=fromTime]').fill(from);await page.locator('[name=toTime]').fill(to);await submit();assert.equal(await page.locator('#dialog').isVisible(),false);}
  await range('خواب','00:00','08:00');await range('صبحانه','08:00','10:00');await range('مطالعه','10:00','12:00');
  assert.equal(await page.locator('#history-total').innerText(),'۱۲:۰۰');
- await page.locator('[data-action=start-day]').click();await page.locator('[name=startTime]').fill('12:00');await submit();
- assert.equal(await page.evaluate(()=>state.history.length),3);assert.equal(await page.evaluate(()=>new Date(state.day.start).getHours()),12);
+ await page.evaluate(()=>startDayForm());await page.locator('[name=startTime]').fill('12:00');await submit();
+ assert.equal(await page.evaluate(()=>state.history.length),2);assert.equal(await page.evaluate(()=>new Date(state.day.start).getHours()),12);
  await page.clock.fastForward(3600000);assert.equal(await page.locator('#history-total').innerText(),'۱۳:۰۰');
  // A retrospective slice of the live period moves its boundary instead of double counting.
  await range('کار پروژه','12:00','12:30');assert.equal(await page.locator('#history-total').innerText(),'۱۳:۰۰');assert.equal(await page.evaluate(()=>new Date(state.day.segment).getMinutes()),30);

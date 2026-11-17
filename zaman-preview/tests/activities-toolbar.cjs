@@ -2,7 +2,7 @@ const{chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{
  const b=await chromium.launch({executablePath:'/usr/bin/chromium',args:['--no-sandbox']});const p=await b.newPage({viewport:{width:390,height:844},timezoneId:'Asia/Tehran'}),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.goto('http://127.0.0.1:4173/zaman-preview/');
  await p.evaluate(()=>{for(let i=0;i<40;i++){rememberActivity('فعالیت '+i);upsertDayPlan(planDayKey(),'فعالیت '+i,1,5);}save();render();});
- await p.locator('[data-tab=activities]').click();const texts=['＋ فعالیت جدید','پلان‌ریزی فعالیت‌ها','گزارش فعالیت‌های پلاندار','گزارش کل فعالیت‌ها'];
+ await p.locator('[data-tab=activities]').click();const texts=['＋ فعالیت روتین جدید','پلان‌ریزی فعالیت‌ها','گزارش فعالیت‌های روتین','گزارش کل فعالیت‌ها'];
  for(const width of[320,390,768]){
   await p.setViewportSize({width,height:844});await p.evaluate(()=>scrollTo(0,0));let base;
   for(const route of['activities','planning','progress','reports','overview']){
