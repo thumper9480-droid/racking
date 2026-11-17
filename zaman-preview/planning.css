@@ -31,7 +31,7 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
 .overview-day-header { display:grid; gap:4px; width:100%; padding:8px 3px; background:transparent; color:#455e3b; font-size:11px; }
 .overview-day-header span { font-size:10px; white-space:nowrap; }
 .overview-day-header.official-holiday { color:#218449; }
-.overview-empty { color:#96a48e; }
+.overview-empty { color:#586e60; font-size:11px; }
 /* One compact row: date, wake-up time, daily sum, count and minutes. */
 .monthly-plan-dialog { width:min(760px,96vw); padding:16px; overflow:hidden; max-height:94dvh; }
 .monthly-plan-dialog #form { display:flex; flex-direction:column; max-height:calc(94dvh - 32px); }
@@ -117,3 +117,5 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
  .month-wake .check { font-size:7px; }
  .progress-ring { width:57px; height:57px; }
 }
+
+.selected-plan-day button:disabled,.plan-card button:disabled,.calendar-week-label button:disabled { opacity:.5; cursor:default; }
