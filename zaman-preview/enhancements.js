@@ -4,7 +4,7 @@ function bazaarDistribution(){try{return window.AndroidZaman?.distributionChanne
 function openBazaarUpdate(){try{const result=JSON.parse(AndroidZaman.openStore());setUpdateStatus(result.ok?'به‌روزرسانی را در صفحهٔ برنامه در بازار بررسی کنید.':result.error||'بازار باز نشد.');}catch{setUpdateStatus('بازار را باز کنید و مدیریت زمان علی میرزا را جست‌وجو کنید.');}}
 const UPDATE_CACHE_KEY='ali-mirza-planning-update-v1',UPDATE_INTERVAL=300000;
 let lastUpdateCheckAt=0,updateCheckTimeout=null;
-const WEB_BUILD=12,NOTICE_DISMISS_KEY='zaman-preview-dismissed-release-';
+const WEB_BUILD=13,NOTICE_DISMISS_KEY='zaman-preview-dismissed-release-';
 let publishedVersions={},checkingNotices=false;
 let memorialRecord=null,availableUpdate=null,checkingUpdate=false,downloadPoll=null,updateDownloaded=false,downloadBusy=false,updateMessage='',wipeStage=0,wipeBusy=false;
 function memorialDue(now=Date.now()){return !!memorialRecord&&now>=memorialRecord.nextAt;}
@@ -27,7 +27,7 @@ function updateBannerVisibility(){
  const notices=[],web=publishedVersions.web,bazaar=publishedVersions.bazaar;
  if(isPreviewWeb()&&web&&releaseIsVisible('web',web.versionCode)){
   const needsReload=web.versionCode>WEB_BUILD;
-  notices.push(`<div class="release-notice"><span><b>به‌روزرسانی جدید پیش‌نمایش وب</b><small>${needsReload?'برای دیدن آخرین نسخه، صفحه را تازه کنید.':'چیدمان میانبرهای امروز و جلوهٔ لوگو به‌روز شدند.'}</small></span><button type="button" ${needsReload?'data-reload-preview':'data-dismiss-release="web"'}>${needsReload?'باز کردن نسخهٔ تازه':'متوجه شدم'}</button></div>`);
+  notices.push(`<div class="release-notice"><span><b>به‌روزرسانی جدید پیش‌نمایش وب</b><small>${needsReload?'برای دیدن آخرین نسخه، صفحه را تازه کنید.':'جای دکمهٔ هفته‌های عمر و جدول ساعت‌های ضبط‌شده به‌روز شدند.'}</small></span><button type="button" ${needsReload?'data-reload-preview':'data-dismiss-release="web"'}>${needsReload?'باز کردن نسخهٔ تازه':'متوجه شدم'}</button></div>`);
  }
  if(!appleDevice()&&!window.IOSZaman&&bazaar&&bazaar.versionCode>APP_VERSION_CODE&&(bazaarDistribution()||isPreviewWeb())&&releaseIsVisible('bazaar',bazaar.versionCode)){
   notices.push(`<div class="release-notice"><span><b>نسخهٔ جدید ${fa(bazaar.versionName)} در بازار منتشر شد</b></span><button type="button" data-market-update>باز کردن بازار</button></div>`);

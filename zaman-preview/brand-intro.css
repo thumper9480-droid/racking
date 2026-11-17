@@ -89,7 +89,22 @@
 }
 
 .is-today .journey .journal-chart {
- margin:12px 0 0; padding:10px 0 0; border:0; border-top:1px solid var(--journal-olive-border);
+ margin:12px 0 0; padding:10px 0 0; border:0; border-top:1px solid var(--theme-border);
  border-radius:0; background:transparent; box-shadow:none;
 }
-.is-today .journey .journal-chart h3 { margin:0 0 9px; color:var(--journal-olive-ink); font-size:13px; }
+.is-today .journey .journal-chart h3 { margin:0 0 9px; color:var(--theme-ink); font-size:13px; }
+
+#today-header #today-brand > img[hidden],#today-header #today-brand #life-weeks-open[hidden] { display:none; }
+#today-header #today-brand #life-weeks-open:not([hidden]) {
+ display:flex; width:100%; max-width:none; min-height:42px; min-width:0;
+ gap:4px; padding:5px; margin:0; border:1px solid #b292ce; border-radius:14px;
+ background:linear-gradient(150deg,#f6efff,#e8dbf5); color:var(--theme-ink);
+ font-size:clamp(9px,10cqi,12px); font-weight:750; line-height:1.35;
+ white-space:normal; text-align:center; box-shadow:none;
+}
+#today-header #today-brand #life-weeks-open svg { width:15px; height:15px; flex:none; }
+#today-header #today-brand #life-weeks-open.selected { border-color:#8d68af; box-shadow:inset 0 0 0 1px #8d68af; }
+@media(prefers-reduced-motion:no-preference) {
+ #today-header #today-brand #life-weeks-open:not([hidden]) { animation:weeks-into-masthead .36s ease-out both; }
+}
+@keyframes weeks-into-masthead { from { opacity:0; transform:perspective(240px) rotateX(24deg); } to { opacity:1; transform:perspective(240px) rotateX(0); } }

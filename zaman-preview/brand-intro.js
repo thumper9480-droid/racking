@@ -2,22 +2,27 @@
 
 (()=>{
  const root=document.querySelector('#brand-intro');
- if(!root||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+ if(!root)return;
  const stage=root.querySelector('.amd-stage'),brand=root.closest('#today-brand');
+ const wordmark=brand.querySelector(':scope > img'),weeks=brand.querySelector('#life-weeks-open');
  const stars=root.querySelector('.amd-stars');
+ if(!wordmark||!weeks)return;
  let opened=false,finishTimer;
 
  function finish(){
   window.clearTimeout(finishTimer);
   root.hidden=true;
   brand.classList.remove('brand-intro-active');
+  wordmark.hidden=true;
+  weeks.hidden=false;
  }
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return;}
 
  async function start(){
   if(opened||document.hidden)return;
   opened=true;
   document.removeEventListener('visibilitychange',start);
-  const images=[brand.querySelector(':scope > img'),root.querySelector('.amd-bloom img')];
+  const images=[wordmark,root.querySelector('.amd-bloom img')];
   const imageReady=images.map(img=>typeof img.decode==='function'?img.decode():Promise.resolve());
   const fontsReady=document.fonts?[document.fonts.load('700 45px "Noto Nastaliq Urdu"','پدرم'),document.fonts.load('900 16px Vazirmatn','به یاد معدن معرفت')]:[];
   await Promise.race([

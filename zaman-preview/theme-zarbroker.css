@@ -199,31 +199,17 @@ body.install-page {
 .arc-percent { font-family:"Vazirmatn RD",Tahoma,sans-serif; }
 .is-today .journey .history-table :is(th,td) { padding-inline:5px; }
 
-/* Olive treatment for the merged daily journal. */
-:root {
- --journal-olive-ink:#3c4727;
- --journal-olive-border:#d0d6bd;
- --journal-olive-heading:#e1e6ce;
- --journal-olive-row:#f4f6ec;
- --journal-olive-highlight:#e8edd5;
+
+/* A plain ruled table for the merged daily journal. */
+.is-today .today-layout > .journey,.is-today .journey .history-scroll { background:var(--theme-surface); border-color:var(--theme-border); }
+.is-today .journey > .journey-heading,.is-today .journey .history-nav button { background:var(--theme-subtle); color:var(--theme-ink); }
+.is-today .journey .history-table :is(thead,tbody,tfoot) :is(th,td) {
+ background:transparent; color:var(--theme-ink); border-bottom:1px solid var(--theme-border);
+ border-inline-end:1px solid var(--theme-border); box-shadow:none; border-radius:0;
 }
-.is-today .today-layout > .journey { background:var(--journal-olive-row); border-color:var(--journal-olive-border); }
-.is-today .journey > .journey-heading,.is-today .journey .history-table :is(thead,tfoot) :is(th,td) {
- background:var(--journal-olive-heading); color:var(--journal-olive-ink); border-color:var(--journal-olive-border);
-}
-.is-today .journey .section-toggle,.is-today .journey .section-chevron,
-.is-today .journey .history-table tbody td,.is-today .journey .history-table .activity-name,
-.is-today .journey .history-table .time-approx,.is-today .journey .history-table .running-label,
-.is-today .journey .history-nav button,.is-today .journey .journal-gaps button {
- color:var(--journal-olive-ink); border-color:var(--journal-olive-border);
-}
-.is-today .journey .history-nav button,.is-today .journey .section-chevron,
-.is-today .journey .journal-gaps button,.is-today .journey .section-toggle:hover {
- background:var(--journal-olive-highlight);
-}
-.is-today .journey .history-scroll,.is-today .journey .journal-chart .chart-legend {
- background:var(--theme-surface); border-color:var(--journal-olive-border);
-}
-.is-today .journey .history-table tbody tr:nth-child(even) { background:var(--journal-olive-row); }
-.is-today .journey .history-table tbody tr:hover,.is-today .journey .history-table tbody .current-row { background:var(--journal-olive-highlight); }
-.is-today .journey .journal-chart .donut-center strong,.is-today .journey .journal-chart .legend-item { color:var(--journal-olive-ink); }
+.is-today .journey .history-table :is(thead,tbody,tfoot) :is(th,td):last-child { border-inline-end:0; }
+.is-today .journey .history-table thead,.is-today .journey .history-table tfoot { background:var(--theme-surface); }
+.is-today .journey .history-table thead th,.is-today .journey .history-table tfoot :is(th,td) { position:static; }
+.is-today .journey .history-table tbody tr:nth-child(n) { background:var(--theme-surface); }
+.is-today .journey .history-table tbody tr:hover,.is-today .journey .history-table tbody tr.current-row { background:var(--theme-row-alt); }
+.is-today .journey .history-table tfoot :is(th,td) { border-bottom:0; }

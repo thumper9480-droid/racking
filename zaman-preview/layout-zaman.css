@@ -163,9 +163,6 @@ dialog#dialog { border-radius:22px; }
   }
 
 /* Today shares the same shortcut buttons with the header dock on other screens. */
-.app-masthead .masthead-tools #life-weeks-open {
- width:auto; max-width:100%; justify-self:start; font-size:11px; padding-inline:9px;
-}
 #utility-home:empty { display:none; }
 .is-today .activity-session {
  grid-template-columns:minmax(0,1.05fr) minmax(0,1.35fr) minmax(108px,.65fr);
@@ -203,3 +200,17 @@ dialog#dialog { border-radius:22px; }
  .is-today .session-utilities .header-education,.is-today .session-utilities #countdown-button { min-height:34px; height:34px; }
  .is-today .session-quick-button { min-height:68px; }
 }
+
+.app-masthead .masthead-tools:has(#utility-home:empty) { display:none; }
+/* Set both rows explicitly so old header placements cannot create implicit columns. */
+#utility-actions {
+ grid-template-areas:"timer education" "reminders settings";
+ grid-template-columns:repeat(2,minmax(0,1fr));
+ align-items:start;
+}
+#utility-actions > #countdown-header-control { grid-area:timer; }
+#utility-actions > #education-button { grid-area:education; }
+#utility-actions > #header-reminders { grid-area:reminders; }
+#utility-actions > #settings { grid-area:settings; }
+#utility-actions > :is(#education-button,#header-reminders,#settings) { margin:0; align-self:start; }
+.session-utilities #utility-actions { width:min(100%,112px); justify-self:end; }
