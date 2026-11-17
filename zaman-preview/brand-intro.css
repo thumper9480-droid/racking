@@ -24,7 +24,7 @@
 #brand-intro .amd-wordmark { clip-path:inset(0 29% 0 0); }
 #brand-intro .amd-needle { clip-path:var(--amd-needle); transform-origin:84.7% 49.4%; }
 #brand-intro .amd-bloom {
- position:absolute; top:50%; left:84.7%; width:min(37%,47px); aspect-ratio:1;
+ position:absolute; top:50%; left:50%; width:min(42%,43px); aspect-ratio:1;
  transform:translate3d(-50%,-50%,-36px) scale(.15); opacity:0;
 }
 #today-header #today-brand #brand-intro .amd-bloom img {
@@ -37,7 +37,9 @@
 }
 #brand-intro .amd-memory { font:900 clamp(7px,11cqi,13px)/1.3 Vazirmatn,Tahoma,sans-serif; }
 #brand-intro .amd-father {
- top:-16%; font:700 clamp(17px,32cqi,47px)/1.35 "Noto Nastaliq Urdu",Vazirmatn,Tahoma,sans-serif;
+ inset:3px 5px; width:auto; padding:0 0 .18em;
+ place-items:center; transform-origin:50% 50%;
+ font:700 clamp(16px,23cqi,32px)/1.5 "Noto Nastaliq Urdu",Vazirmatn,Tahoma,sans-serif;
  color:#145241;
  text-shadow:0 1px #0a352c,0 2px #0a352c,0 3px #103328,0 4px #12362c,0 6px 7px #0b302d6b;
 }
@@ -68,15 +70,15 @@
 }
 @keyframes amd-bloom {
  0%,37% { transform:translate3d(-50%,-50%,-54px) rotateY(-36deg) rotateZ(-8deg) scale(.11); filter:drop-shadow(0 1px 1px #35282538); opacity:0; }
- 46% { transform:translate3d(-60%,-50%,0) rotateY(24deg) rotateZ(3deg) scale(.56); filter:drop-shadow(1px 3px 2px #35282548); opacity:1; }
- 54% { transform:translate3d(-129%,-54%,67px) rotateY(-8deg) rotateZ(-5deg) scale(.93); filter:drop-shadow(1px 8px 4px #35282579); opacity:1; }
- 57% { transform:translate3d(-134%,-54%,58px) rotateY(2deg) rotateZ(0) scale(.9); filter:drop-shadow(1px 7px 4px #35282565); opacity:1; }
- 65%,100% { transform:translate3d(-66%,-50%,-34px) rotateY(-31deg) scale(.24); filter:drop-shadow(0 1px 1px #35282537); opacity:0; }
+ 46% { transform:translate3d(-50%,-50%,0) rotateY(24deg) rotateZ(3deg) scale(.56); filter:drop-shadow(1px 3px 2px #35282548); opacity:1; }
+ 54% { transform:translate3d(-50%,-51%,67px) rotateY(-8deg) rotateZ(-5deg) scale(.93); filter:drop-shadow(1px 8px 4px #35282579); opacity:1; }
+ 57% { transform:translate3d(-50%,-50%,58px) rotateY(2deg) rotateZ(0) scale(.9); filter:drop-shadow(1px 7px 4px #35282565); opacity:1; }
+ 65%,100% { transform:translate3d(-50%,-50%,-34px) rotateY(-31deg) scale(.24); filter:drop-shadow(0 1px 1px #35282537); opacity:0; }
 }
 @keyframes amd-father {
  0%,60% { opacity:0; transform:translate3d(0,2px,-32px) scale(.68) rotateX(-13deg); }
- 70% { opacity:1; transform:translate3d(0,-1px,49px) scale(.9) rotateX(4deg); }
- 76%,81% { opacity:1; transform:translate3d(0,0,32px) scale(.94); }
+ 70% { opacity:1; transform:translate3d(0,0,32px) scale(.87) rotateX(4deg); }
+ 76%,81% { opacity:1; transform:translate3d(0,0,24px) scale(.85); }
  88%,100% { opacity:0; transform:translate3d(0,0,-15px) scale(.82); }
 }
 @keyframes amd-starfall {

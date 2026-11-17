@@ -161,3 +161,45 @@ dialog#dialog { border-radius:22px; }
  .is-today .session-quick-button { min-height:60px; border-radius:11px; }
  .session-actions.session-quick-actions { gap:4px; }
   }
+
+/* Today shares the same shortcut buttons with the header dock on other screens. */
+.app-masthead .masthead-tools #life-weeks-open {
+ width:auto; max-width:100%; justify-self:start; font-size:11px; padding-inline:9px;
+}
+#utility-home:empty { display:none; }
+.is-today .activity-session {
+ grid-template-columns:minmax(0,1.05fr) minmax(0,1.35fr) minmax(108px,.65fr);
+ gap:10px;
+ border:1.5px solid var(--theme-ink);
+}
+.session-utilities { min-width:0; height:100%; display:grid; align-content:center; }
+.session-utilities .masthead-actions {
+ width:100%; min-width:0; grid-template-columns:repeat(2,minmax(0,1fr)); gap:4px;
+}
+.session-utilities .header-education {
+ position:static; grid-column:auto; grid-row:auto; align-self:stretch;
+ display:flex; width:100%; min-width:0; height:38px; margin:0; padding:3px 2px;
+ justify-content:center; align-items:center; gap:1px; border-radius:10px;
+ background:var(--theme-subtle); border-color:var(--theme-border); color:var(--theme-ink);
+ font-size:9px; box-shadow:none;
+}
+.session-utilities .header-education span { font-size:inherit; }
+.session-utilities .header-education svg { width:15px; height:15px; }
+.session-utilities #settings .header-settings-icon { font-size:15px; }
+.session-utilities #countdown-header-control {
+ position:relative; inset:auto; z-index:auto; grid-column:auto; grid-row:auto;
+ width:100%; display:block;
+}
+.session-utilities #countdown-button { width:100%; height:38px; border-radius:10px; }
+.session-utilities #countdown-button.is-running { background:var(--theme-negative); color:var(--theme-surface); border-color:var(--theme-negative); }
+.session-utilities #countdown-header-status {
+ position:static; margin:1px auto 0; background:var(--theme-negative-surface); color:var(--theme-ink); font-size:8px;
+}
+.session-utilities #countdown-header-status:not([hidden]) { display:block; width:max-content; }
+.is-today .session-quick-actions > :only-child { grid-column:1 / -1; }
+@media(max-width:520px) {
+ .is-today .activity-session { grid-template-columns:minmax(0,1.7fr) minmax(86px,1fr); gap:8px; }
+ .is-today .activity-session .session-clock { grid-column:1 / -1; }
+ .is-today .session-utilities .header-education,.is-today .session-utilities #countdown-button { min-height:34px; height:34px; }
+ .is-today .session-quick-button { min-height:68px; }
+}
