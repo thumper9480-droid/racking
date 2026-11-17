@@ -39,3 +39,20 @@
  .life-weeks-form { grid-template-columns:minmax(0,1fr) minmax(0,1.7fr); }
  .life-weeks-form button { grid-column:1 / -1; justify-self:start; }
 }
+
+.life-metric-percent { color:inherit; font-size:12px; font-weight:650; }
+@media(max-width:600px) {
+ .life-week-scroll { overflow:visible; padding:5px; }
+ .life-week-grid {
+  min-width:0;
+  block-size:clamp(160px,48vh,420px);
+  block-size:clamp(160px,48svh,420px);
+  grid-template-rows:repeat(var(--life-row-count),minmax(0,1fr));
+  row-gap:1px;
+ }
+ .life-week-row { min-height:0; grid-template-columns:23px minmax(0,1fr); gap:3px; }
+ .life-row-label { visibility:hidden; font-size:8px; }
+ .life-week-row:nth-child(10n + 1) .life-row-label { visibility:visible; }
+ .life-week-cells { height:100%; min-width:0; gap:1px; }
+ .life-week { aspect-ratio:auto; min-width:0; border-radius:1px; }
+}

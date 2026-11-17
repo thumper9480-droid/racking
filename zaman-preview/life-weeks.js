@@ -30,6 +30,10 @@ function lifeWeekNumber(value){
  return value.toLocaleString('fa-IR');
 }
 
+function lifeWeekPercent(count,total){
+ return (count/total).toLocaleString('fa-IR',{style:'percent',maximumFractionDigits:1});
+}
+
 function lifeWeeksResults(result){
  if(!result)return '';
  const {total,elapsed,remaining}=result;
@@ -40,11 +44,11 @@ function lifeWeeksResults(result){
   rows.push('<div class="life-week-row"><span class="life-row-label">'+lifeWeekNumber(start+1)+'</span><div class="life-week-cells">'+squares+'</div></div>');
  }
  const metrics=[['کل هفته‌ها',total,''],['هفته‌های گذشته',elapsed,'past'],['هفته‌های باقی‌مانده',remaining,'future']];
- const summary=metrics.map(([label,n,kind])=>'<div class="life-metric '+kind+'"><span>'+label+'</span><strong>'+lifeWeekNumber(n)+'</strong></div>').join('');
+ const summary=metrics.map(([label,n,kind])=>'<div class="life-metric '+kind+'"><span>'+label+'</span><strong>'+lifeWeekNumber(n)+'</strong><small class="life-metric-percent">'+lifeWeekPercent(n,total)+'</small></div>').join('');
  return '<div class="life-metrics">'+summary+'</div>'
   +(elapsed>=total?'<p class="life-explainer">تعداد هفته‌های سپری‌شده به بازهٔ واردشده رسیده یا از آن گذشته است.</p>':'')
   +'<ul class="life-week-legend" aria-label="راهنمای رنگ‌ها"><li><i class="life-week-past" aria-hidden="true"></i>هفته‌های گذشته</li><li><i class="life-week-future" aria-hidden="true"></i>هفته‌های باقی‌مانده</li></ul>'
-  +'<div class="life-week-scroll" role="region" tabindex="0" aria-label="جدول هفته‌های عمر. هر خانه یک هفته است و کنار هر ردیف شمارهٔ اولین هفتهٔ آن نوشته شده است."><div class="life-week-grid" aria-hidden="true">'+rows.join('')+'</div></div>';
+  +'<div class="life-week-scroll" role="region" tabindex="0" aria-label="جدول هفته‌های عمر. هر خانه یک هفته است. شماره‌های کنار جدول، آغاز ردیف‌ها را نشان می‌دهند."><div class="life-week-grid" style="--life-row-count:'+rows.length+'" aria-hidden="true">'+rows.join('')+'</div></div>';
 }
 
 function lifeWeeksPage(){

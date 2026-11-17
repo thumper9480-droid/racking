@@ -39,3 +39,8 @@
 .session-quick-button:disabled { color:#85998a; background:#e8efe5; border-color:#d2dfcf; box-shadow:none; opacity:1; }
 @media(max-width:450px) { .is-today .activity-session { gap:9px; padding-inline:10px; } .session-quick-button { font-size:10px; min-height:98px; border-radius:10px; padding-inline:2px; } .session-actions.session-quick-actions { gap:4px; } .is-today .session-clock .clock { font-size:clamp(24px,7.1vw,32px); } }
 @media(max-width:350px) { .session-quick-button { font-size:9px; } .is-today .activity-session { gap:6px; } .session-actions.session-quick-actions { gap:3px; } .is-today .session-clock .clock { font-size:24px; } }
+
+@keyframes routine-today-blink { 0%,100% { opacity:1; } 50% { opacity:.5; } }
+@media(prefers-reduced-motion:no-preference) {
+ .is-today .today-plan-card h2 { animation:routine-today-blink .6s ease-in-out infinite; }
+}

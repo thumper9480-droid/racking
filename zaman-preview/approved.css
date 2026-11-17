@@ -195,7 +195,8 @@ nav .settings-nav { flex:0 0 32px; background:#f6f8f4; }
 .day-chart .legend-duration { grid-column:3; grid-row:1; font-size:11px; white-space:nowrap; direction:ltr; }
 .day-chart .legend-percent { grid-column:4; grid-row:1; min-width:28px; font-size:11px; text-align:left; }
 /* Project rows stay narrow until the user opens their arrow. */
-.projects-screen { --project-ink:#8d4816; --project-line:#e2af77; background:linear-gradient(135deg,#fff0dc,#fff9ef); border-color:var(--project-line); padding:12px; }
+.projects-screen,.is-today .due-project-tasks { --project-ink:#8d4816; --project-line:#e2af77; --project-surface:linear-gradient(135deg,#fff0dc,#fff9ef); background:var(--project-surface); border-color:var(--project-line); }
+.projects-screen { padding:12px; }
 .projects-screen[data-project-theme=done] { --project-ink:#236840; --project-line:#a6cbb0; background:linear-gradient(135deg,#e6f4e8,#f4faf3); }
 .projects-screen[data-project-theme=deleted] { --project-ink:#665e56; --project-line:#c8bfb5; background:#f2efea; }
 .projects-screen .projects-heading { margin-bottom:12px; }
@@ -264,12 +265,22 @@ nav .settings-nav { flex:0 0 32px; background:#f6f8f4; }
 .today-layout .due-project-tasks,.today-layout > .journey,.today-layout > .day-chart {
  padding:0; overflow:hidden; border-width:1.5px; border-radius:13px;
 }
-.is-today .due-project-tasks { background:#f1f5f8; border-color:#91a7bb; box-shadow:0 3px 12px #4254690b; }
-.is-today .due-project-tasks > h2 { background:linear-gradient(110deg,#e7eef3,#dce7ef); }
-.is-today .due-project-tasks .section-toggle { color:#414a52; }
-.is-today .journey { background:#fffaf3; border-color:#dc8d3c; }
-.is-today .journey > .journey-heading { background:linear-gradient(110deg,#fff5e5,#fbedcf); }
-.is-today .journey .section-toggle { color:#985018; }
+.is-today .due-project-tasks { box-shadow:0 3px 12px #8d481611; }
+.is-today .due-project-tasks > h2 { background:#fff9ef8c; }
+.is-today .due-project-tasks .section-toggle { color:var(--project-ink); }
+.is-today .journey { color:#f4f4f4; background:#171717; border-color:#414141; }
+.is-today .journey > .journey-heading { background:#242424; }
+.is-today .journey .section-toggle { color:#f7f7f7; }
+.is-today .journey .section-chevron,.is-today .journey .history-nav button,.is-today .journey .journal-gaps button {
+ color:#f0f0f0; background:#303030; border-color:#585858;
+}
+.is-today .journey .history-scroll { background:#171717; border-color:#484848; scrollbar-color:#737373 #242424; }
+.is-today .journey .history-table thead th { color:#fff; background:#292929; box-shadow:0 1px #555; }
+.is-today .journey .history-table tbody td { color:#f1f1f1; border-bottom-color:#3e3e3e; }
+.is-today .journey .history-table .activity-name,.is-today .journey .history-table .time-approx,
+.is-today .journey .history-table .running-label { color:#f1f1f1; }
+.is-today .journey .history-table .current-row { background:#2d2d2d; }
+.is-today .journey .history-table tfoot :is(th,td) { background:#252525; color:#fff; border-color:#454545; }
 .is-today .day-chart { background:#f0faf8; border-color:#32a8a3; box-shadow:0 3px 12px #258d850b; }
 .is-today .day-chart > h2 { background:linear-gradient(110deg,#dff4f0,#d3eeed); }
 .is-today .day-chart .section-toggle { color:#145b60; }
@@ -279,7 +290,7 @@ nav .settings-nav { flex:0 0 32px; background:#f6f8f4; }
 .today-layout #project-tasks-content { padding:0 10px 8px; }
 .today-layout #journey-content { padding:0 10px 8px; }
 .today-layout #chart-content { padding:8px 10px 10px; }
-.is-today .due-task-row { border-color:#c9d4dd; background:#ffffffb8; }
+.is-today .due-project-tasks .due-task-row { border-color:var(--project-line); background:#ffffffb8; }
 .is-today .day-chart .legend-item { border-bottom-color:#c8e3dc; }
 @media(max-width:350px) {
  .is-today .session-actions .circle-action { min-height:70px; padding:8px 4px; font-size:14px; border-radius:11px; }
