@@ -1,0 +1,41 @@
+
+#life-weeks-open { grid-column:1 / -1; grid-row:3; justify-self:center; display:inline-flex; align-items:center; justify-content:center; gap:6px; margin:6px 0 2px; padding:7px 9px; min-height:37px; border:1px solid #a9c9b7; border-radius:11px; background:#f4faf4; color:#23533f; font-size:11px; line-height:1.45; white-space:nowrap; }
+#life-weeks-open svg { width:18px; height:18px; flex:none; }
+#life-weeks-open.selected { background:#dcefe1; border-color:#559172; }
+@media(min-width:620px) {
+ #today-header { grid-template-columns:clamp(112px,26vw,154px) minmax(0,1fr) minmax(128px,151px) 44px 44px; }
+ #countdown-header-control, #header-reminders { grid-column:4; }
+ #education-button, #settings { grid-column:5; }
+ #life-weeks-open { grid-column:3; grid-row:1 / 3; }
+}
+.life-weeks-page { padding:clamp(12px,3vw,20px); }
+.life-weeks-page h2 { margin:0 0 14px; font-size:clamp(17px,4vw,23px); color:#184d37; }
+.life-weeks-form { display:grid; grid-template-columns:minmax(100px,1fr) minmax(160px,2fr) auto; gap:10px; align-items:end; }
+.life-weeks-form fieldset { min-width:0; margin:0; padding:8px; border:1px solid #cbdacf; border-radius:10px; }
+.life-weeks-form legend { padding:0 4px; font-size:12px; font-weight:750; }
+.life-weeks-form label { display:flex; flex-direction:column; gap:3px; margin:0; font-size:11px; }
+.life-weeks-form input { width:100%; min-width:0; margin:0; padding:7px 3px; text-align:center; }
+.life-weeks-form button { margin:0; min-height:40px; }
+.life-birth,.life-metrics { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.life-metrics { margin:12px 0; }
+.life-metric { display:grid; gap:3px; padding:8px 4px; border:1px solid #d2ddd5; border-radius:10px; text-align:center; background:#f5f8f4; color:#184d37; font-size:11px; }
+.life-metric strong { font-size:clamp(17px,4vw,27px); }
+.life-metric.past { background:#f9e8e7; color:#9f2732; border-color:#ebc7cb; }
+.life-metric.future { background:#e3f4e8; color:#175c35; border-color:#c2e1cb; }
+.life-explainer { margin:9px 0; color:#4e695c; font-size:12px; }
+.life-weeks-error { color:#9f2732; margin:8px 0; font-size:12px; }
+.life-week-legend { display:flex; gap:14px; flex-wrap:wrap; list-style:none; padding:0; margin:10px 0; font-size:11px; }
+.life-week-legend li { display:flex; gap:5px; align-items:center; }
+.life-week-legend i { width:11px; height:11px; border-radius:2px; display:inline-block; }
+.life-week-scroll { overflow:auto; padding:8px; border:1px solid #d2ddd5; border-radius:11px; background:#fbfcfa; }
+.life-week-grid { display:grid; row-gap:3px; min-width:430px; }
+.life-week-row { display:grid; grid-template-columns:35px minmax(0,1fr); gap:6px; align-items:center; }
+.life-row-label { text-align:center; font-size:9px; color:#4e695c; line-height:1; }
+.life-week-cells { display:grid; grid-template-columns:repeat(52,minmax(0,1fr)); gap:2px; }
+.life-week { aspect-ratio:1; border-radius:2px; }
+.life-week-past { background:#be3d45; }
+.life-week-future { background:#24864c; }
+@media(max-width:520px) {
+ .life-weeks-form { grid-template-columns:minmax(0,1fr) minmax(0,1.7fr); }
+ .life-weeks-form button { grid-column:1 / -1; justify-self:start; }
+}
