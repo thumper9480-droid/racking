@@ -230,3 +230,23 @@ body.install-page {
 #utility-actions #countdown-button.is-running {
  background:var(--theme-negative); border-color:var(--theme-negative); color:var(--theme-surface);
 }
+
+/* Pair styling differentiates planning actions from report links. */
+#view .activities-pair-plan > button {
+ background:var(--theme-primary); border-color:var(--theme-field-border); color:var(--theme-ink);
+}
+#view .activities-pair-report > button {
+ background:#e8dbf5; border-color:#d4bee7; color:var(--theme-ink);
+}
+#view .activities-pair > button.is-current { box-shadow:inset 0 -2px #64566e; font-weight:750; }
+#view .activities-pair > button:hover { filter:brightness(.96); }
+
+@supports ((background-clip:text) or (-webkit-background-clip:text)) {
+ @media(prefers-reduced-motion:no-preference) and (forced-colors:none) {
+  .today-led-line {
+   background-image:radial-gradient(circle,var(--theme-green) 49%,transparent 62%);
+   background-size:2px 2px;
+   -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+ }
+}
