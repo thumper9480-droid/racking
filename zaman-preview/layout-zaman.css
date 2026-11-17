@@ -1,0 +1,163 @@
+
+/* Page shell and navigation. */
+body {
+ background:radial-gradient(ellipse 56rem 25rem at 50% -12rem,var(--theme-subtle),transparent 84%),var(--theme-background);
+}
+main { max-width:880px; padding:16px clamp(12px,3vw,26px) 32px; }
+#today-header.app-masthead {
+ display:grid;
+ grid-template-columns:minmax(96px,.85fr) minmax(0,3.75fr) minmax(95px,1fr);
+ grid-template-areas:'brand nav clock' 'tools tools tools';
+ align-items:center;
+ gap:12px;
+ padding:14px 16px;
+ margin:0 0 12px;
+ background:var(--theme-surface);
+ border:1px solid var(--theme-border);
+ border-radius:26px;
+ box-shadow:var(--theme-shadow);
+}
+.app-masthead #header-clock,.app-masthead #date { width:100%; }
+.app-masthead #header-clock { max-width:150px; margin-inline:auto; }
+#today-header #today-brand {
+ display:flex; align-items:center; justify-content:center;
+ width:100%; height:auto; min-height:64px; margin:0; overflow:visible;
+}
+#today-header #today-brand img {
+ position:static; transform:none; width:100%; max-width:210px; height:auto;
+}
+#today-header #date { margin:4px auto 0; text-align:center; }
+#today-header #date .date-line { white-space:normal; flex-wrap:wrap; }
+.masthead-datetime { grid-area:clock; min-width:0; }
+.app-masthead #today-brand { grid-area:brand; }
+.masthead-tools {
+ grid-area:tools; display:flex; align-items:center; justify-content:space-between; gap:8px;
+ border-top:1px solid var(--theme-border); padding-top:8px;
+}
+.masthead-actions {
+ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:5px;
+ width:min(100%,154px);
+}
+#today-header .masthead-actions .header-education {
+ position:static; grid-column:auto; grid-row:auto;
+ display:flex; width:100%; height:43px; margin:0; padding:4px 2px;
+ align-items:center; align-self:stretch; justify-content:center;
+ border-radius:13px; border-color:var(--theme-border);
+ background:var(--theme-subtle); color:var(--theme-ink); box-shadow:none;
+}
+#today-header .masthead-actions .header-education svg,#settings .header-settings-icon { color:var(--theme-ink); }
+#today-header .masthead-actions .header-education:is(.selected,:hover) { background:var(--theme-subtle); border-color:var(--theme-border); }
+#today-header #countdown-button.is-running { background:var(--theme-negative); color:var(--theme-surface); border-color:var(--theme-negative); }
+#today-header #countdown-button.is-running svg { color:inherit; }
+#today-header #countdown-header-control {
+ grid-column:auto; grid-row:auto; width:100%; align-self:start; display:block;
+}
+#today-header #countdown-header-status { position:static; margin:2px auto 0; text-align:center; }
+#today-header #countdown-header-status:not([hidden]) { display:block; width:max-content; }
+#today-header #life-weeks-open { width:min(100%,154px); margin:0; min-height:34px; white-space:normal; }
+
+.app-nav {
+ grid-area:nav; display:flex; flex-wrap:wrap; align-items:center; justify-content:center;
+ gap:5px; margin:0; padding:0; min-width:0; border:0; border-radius:0; box-shadow:none; position:static;
+}
+.app-nav [data-tab] {
+ display:flex; align-items:center; justify-content:center; gap:6px;
+ flex:1 1 94px; min-width:0; min-height:41px; border-radius:15px; padding:6px;
+}
+.app-nav [data-tab] span { font-size:inherit; line-height:1.35; }
+.app-nav .nav-symbol,.app-nav .activities-nav .nav-symbol { width:20px; height:20px; flex:none; }
+.app-nav [data-tab].selected { background:var(--theme-primary); box-shadow:none; }
+#view { min-width:0; }
+#view[data-screen=alarms],#view[data-screen=activities],#view[data-screen=planning],
+#view[data-screen=reports],#view[data-screen=projects] {
+ padding:clamp(12px,3vw,20px);
+ border:1px solid var(--theme-border); border-radius:24px; background:var(--theme-surface);
+ box-shadow:var(--theme-shadow);
+}
+
+#view[data-screen=projects][data-project-theme=done] { background:var(--theme-subtle); }
+#view[data-screen=projects][data-project-theme=deleted] { background:var(--theme-subtle); }
+
+/* Today: an open clock card, two related cards, and the daily journal. */
+.today-layout { max-width:none; gap:12px; }
+.is-today .activity-session {
+ grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px;
+ padding:18px 20px;
+ border-color:var(--theme-border); border-radius:22px;
+ background:radial-gradient(ellipse at 0 110%,var(--theme-subtle),transparent 65%),linear-gradient(145deg,var(--theme-row-alt),var(--theme-surface));
+}
+.is-today .session-clock { text-align:center; }
+.is-today .session-caption { color:var(--theme-muted); }
+.is-today .session-clock .clock { font-size:clamp(26px,6vw,48px); line-height:1.05; }
+.session-actions.session-quick-actions { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+.is-today .session-quick-button { min-height:72px; border-radius:15px; }
+.is-today .session-quick-button.past-quick { background:var(--theme-surface); border-color:var(--theme-field-border); }
+.is-today .day-reset-panel { padding:0; margin:0; }
+.is-today .reset-day-button { border-radius:12px; }
+
+.is-today .today-layout > .journey {
+ border-color:var(--theme-border); border-radius:20px; background:var(--theme-surface); color:var(--theme-ink);
+ box-shadow:var(--theme-shadow);
+}
+.is-today .journey > .journey-heading { background:var(--theme-subtle); }
+.is-today .journey .section-toggle { min-height:46px; font-size:15px; }
+.is-today .journey #journey-content { padding:0 12px 12px; }
+.is-today .journey > .journey-heading { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:6px; padding-inline-end:8px; }
+.is-today .journey .history-nav { position:static; transform:none; display:flex; align-items:center; gap:4px; }
+.is-today .journey .section-toggle { gap:4px; }
+.is-today .journey .history-nav button {
+ min-height:34px; min-width:32px; padding:4px 6px; border-radius:10px;
+ color:var(--theme-ink); background:var(--theme-subtle); border-color:var(--theme-border);
+}
+.is-today .journey .history-nav .history-date {
+ padding-inline:8px; background:var(--theme-subtle); border-color:var(--theme-border); font-weight:750;
+}
+.is-today .journey .history-scroll { background:var(--theme-surface); border-color:var(--theme-border); scrollbar-color:var(--theme-border) var(--theme-subtle); }
+.is-today .journey .history-table { table-layout:fixed; }
+.is-today .journey .history-table thead th {
+ background:var(--theme-subtle); color:var(--theme-ink); box-shadow:none; border-bottom:1px solid var(--theme-border);
+}
+.is-today .journey .history-table tbody td { color:var(--theme-ink); border-bottom-color:var(--theme-border); overflow-wrap:anywhere; }
+.is-today .journey .history-table tbody tr:nth-child(even):not(.current-row) { background:var(--theme-row-alt); }
+.is-today .journey .history-table .activity-name,.is-today .journey .history-table .time-approx { color:var(--theme-ink); }
+.is-today .journey .history-table .activity-name { text-align:right; text-decoration-color:var(--theme-green); text-underline-offset:3px; }
+.is-today .journey .history-table .current-row { background:var(--theme-subtle); }
+.is-today .journey .history-table .running-label { color:var(--theme-ink); font-size:10px; font-weight:700; }
+.is-today .journey .journal-gaps button { background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-field-border); }
+
+/* Lists, search and settings use the same visual hierarchy. */
+#view .activities-toolbar { border-radius:15px; padding:5px; gap:5px; background:var(--theme-subtle); }
+#view .activities-toolbar button { border-radius:11px; }
+#view .alarm-heading h2,.projects-screen .projects-heading h2 { color:var(--theme-ink); }
+#view .alarm-heading + .card,#view .alarm-heading + .card .content b,#view .alarm-heading + .card .content .muted { color:var(--theme-ink); }
+#view .projects-heading,.planner-title,.reports-heading,.alarm-heading { gap:8px; }
+#settings-dialog > section { padding:10px 12px; margin:8px 0; border:1px solid var(--theme-border); border-radius:13px; background:var(--theme-row-alt); }
+#settings-dialog > section h3 { margin-top:0; }
+dialog#dialog { border-radius:22px; }
+
+@media(min-width:660px) {
+ }
+@media(max-width:600px) {
+ main { padding:8px 9px 22px; }
+ #today-header.app-masthead {
+  grid-template-columns:minmax(0,1.25fr) minmax(90px,1fr);
+  grid-template-areas:'brand clock' 'nav nav' 'tools tools';
+  gap:6px; margin-block-end:10px; padding:9px 7px; border-radius:17px;
+ }
+ #today-header #today-brand { min-height:35px; max-width:152px; }
+ .masthead-tools { flex-wrap:wrap; }
+ .masthead-actions { min-width:115px; }
+ #today-header #life-weeks-open { width:auto; }
+ #today-header #wall-clock.has-segment-clock { padding:5px; }
+ #today-header #date .date-line { font-size:9px; }
+ #today-header .masthead-actions .header-education { height:39px; border-radius:9px; }
+ #today-header .masthead-actions .header-education span { font-size:9px; }
+ #today-header .masthead-actions #settings .header-settings-icon { font-size:15px; }
+ #today-header #life-weeks-open { min-height:30px; padding:3px; font-size:9px; }
+ #today-header #life-weeks-open svg { width:13px; height:13px; }
+ .app-nav [data-tab] { justify-content:center; flex:1 1 89px; gap:4px; min-height:36px; padding:4px; font-size:10px; border-radius:12px; }
+ .app-nav .nav-symbol,.app-nav .activities-nav .nav-symbol { width:17px; height:17px; }
+ .is-today .activity-session { padding:12px 8px; gap:6px; }
+ .is-today .session-quick-button { min-height:60px; border-radius:11px; }
+ .session-actions.session-quick-actions { gap:4px; }
+  }

@@ -1,0 +1,200 @@
+
+/* Vazirmatn Round Dots by the Vazirmatn Project Authors, SIL OFL 1.1.
+   https://github.com/rastikerdar/vazirmatn/tree/v33.003/Round-Dots */
+@font-face {
+ font-family:"Vazirmatn RD";
+ src:url("https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Round-Dots/fonts/webfonts/Vazirmatn-RD%5Bwght%5D.woff2") format("woff2"),
+     url("https://raw.githubusercontent.com/rastikerdar/vazirmatn/v33.003/Round-Dots/fonts/webfonts/Vazirmatn-RD%5Bwght%5D.woff2") format("woff2");
+ font-weight:100 900;
+ font-style:normal;
+ font-display:swap;
+}
+
+:root {
+ --theme-background:#F6F3F7;
+ --theme-surface:#FFFFFF;
+ --theme-ink:#35283F;
+ --theme-primary:#B6E3CE;
+ --theme-subtle:#F0E9F5;
+ --theme-row-alt:#FCF9FD;
+ --theme-border:#E8DFF0;
+ --theme-negative:#B4233D;
+ --theme-negative-surface:#F3BEC5;
+ --theme-positive-surface:#BEE5C8;
+ --theme-green:#103F36;
+ --theme-install-background:#F4F1F6;
+ --theme-install-ink:#30243B;
+ --theme-field-border:#A9D7C4;
+ --theme-install-primary:#B5E2CF;
+ --theme-muted:#64566E;
+ --theme-shadow-ink:#35283F16;
+ --theme-shadow:0 3px 13px var(--theme-shadow-ink);
+ --teal:var(--theme-green);
+ --line:var(--theme-border);
+ font-family:"Vazirmatn RD",Tahoma,sans-serif;
+ color:var(--theme-ink);
+ background:var(--theme-background);
+ color-scheme:light;
+}
+body { color:var(--theme-ink); }
+h1,h2,h3,h4,legend { color:var(--theme-ink); }
+button,input,select,textarea,.import { font-family:inherit; }
+button,.import { color:var(--theme-ink); background:var(--theme-subtle); }
+button:not(:disabled):hover,.import:hover { filter:none; background:var(--theme-subtle); }
+a { color:var(--theme-green); }
+:where(button,a,input,select,textarea,[tabindex],.import):focus-visible { outline:3px solid var(--theme-green); outline-offset:2px; }
+button:focus-visible,a:focus-visible,.import:focus-visible { outline-color:var(--theme-green); }
+input:not([type=checkbox]):not([type=radio]):not([type=file]),select,textarea {
+ background:var(--theme-surface); color:var(--theme-ink); border:1px solid var(--theme-field-border); border-radius:10px;
+}
+input[type=checkbox],input[type=radio],.check input,.toggle,.reset-confirmation input { accent-color:var(--theme-green); }
+.muted,.life-explainer,.report-note,.plan-help,.plan-empty,.education-lead { color:var(--theme-muted); }
+
+.card,dialog,.projects-screen,#view.projects-screen,.is-today .due-project-tasks,.is-today .day-chart {
+ background:var(--theme-surface); color:var(--theme-ink); border-color:var(--theme-border); box-shadow:var(--theme-shadow);
+}
+.card,dialog { border-radius:20px; }
+dialog { border:1px solid var(--theme-border); }
+dialog::backdrop { background:#35283F6B; }
+.dialog-actions,.settings-about,.settings-updates,.backup-settings { border-color:var(--theme-border); }
+
+/* Primary navigation and the compact toolbar. */
+#today-header.app-masthead { background:var(--theme-surface); border-color:var(--theme-border); }
+#today-header .app-nav { background:var(--theme-surface); }
+#today-header .app-nav [data-tab] {
+ background:var(--theme-ink); color:var(--theme-surface); border-color:var(--theme-ink);
+ white-space:normal;
+}
+#today-header .app-nav [data-tab]:hover {
+ background:var(--theme-subtle); border-color:var(--theme-border); color:var(--theme-ink);
+}
+#today-header .app-nav [data-tab].selected {
+ background:var(--theme-primary); border-color:var(--theme-primary); color:var(--theme-ink);
+}
+#today-header .masthead-actions .header-education.selected,#today-header #life-weeks-open.selected {
+ background:var(--theme-primary); border-color:var(--theme-field-border); color:var(--theme-ink);
+}
+#today-header #life-weeks-open { background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-border); }
+#today-header #countdown-header-status { color:var(--theme-ink); background:var(--theme-negative-surface); }
+#today-header #date .date-line,#today-header #date .date-line b { color:var(--theme-ink); }
+#today-header #date .gregorian-date { color:var(--theme-muted); }
+#wall-clock.has-segment-clock { border-color:var(--theme-border); background:var(--theme-surface); box-shadow:var(--theme-shadow); }
+.wall-digit polygon { fill:var(--theme-border); }
+.wall-digit polygon.lit,.wall-colon { fill:var(--theme-green); }
+
+/* Button roles, alerts and meaningful states. */
+.primary,.primary:not(:disabled):hover,.activities-toolbar .primary,
+.projects-screen .projects-heading .primary,.projects-screen .project-detail .primary,
+.is-today .session-quick-button:not(:disabled),
+#countdown-dialog .countdown:not(.is-running) .primary,#update-banner button,#ring #restart-countdown {
+ background:var(--theme-primary); color:var(--theme-ink); border-color:var(--theme-field-border); font-weight:750;
+}
+.is-today .session-quick-button.past-quick:not(:disabled),
+.is-today .reset-day-button,.education-topics button,.reset-now-button.selected,
+.reset-wheel-toggle[aria-expanded=true],#activity-suggestions button[aria-selected=true] {
+ background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-border);
+}
+.is-today .session-quick-button:disabled { background:var(--theme-subtle); color:var(--theme-muted); border-color:var(--theme-border); }
+.danger,#wipe-dialog .danger,#ring #silence,.reminder-delete,.calendar-data-note,
+.month-form-error,.month-row-error,#recovery-error,.life-weeks-error {
+ background:var(--theme-negative-surface); color:var(--theme-ink); border-color:var(--theme-negative);
+}
+#toast,#ring { background:var(--theme-ink); color:var(--theme-surface); }
+#update-banner {
+ background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-border); box-shadow:var(--theme-shadow);
+}
+#update-banner b,#update-banner small { color:var(--theme-ink); }
+#update-banner .release-notice + .release-notice { border-color:var(--theme-border); }
+#countdown-dialog .countdown:not(.is-running),#countdown-dialog [data-countdown-back] {
+ background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-border);
+}
+#countdown-dialog #count-clock,.is-today .session-clock .clock { color:var(--theme-ink); }
+#countdown-dialog .countdown.is-running { background:var(--theme-negative-surface); border-color:var(--theme-negative); }
+#countdown-dialog .countdown.is-running #count-clock { color:var(--theme-negative); }
+
+.is-today .due-project-tasks > h2,.is-today .day-chart > h2 { background:var(--theme-subtle); }
+.is-today .due-project-tasks .section-toggle,.is-today .day-chart .section-toggle,
+.is-today .journey .section-toggle,.today-plan-card h2,
+.life-weeks-page h2,.life-metric,.report-period-nav h3,.report-summary strong { color:var(--theme-ink); }
+.is-today .section-toggle:hover { background:var(--theme-subtle); }
+.is-today .section-chevron,.is-today .journey .section-chevron {
+ background:var(--theme-primary); color:var(--theme-ink); border-color:var(--theme-field-border); border-radius:50%;
+}
+.is-today .day-chart .chart-legend { background:var(--theme-row-alt); border-color:var(--theme-border); }
+.is-today .day-chart .legend-item,.is-today .day-chart .legend-duration,
+.is-today .day-chart .legend-percent,.is-today .day-chart .donut-center strong { color:var(--theme-ink); }
+.today-plan-card,.daily-progress-row,.daily-progress-activity,.selected-plan-day,
+.overview-week,.overview-all-total,.report-summary > div,#plan-period-wheel,.life-metric {
+ background:var(--theme-surface); color:var(--theme-ink); border-color:var(--theme-border);
+}
+.life-metric.past { background:var(--theme-negative-surface); color:var(--theme-ink); border-color:var(--theme-negative); }
+.life-metric.future,.plan-card.is-complete,.today-plan-item.is-complete,.task-key.completed {
+ background:var(--theme-positive-surface); color:var(--theme-green); border-color:var(--theme-field-border);
+}
+.life-week-past { background:var(--theme-negative); }
+.life-week-future { background:#278650; }
+.report-period-tabs button,.plan-report-modes button,.calendar-week-label button,.planner-title .small,.activities-toolbar button {
+ background:var(--theme-surface); color:var(--theme-ink); border-color:var(--theme-border);
+}
+.plan-report-modes .selected,.report-period-tabs button.selected,.calendar-day.selected,
+#plan-period-wheel > [aria-selected=true],.projects-screen .project-status-tabs button.selected,
+.activities-toolbar .is-current,.calendar-day.today:not(.selected) {
+ background:var(--theme-primary); color:var(--theme-ink); border-color:var(--theme-field-border);
+}
+.plan-card progress,.today-plan-item progress,.overview-progress progress,progress { accent-color:var(--theme-green); }
+.progress-ring { background:conic-gradient(var(--theme-green) var(--ring-progress),var(--theme-subtle) 0); }
+.progress-ring span { color:var(--theme-ink); }
+.progress-ring.complete span { color:var(--theme-green); }
+
+/* Compact tables and forms across Today, reports and plan views. */
+:is(.history-table,.report-table,.overview-table) thead th,
+.is-today .journey .history-table thead th {
+ background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-border);
+}
+:is(.history-table,.report-table,.overview-table) tbody :is(th,td),
+.is-today .journey .history-table tbody td { color:var(--theme-ink); border-color:var(--theme-border); }
+:is(.history-table,.report-table,.overview-table) tbody tr:nth-child(odd) { background:var(--theme-surface); }
+:is(.history-table,.report-table,.overview-table) tbody tr:nth-child(even) { background:var(--theme-row-alt); }
+:is(.history-table,.report-table,.overview-table) tbody tr:hover,
+.is-today .journey .history-table tbody .current-row,.overview-table tbody th {
+ background:var(--theme-subtle);
+}
+.overview-table .overview-day-total { background:var(--theme-row-alt); }
+.overview-table .overview-task.complete { background:var(--theme-positive-surface); color:var(--theme-green); }
+.is-today .journey .history-table tfoot :is(th,td) {
+ background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-border);
+}
+.plan-range-total,.month-plan-row,.week-pattern-row,.item { border-color:var(--theme-border); }
+.plan-quota-preview,.month-total-heading output,.month-plan-row > output,
+.recovery-lead,.recovery-window,.reset-time-picker {
+ background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-border);
+}
+.is-today .due-project-tasks,.projects-screen { --project-ink:var(--theme-ink); --project-line:var(--theme-border); }
+.projects-screen .project-list-row:not(.project-tinted),.projects-screen .project-detail:not(.project-tinted) {
+ background:var(--theme-surface); border-color:var(--theme-border);
+}
+.projects-screen .project-list-row.selected:not(.project-tinted) { background:var(--theme-subtle); border-color:var(--theme-field-border); }
+.project-tinted .project-link,.project-tinted .project-number,.due-task-row > .small {
+ color:var(--theme-ink); background:var(--theme-subtle); border-color:var(--theme-border);
+}
+
+/* Matching surfaces on the existing help and installation pages. */
+body.install-page {
+ background:var(--theme-install-background); color:var(--theme-install-ink); font-family:inherit;
+}
+.install-page article,.themed-guide :is(.guide-page,.toc,.cover) {
+ background:var(--theme-surface); border-color:var(--theme-border); box-shadow:var(--theme-shadow);
+}
+.install-page h1,.install-page h2 { color:var(--theme-install-ink); }
+.install-page .download,.themed-guide .guide-actions .primary {
+ background:var(--theme-install-primary); color:var(--theme-install-ink); border-color:var(--theme-field-border);
+}
+.install-page a.secondary,.themed-guide :is(.guide-actions a,.toc-links a,.jump,.step-index) {
+ background:var(--theme-subtle); color:var(--theme-ink); border-color:var(--theme-border);
+}
+.themed-guide :is(.eyebrow,.intro) { color:var(--theme-muted); }
+.themed-guide .page-heading { border-color:var(--theme-border); }
+.install-page progress { accent-color:var(--theme-install-primary); }
+
+.arc-percent { font-family:"Vazirmatn RD",Tahoma,sans-serif; }
+.is-today .journey .history-table :is(th,td) { padding-inline:5px; }
