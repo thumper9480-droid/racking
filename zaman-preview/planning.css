@@ -136,3 +136,20 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
 .planner-title { flex-wrap:wrap; gap:8px; }
 .planner-title .actions { flex-wrap:wrap; }
 #daily-planning-calendar { scroll-margin-top:10px; }
+
+.planner-mode-actions {
+ display:flex; justify-content:center; gap:12px; flex-wrap:wrap; margin:14px 0 18px;
+}
+.planner-mode-actions > button {
+ display:flex; align-items:center; justify-content:center; gap:8px;
+ min-height:53px; width:min(100%,230px); padding:9px 12px; border:1px solid;
+ font-size:14px; font-weight:750; border-radius:14px;
+}
+.planning-control-icon { flex:none; width:20px; height:20px; }
+.monthly-period-picker { display:grid; grid-template-columns:minmax(0,1.8fr) minmax(0,1fr); gap:8px; }
+.monthly-period-picker label { min-width:0; }
+@media(max-width:520px) {
+ .planner-mode-actions { gap:7px; }
+ .planner-mode-actions > button { flex:1 1 128px; width:auto; gap:5px; min-height:49px; font-size:12px; }
+ .planner-mode-actions .planning-control-icon { width:17px; height:17px; }
+}

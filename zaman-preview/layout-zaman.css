@@ -233,10 +233,10 @@ dialog#dialog { border-radius:22px; }
  animation:today-led-march 7.4s linear infinite;
 }
 @keyframes today-led-march {
- 0%,7% { transform:translateX(100cqi); opacity:0; }
+ 0%,7% { transform:translateX(-100%); opacity:0; }
  19% { opacity:1; }
  80% { opacity:1; }
- 93%,100% { transform:translateX(-100%); opacity:0; }
+ 93%,100% { transform:translateX(100cqi); opacity:0; }
 }
 @media(max-width:600px) { .app-nav .nav-today-slot { flex-basis:89px; } .today-led-line { font-size:11px; } }
 @media(prefers-reduced-motion:reduce), (forced-colors:active) {

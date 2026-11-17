@@ -39,8 +39,8 @@ function activityToolbar(){
    <button type="button" ${planSelected?'class="is-current" aria-current="page"':''} data-open-planning>پلان‌ریزی فعالیت‌ها</button>
   </div>
   <div class="activities-pair activities-pair-report" role="group" aria-label="گزارش‌ها">
-   <button type="button" ${routineReportSelected?'class="is-current" aria-current="page"':''} data-plan-progress>گزارش فعالیت‌های روتین</button>
-   <button type="button" ${reportSelected?'class="is-current" aria-current="page"':''} data-action="reports">گزارش کل فعالیت‌ها</button>
+   <button type="button" ${routineReportSelected?'class="is-current" aria-current="page"':''} data-plan-progress>${planActionIcon('routineReport')}<span>گزارش فعالیت‌های روتین</span></button>
+   <button type="button" ${reportSelected?'class="is-current" aria-current="page"':''} data-action="reports">${planActionIcon('allReport')}<span>گزارش کل فعالیت‌ها</span></button>
   </div>
  </div>`;
 }
