@@ -213,3 +213,20 @@ body.install-page {
 .is-today .journey .history-table tbody tr:nth-child(n) { background:var(--theme-surface); }
 .is-today .journey .history-table tbody tr:hover,.is-today .journey .history-table tbody tr.current-row { background:var(--theme-row-alt); }
 .is-today .journey .history-table tfoot :is(th,td) { border-bottom:0; }
+
+/* Give the shared shortcuts the same plum surface as the Projects tab. */
+#utility-actions > :is(#education-button,#header-reminders,#settings),
+#utility-actions #countdown-button {
+ background:var(--theme-ink);
+ border-color:var(--theme-ink);
+ color:var(--theme-surface);
+}
+#utility-actions > :is(#education-button,#header-reminders,#settings):hover,
+#utility-actions #countdown-button:not(.is-running):hover { filter:brightness(1.18); }
+#utility-actions :is(#education-button,#header-reminders,#settings,#countdown-button) :is(svg,.header-settings-icon) { color:inherit; }
+#utility-actions > #header-reminders.selected {
+ background:var(--theme-primary); border-color:var(--theme-field-border); color:var(--theme-ink);
+}
+#utility-actions #countdown-button.is-running {
+ background:var(--theme-negative); border-color:var(--theme-negative); color:var(--theme-surface);
+}

@@ -97,13 +97,23 @@
 #today-header #today-brand > img[hidden],#today-header #today-brand #life-weeks-open[hidden] { display:none; }
 #today-header #today-brand #life-weeks-open:not([hidden]) {
  display:flex; width:100%; max-width:none; min-height:42px; min-width:0;
- gap:4px; padding:5px; margin:0; border:1px solid #b292ce; border-radius:14px;
- background:linear-gradient(150deg,#f6efff,#e8dbf5); color:var(--theme-ink);
- font-size:clamp(9px,10cqi,12px); font-weight:750; line-height:1.35;
+ gap:4px; padding:5px; margin:0; border:1px solid #cbded0; border-radius:12px;
+ background:linear-gradient(145deg,#f7faf5,#eef5ef); color:var(--theme-green);
+ font-size:clamp(9px,10cqi,12px); font-weight:850; line-height:1.35;
  white-space:normal; text-align:center; box-shadow:none;
 }
 #today-header #today-brand #life-weeks-open svg { width:15px; height:15px; flex:none; }
-#today-header #today-brand #life-weeks-open.selected { border-color:#8d68af; box-shadow:inset 0 0 0 1px #8d68af; }
+
+#today-header #today-brand #life-weeks-open.selected { border-color:var(--theme-green); box-shadow:inset 0 0 0 1px var(--theme-field-border); }
+.weeks-led-label { font-weight:850; text-wrap:balance; }
+@supports ((background-clip:text) or (-webkit-background-clip:text)) {
+ .weeks-led-label {
+  background-image:repeating-linear-gradient(0deg,var(--theme-green) 0 3px,#375c4d 3px 4px,var(--theme-green) 4px 6px);
+  -webkit-background-clip:text; background-clip:text; color:transparent;
+ }
+}
+@media(forced-colors:active) { .weeks-led-label { background:none; color:ButtonText; } }
+
 @media(prefers-reduced-motion:no-preference) {
  #today-header #today-brand #life-weeks-open:not([hidden]) { animation:weeks-into-masthead .36s ease-out both; }
 }
