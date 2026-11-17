@@ -1,10 +1,13 @@
 #today-header { grid-template-columns:clamp(112px,32vw,154px) minmax(0,1fr) 42px 44px; }
 #today-header #today-brand img { max-width:min(280px,calc(100% + 12px)); }
-#education-button, #header-reminders { grid-column:4; }
+#education-button, #settings { grid-column:4; }
+#header-reminders { grid-column:3; }
+#header-reminders, #settings { grid-row:2; align-self:start; margin-top:17px; }
+#settings .header-settings-icon { font-size:17px; line-height:1; }
 #education-button { grid-row:1; }
-#countdown-header-control { grid-column:3; grid-row:1; align-self:center; position:relative; display:grid; justify-items:center; }
+#countdown-header-control { grid-column:3; grid-row:1; align-self:end; position:relative; display:grid; justify-items:center; }
 #countdown-header-status { position:absolute; top:100%; margin-top:2px; }
-#countdown-button { width:38px; height:38px; border-radius:50%; margin:0; padding:3px; color:#3e755b; background:#f3f8f1; border:1px solid #bdd5c5; }
+#countdown-button { width:40px; height:40px; border-radius:50%; margin:0; padding:3px; color:#3e755b; background:#f3f8f1; border:1px solid #bdd5c5; }
 #countdown-button span { font-size:8px; }
 #countdown-button svg { width:15px; height:15px; }
 #countdown-button.is-running { color:#fff; background:#b72c35; border-color:#98242b; }
@@ -17,4 +20,6 @@
 #countdown-dialog #count-clock { font-size:38px; color:#604483; direction:ltr; }
 #countdown-dialog .actions { gap:7px; }
 #countdown-dialog .actions button { min-height:42px; }
-@media(max-width:350px) { #today-header { grid-template-columns:112px minmax(0,1fr) 34px 34px; } #countdown-button { width:31px; height:31px; } #countdown-button svg { width:13px; height:13px; } #countdown-button span { font-size:7px; } #countdown-header-status { font-size:8px; } #countdown-dialog { padding:16px; } }
+@media(max-width:350px) { #today-header { grid-template-columns:112px minmax(0,1fr) 34px 34px; } #countdown-button { width:34px; height:34px; } #countdown-button svg { width:13px; height:13px; } #countdown-button span { font-size:7px; } #countdown-header-status { font-size:8px; } #countdown-dialog { padding:16px; } }
+
+#education-button { align-self:end; }

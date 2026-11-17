@@ -31,8 +31,8 @@ function recoverySummary(now=Date.now()){
 function todayPlannedActivities(){const day=planDayKey(),plans=(state.dailyPlans||[]).filter(p=>p.day===day);if(!plans.length)return'';return `<article class="card today-plan-card"><div class="row"><h2>فعالیت‌های روتین امروز</h2><button type="button" class="small" data-today-plan-report>گزارش</button></div>${plans.map(p=>{const data=planProgress(p);return `<div class="today-plan-item ${data.complete?'is-complete':''}" data-today-plan="${esc(p.id)}"><span class="today-plan-check" role="checkbox" aria-checked="${data.complete}" aria-label="تکمیل ${esc(p.name)}">${data.complete?'✓':'○'}</span><div><b>${esc(p.name)}</b><small>${fa(p.count)} نوبت × ${fa(p.minutes)} دقیقه · ${planMinutes(data.assigned)} از ${planMinutes(data.target)} دقیقه</small><progress value="${data.assigned}" max="${data.target}" aria-label="پیشرفت ${esc(p.name)}"></progress></div></div>`;}).join('')}</article>`;}
 function activityToolbar(){return `<div class="activities-toolbar" role="group" aria-label="منوی ثابت فعالیت‌ها"><button type="button" class="primary" data-action="add-activity">＋ فعالیت روتین جدید</button><button type="button" class="${tab==='planning'&&!planningProgressView?'is-current':''}" data-open-planning>پلان‌ریزی فعالیت‌ها</button><button type="button" class="${tab==='planning'&&planningProgressView?'is-current':''}" data-plan-progress>گزارش فعالیت‌های روتین</button><button type="button" class="${tab==='reports'?'is-current':''}" data-action="reports">گزارش کل فعالیت‌ها</button></div>`;}
 function recoveryResume(){
- if(state.sleepStart!==undefined){sleepForm(null,true);return;}if(state.pendingSegment){namePendingSegment();return;}if(state.day)return;
- const data=recoverySummary();if(data.missing<1){if(startLiveDay(Date.now())){state.day.resumed=true;recoveryClaimGaps(state,data.day.start,Date.now());save();render();}return;}pastTimeForm({resumeAfter:true});
+ if(state.sleepStart!==undefined){sleepForm(null,true,true);return;}if(state.pendingSegment){namePendingSegment();return;}if(state.day)return;
+ const data=recoverySummary();if(data.missing<1){if(startLiveDay(Date.now())){state.day.resumed=true;state.lastQuickWakeDay=planDayKey();recoveryClaimGaps(state,data.day.start,Date.now());save();render();}return;}pastTimeForm({resumeAfter:true});
 }
 function pastTimeForm(options={}){
  const index=options.index??null,old=index===null?null:state.history[index],oldSleep=options.sleepId?(state.sleeps||[]).find(s=>s.id===options.sleepId):null,pending=options.pending;
@@ -44,7 +44,7 @@ function pastTimeForm(options={}){
  let skipToNow=false;
  const opened=modal(pending?'تا الان حدوداً چه کار کردید؟':oldSleep?'ویرایش مدت خواب':old?'ویرایش ثبت فعالیت':resume?'ادامه از همین الان':'ثبت زمان گذشته',fields,f=>{
   const fail=message=>{const error=$('#recovery-error');error.textContent=message;error.hidden=false;error.scrollIntoView({block:'nearest'});return false;};
-  if(skipToNow){skipToNow=false;const now=Date.now(),day=journalBounds(now);if(state.day||state.pendingSegment||state.sleepStart!==undefined)return fail('ابتدا خواب یا فعالیت جاری را تمام کنید.');const next={...state,history:state.history.map(h=>({...h})),unassigned:(state.unassigned||[]).map(g=>({...g}))};recoveryFillUnknown(next,day,now);next.day={start:now,segment:now,activity:'فعالیت جاری',resumed:true};try{validate(next);}catch{return fail('اطلاعات روز با هم سازگار نیست؛ ثبت‌های قبلی را بررسی کنید.');}state=next;historyOffset=0;return true;}
+  if(skipToNow){skipToNow=false;const now=Date.now(),day=journalBounds(now);if(state.day||state.pendingSegment||state.sleepStart!==undefined)return fail('ابتدا خواب یا فعالیت جاری را تمام کنید.');const next={...state,history:state.history.map(h=>({...h})),unassigned:(state.unassigned||[]).map(g=>({...g}))};recoveryFillUnknown(next,day,now);next.day={start:now,segment:now,activity:'فعالیت جاری',resumed:true};next.lastQuickWakeDay=planDayKey(now);try{validate(next);}catch{return fail('اطلاعات روز با هم سازگار نیست؛ ثبت‌های قبلی را بررسی کنید.');}state=next;historyOffset=0;return true;}
   if(pending&&state.pendingSegment!==pending)return fail('فعالیت جاری تغییر کرده است؛ پنجره را دوباره باز کنید.');
   if(old&&state.history[index]!==old||oldSleep&&!(state.sleeps||[]).includes(oldSleep))return fail('این ثبت تغییر کرده است؛ پنجره را دوباره باز کنید.');
   const chosen=pending?new Date(initialDay.start):persianToLocal(f.get('jyear'),f.get('jmonth'),f.get('jday')),now=Date.now();if(!chosen)return fail('تاریخ معتبر انتخاب کنید.');const day=journalBounds(chosen);
@@ -76,7 +76,7 @@ function pastTimeForm(options={}){
   if(Math.abs(recoveryTotal(day,next,now)-(Math.min(day.end,now)-day.start))<1)recoveryClaimGaps(next,day.start,Math.min(day.end,now));
   if(recoveryTotal(day,next,now)>Math.min(day.end,now)-day.start+1)return fail('جمع خواب، فعالیت و زمان نامشخص از زمان سپری‌شدهٔ روز بیشتر می‌شود. ثبت نامشخص را برای جایگزین‌کردن ویرایش کنید.');
   if(resume&&f.get('resumeNow')){
-   if(next.sleepStart!==undefined||next.day||next.pendingSegment)return fail('ابتدا خواب یا فعالیت جاری را تمام کنید.');recoveryFillUnknown(next,day,now);next.day={start:now,segment:now,activity:'فعالیت جاری',resumed:true};
+   if(next.sleepStart!==undefined||next.day||next.pendingSegment)return fail('ابتدا خواب یا فعالیت جاری را تمام کنید.');recoveryFillUnknown(next,day,now);next.day={start:now,segment:now,activity:'فعالیت جاری',resumed:true};next.lastQuickWakeDay=planDayKey(now);
   }
   try{validate(next);}catch{return fail('این ثبت با اطلاعات روز سازگار نیست؛ زمان‌ها را بررسی کنید.');}
   state=next;if(type==='activity')rememberActivity(name);historyOffset=Math.round((day.start-journalBounds(now).start)/86400000);return true;
@@ -96,6 +96,6 @@ function pastTimeForm(options={}){
  form.oninput=refresh;form.onchange=refresh;form.querySelector('[data-recovery-unknown-now]')?.addEventListener('click',()=>{skipToNow=true;form.requestSubmit();});
  refresh();if(!pending)updatePersianDate();if(resume)$('#form button[type=submit]').textContent='ثبت و ادامه';if(kind==='activity'&&!resume)focusActivityInput();
 }
-function handleRecoveryClick(b){if(b.hasAttribute('data-today-plan-report')){planReportMode='day';planReportAnchor=Date.now();planningProgressView=true;planningOverview=false;tab='planning';render();window.scrollTo(0,0);return true;}if(b.hasAttribute('data-recover-past')){pastTimeForm();return true;}return false;}
+function handleRecoveryClick(b){if(b.hasAttribute('data-today-plan-report')){planReportMode='day';planReportAnchor=Date.now();planningProgressView=true;tab='planning';render();window.scrollTo(0,0);return true;}if(b.hasAttribute('data-recover-past')){pastTimeForm();return true;}return false;}
 
 function recoveryKindForName(name){const key=normalizeActivity(name);return ['خواب','خوابیدن'].includes(key)?'sleep':['نامشخص','یادم نیست','فراموش کردم'].includes(key)?'unknown':'activity';}

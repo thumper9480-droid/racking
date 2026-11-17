@@ -28,7 +28,7 @@ function sleepConflict(start,end,except=null,finishing=false){
  const days=[...new Set([...state.history,...(state.sleeps||[])].filter(h=>h.durationOnly&&h.start<end&&journalBounds(h.start).end>start).map(h=>journalBounds(h.start).start))];for(const dayStart of days){const day=journalBounds(dayStart);const sleepSummaries=(state.sleeps||[]).filter(s=>s.durationOnly&&s.id!==except&&s.start>=day.start&&s.start<day.end).reduce((sum,s)=>sum+s.durationMs,0),other=sleepSummaries+sleepRanges(state).filter(s=>s.id!==except&&!(finishing&&s.id==='current-sleep')).reduce((sum,s)=>sum+Math.max(0,Math.min(s.end,day.end)-Math.max(s.start,day.start)),0),added=Math.max(0,Math.min(end,day.end)-Math.max(start,day.start));if(journalTotal(day,-1,Date.now())-sleepStats(day).total+other+added>Math.min(Date.now(),day.end)-day.start+1){toast('جمع خواب و فعالیت‌ها از زمان سپری‌شدهٔ روز بیشتر می‌شود.');return true;}}
  return false;
 }
-function sleepForm(record=null,finishing=false){
+function sleepForm(record=null,finishing=false,fromQuickWake=false){
  if(finishing&&state.sleepStart===undefined)return;
  const now=Date.now(),yesterday=new Date(now);yesterday.setDate(yesterday.getDate()-1);yesterday.setHours(23,0,0,0);
  const originals={sleepFrom:record?.start??(finishing?state.sleepStart:yesterday.getTime()),sleepTo:record?.end??now},anchor=state.sleepStart;
@@ -40,6 +40,7 @@ function sleepForm(record=null,finishing=false){
   if(sleepConflict(start,end,finishing?'current-sleep':record?.id,finishing))return false;
   const previous=state.sleeps,previousStart=state.sleepStart,entry={...(record||{id:uid(),createdAt:Date.now()}),start,end};state.sleeps=record?(state.sleeps||[]).map(s=>s.id===record.id?entry:s):[...(state.sleeps||[]),entry];if(finishing)delete state.sleepStart;
   if(f.get('wakeStartDay')&&!startLiveDay(end)){if(previous===undefined)delete state.sleeps;else state.sleeps=previous;if(previousStart!==undefined)state.sleepStart=previousStart;return false;}
+  if(fromQuickWake)state.lastQuickWakeDay=planDayKey();
   journalClaimRange(start,end);return true;
  });
  if(opened){refreshSleepPreview();document.querySelector('[data-sleep-now]').onclick=()=>{const at=Date.now(),d=new Date(at),j=jalaliParts(new Date(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate()))),form=document.querySelector('#form');originals.sleepTo=at;form.elements.sleepToYear.value=fa(j.year);form.elements.sleepToMonth.value=String(j.month);form.elements.sleepToDay.value=String(j.day);form.elements.sleepToTime.value=journalTime(at);refreshSleepPreview();};}

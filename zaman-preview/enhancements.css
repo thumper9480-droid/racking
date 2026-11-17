@@ -40,3 +40,7 @@ nav [data-tab] { min-width:0; padding-inline:6px; }
 #wipe-dialog [data-wipe-confirm] { border:1px solid #bc3838; background:#fff0ee; color:#a51e27; font-weight:750; }
 @media(max-width:650px) { nav [data-tab] { font-size:10px; gap:4px; } nav button span { font-size:16px; } nav .settings-nav { flex-basis:31px; } .project-row-actions { max-width:52%; } }
 .memorial-stop { margin-top:12px; color:#7c6860; font-size:11px; }
+
+#update-banner:not([hidden]) { display:grid; gap:10px; }
+#update-banner .release-notice { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+#update-banner .release-notice+.release-notice { border-top:1px solid #e9b7b3; padding-top:10px; }
