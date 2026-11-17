@@ -35,36 +35,7 @@ function journalDateFields(value){const d=new Date(value),p=jalaliParts(new Date
 function journalUpdateMode(){const form=$('#form'),duration=form.elements.entryMode?.value==='duration';if(!form.elements.entryMode)return;$('#journal-range').hidden=duration;$('#journal-duration').hidden=!duration;for(const input of $('#journal-range').querySelectorAll('input'))input.disabled=duration;form.elements.durationMinutes.disabled=!duration;form.elements.durationMinutes.required=duration;form.elements.toTime.disabled=duration||form.elements.endOfDay.checked;}
 document.addEventListener('change',event=>{if(['entryMode','endOfDay'].includes(event.target.name))journalUpdateMode();});
 function journalTotal(day,except,now){let total=state.history.reduce((sum,h,i)=>sum+(i===except?0:journalDuration(h,day)),0);const pending=state.pendingSegment;if(pending)total+=Math.max(0,Math.min(pending.end,day.end)-Math.max(pending.start,day.start));if(state.day&&!(pending?.ending&&!pending.detached))total+=Math.max(0,Math.min(journalLiveEnd(now),day.end)-Math.max(state.day.segment,day.start));return total+sleepStats(day,now).total;}
-function manualHistoryForm(index=null,selectedDay=null,chosenGap=null){
- const old=index===null?null:state.history[index];if(index!==null&&!old)return;
- const initialDay=old?journalBounds(old.start):selectedDay||historyDay(),gap=chosenGap||journalFirstGap(initialDay),from=old&&!old.durationOnly?old.start:gap.start,to=old&&!old.durationOnly?old.end:gap.end;
- const mode=old?.durationOnly?'duration':'range',endOfDay=to===initialDay.end;
- const fields=`${journalDateFields(initialDay.start)}${activityInput(old?.name||'')}<div class="journal-mode" role="group" aria-label="روش ثبت زمان"><label><input type="radio" name="entryMode" value="range" ${mode==='range'?'checked':''}>از ساعت تا ساعت</label><label><input type="radio" name="entryMode" value="duration" ${mode==='duration'?'checked':''}>فقط مدت</label></div><div id="journal-range"><div class="journal-time-fields"><label>از ساعت<input type="time" name="fromTime" required value="${journalTime(from)}"></label><label>تا ساعت<input type="time" name="toTime" required value="${journalTime(to)}"></label></div><label class="check"><input type="checkbox" name="endOfDay" ${endOfDay?'checked':''}>تا پایان روز (۲۴:۰۰)</label></div><div id="journal-duration"><label>مدت به دقیقه<input type="number" name="durationMinutes" min="1" max="1500" step="1" inputmode="numeric" value="${old?.durationOnly?old.durationMs/60000:40}"></label></div>${old?`<button type="button" class="small danger" data-delete-history="${index}">حذف ثبت</button>`:''}`;
- const opened=modal(old?'ویرایش ثبت فعالیت':'ثبت دستی فعالیت',fields,f=>{
-  const chosen=persianToLocal(f.get('jyear'),f.get('jmonth'),f.get('jday')),now=Date.now();if(!chosen){toast('تاریخ معتبر وارد کنید.');return false;}
-  const day=journalBounds(chosen);if(day.start>now){toast('ثبت فعالیت برای روز آینده ممکن نیست.');return false;}
-  const name=String(f.get('name')||'').trim();if(!name)return false;const durationOnly=f.get('entryMode')==='duration';let entry;
-  if(durationOnly){const minutes=Number(asciiDigits(f.get('durationMinutes')));if(!Number.isInteger(minutes)||minutes<1||minutes>1500){toast('مدت معتبر به دقیقه وارد کنید.');return false;}const durationMs=minutes*60000;if(journalTotal(day,index,now)+durationMs>Math.min(day.end,now)-day.start+1){toast('مدت ثبت‌ها از زمان سپری‌شدهٔ این روز بیشتر می‌شود.');return false;}entry={name,start:day.start,end:day.start,durationOnly:true,durationMs,manual:true};}
-  else{
-   let start=journalParseTime(f.get('fromTime'),day),end=f.get('endOfDay')?day.end:journalParseTime(f.get('toTime'),day);
-   const unchanged=old&&!old.durationOnly&&day.start===initialDay.start&&f.get('fromTime')===journalTime(old.start)&&Boolean(f.get('endOfDay'))===(old.end===initialDay.end)&&(f.get('endOfDay')||f.get('toTime')===journalTime(old.end));
-   if(unchanged){start=old.start;end=old.end;}
-   if(start===null||end===null||end<=start||end>now){toast('بازهٔ گذشته و معتبر وارد کنید؛ پایان باید پس از شروع باشد.');return false;}
-   if(!unchanged){
-    if(sleepOverlap(start,end)){toast('این بازه با زمان خواب تداخل دارد؛ خواب یا فعالیت را اصلاح کنید.');return false;}
-    if(state.history.some((h,i)=>i!==index&&!h.durationOnly&&h.end>start&&h.start<end)||state.pendingSegment&&state.pendingSegment.end>start&&state.pendingSegment.start<end){toast('این بازه با ثبت دیگری هم‌پوشانی دارد؛ همان سطر را ویرایش کنید.');return false;}
-    const live=state.day&&!state.pendingSegment?.ending&&end>state.day.segment&&start<journalLiveEnd(now),removedLive=live?Math.max(0,Math.min(journalLiveEnd(now),end)-state.day.segment):0;
-    if(journalTotal(day,index,now)-removedLive+end-start>Math.min(day.end,now)-day.start+1){toast('مدت ثبت‌ها از زمان سپری‌شدهٔ این روز بیشتر می‌شود.');return false;}
-    if(live){journalAddGap(state.day.segment,Math.max(state.day.segment,start));state.day.segment=end;}
-    journalClaimRange(start,end);
-   }
-   entry={name,start,end,...(old?.manual?{manual:true}:{})};if(!old)entry.manual=true;
-  }
-  entry.name=rememberActivity(name);if(old){for(const key of ['durationOnly','durationMs'])delete old[key];Object.assign(old,entry);}else state.history.push(entry);
-  const today=journalBounds(now);historyOffset=Math.round((day.start-today.start)/86400000);return true;
- });
- if(opened){updatePersianDate();journalUpdateMode();focusActivityInput();}
-}
+function manualHistoryForm(index=null,selectedDay=null,chosenGap=null){pastTimeForm({index,selectedDay:selectedDay||historyDay(),chosenGap});}
 function startLiveDay(start){
  const now=Date.now();closeExpiredDay(now);if(state.sleepStart!==undefined){toast('ابتدا زمان بیدارشدن را ثبت کنید.');return false;}const day=journalBounds(now);if(state.day||state.pendingSegment){toast('ابتدا فعالیت جاری را ثبت یا پایان دهید.');return false;}
  if(!Number.isFinite(start)||start<day.start||start>now){toast('ساعت شروع باید امروز و پیش از زمان فعلی باشد.');return false;}
@@ -72,10 +43,10 @@ function startLiveDay(start){
  if(state.history.some(h=>!h.durationOnly&&h.end>start&&h.start<now)){toast('این زمان با فعالیت ثبت‌شده هم‌پوشانی دارد؛ زمان پس از آن را انتخاب کنید.');return false;}
  const summaries=state.history.filter(h=>h.durationOnly&&h.start>=day.start&&h.start<day.end).reduce((sum,h)=>sum+h.durationMs,0),before=state.history.filter(h=>!h.durationOnly).reduce((sum,h)=>sum+Math.max(0,Math.min(h.end,start)-Math.max(h.start,day.start)),0);
  if(summaries>start-day.start-before-sleepStats({start:day.start,end:start},now).total+1){toast('برای حفظ مدت‌های ثبت‌شده، زمان شروع دیرتری انتخاب کنید.');return false;}
- journalClaimRange(start,now);state.day={start,segment:start,activity:'فعالیت جاری'};return true;
+ if(recoveryTotal(day,{...state,day:{start,segment:start,activity:'فعالیت جاری'}},now)>now-day.start+1){toast('ساعت شروع با مدت‌های ثبت‌شده سازگار نیست؛ زمان دیرتری انتخاب کنید.');return false;}journalClaimRange(start,now);state.day={start,segment:start,activity:'فعالیت جاری'};return true;
 }
 function startDayForm(){const day=journalBounds(),opened=modal('شروع روز از ساعت دلخواه',resetTimeFields(new Date()),f=>{if(journalBounds().start!==day.start){toast('روز عوض شده؛ دوباره انتخاب کنید.');return false;}const chosen=readResetTime(f),start=chosen.useNow?Date.now():journalParseTime(chosen.value,day);return startLiveDay(start);});if(opened)setupResetTime();}
-function journalStartControls(){return state.day?'':`<div class="journal-start-controls"><button type="button" class="small" data-action="start-day">شروع از ساعت دلخواه</button><button type="button" class="small" data-action="manual-today">ثبت زمان گذشته</button></div>`;}
+function journalStartControls(){return state.day?'':`<div class="journal-start-controls"><button type="button" class="small" data-action="start-day">شروع از ساعت دلخواه</button></div>`;}
 function handleJournalClick(button){
  if(button.dataset.fillGap){const gap=state.unassigned?.find(g=>g.id===button.dataset.fillGap);if(gap)manualHistoryForm(null,historyDay(),{start:Math.max(gap.start,historyDay().start),end:Math.min(gap.end,historyDay().end)});return true;}
  if(button.dataset.deleteHistory!==undefined){const index=Number(button.dataset.deleteHistory);if(Number.isInteger(index)&&state.history[index]&&confirm('این ثبت حذف شود؟')){dismissModal();state.history.splice(index,1);save();render();}return true;}

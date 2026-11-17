@@ -1,0 +1,31 @@
+/* Shared section navigation keeps the same size and position across Activities views. */
+.activities-toolbar { position:sticky; top:0; z-index:8; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:5px; padding:8px 0; margin-bottom:9px; background:#f6f8f3f5; backdrop-filter:blur(8px); }
+.activities-toolbar button { min-width:0; min-height:48px; padding:5px; font-size:11px; line-height:1.6; border:1px solid #cbded0; color:#426e54; background:#f5faf4; }
+.activities-toolbar .primary { color:#fff; background:#087f79; border-color:#087f79; }
+.activities-toolbar .is-current { background:#e3f0e6; border-color:#6eaa83; box-shadow:inset 0 -2px #6eaa83; }
+.today-recovery { padding:11px 12px; border:1px solid #d3dfd0; background:#f6faf2; }
+.today-recovery .row>b { font-size:12px; }
+.today-recovery .small { padding:6px 8px; font-size:10px; background:#e7f1e4; color:#3a6650; }
+.recovery-totals { display:flex; flex-wrap:wrap; gap:6px 12px; margin-top:8px; color:#71816b; font-size:10px; }
+.recovery-totals b { color:#405f48; margin-inline-start:3px; font-variant-numeric:tabular-nums; }
+.today-plan-card { padding:11px; border:1px solid #a7c7ae; background:#f0f7ed; }
+.today-plan-card h2 { font-size:13px; margin:0; color:#3a6b4c; }
+.today-plan-card .small { padding:5px 8px; font-size:10px; }
+.today-plan-item { display:flex; align-items:center; gap:7px; padding:8px; margin-top:7px; border:1px solid #d5e3d1; border-radius:9px; background:#fff; }
+.today-plan-item>div { flex:1; min-width:0; display:grid; gap:4px; }
+.today-plan-item b { font-size:12px; overflow-wrap:anywhere; }
+.today-plan-item small { font-size:10px; color:#6d826c; }
+.today-plan-item progress { width:100%; height:6px; accent-color:#32875b; }
+.today-plan-check { font-size:21px; color:#8aa38a; width:23px; text-align:center; }
+.today-plan-item.is-complete { background:#e0f1df; border-color:#75b886; }
+.today-plan-item.is-complete .today-plan-check { color:#257c43; font-weight:850; }
+.time-approx { display:block; font-size:9px; color:#9a701c; }
+.recovery-dialog { width:min(520px,94vw); padding:20px; }
+.recovery-lead,.recovery-window { font-size:12px; line-height:1.9; color:#4b7054; background:#eef5e9; border-radius:9px; padding:9px; }
+.recovery-duration-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+#journal-duration>small { display:block; font-size:10px; line-height:1.8; color:#748369; }
+.recovery-approx,.recovery-resume { margin-top:12px; font-size:12px; line-height:1.8; }
+#recovery-error { border:1px solid #e8a79e; background:#fff0ec; color:#982f20; border-radius:8px; padding:8px; font-size:12px; line-height:1.8; }
+[data-recovery-unknown-now] { width:100%; background:#f7eddb; color:#7c5c27; margin-top:8px; }
+@media(max-width:450px) { .activities-toolbar { gap:3px; } .activities-toolbar button { font-size:9px; padding:4px 2px; } .recovery-dialog { padding:16px; } }
+@media(max-width:350px) { .activities-toolbar button { font-size:8px; min-height:52px; } .today-plan-item small { font-size:9px; } .recovery-totals { font-size:9px; gap:5px 8px; } }
