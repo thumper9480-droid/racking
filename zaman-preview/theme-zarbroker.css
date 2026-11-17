@@ -231,16 +231,6 @@ body.install-page {
  background:var(--theme-negative); border-color:var(--theme-negative); color:var(--theme-surface);
 }
 
-/* Pair styling differentiates planning actions from report links. */
-#view .activities-pair-plan > button {
- background:var(--theme-primary); border-color:var(--theme-field-border); color:var(--theme-ink);
-}
-#view .activities-pair-report > button {
- background:#79b99f; border-color:#589579; color:#18382d;
-}
-#view .activities-pair > button.is-current { box-shadow:inset 0 -2px #64566e; font-weight:750; }
-#view .activities-pair > button:hover { filter:brightness(.96); }
-
 @supports ((background-clip:text) or (-webkit-background-clip:text)) {
  @media(prefers-reduced-motion:no-preference) and (forced-colors:none) {
   .today-led-line {
@@ -251,11 +241,8 @@ body.install-page {
  }
 }
 
-#view .activities-pair-report > button {
- display:flex; align-items:center; justify-content:center; gap:5px;
-}
-#view .activities-pair-report .planning-control-icon { width:16px; height:16px; }
-#view .planner-mode-actions > button {
- color:var(--theme-ink); background:var(--theme-primary); border-color:var(--theme-field-border);
-}
-#view .planner-mode-actions > button:hover { background:var(--theme-positive-surface); }
+#view .activity-cards > button { background:var(--theme-surface); color:var(--theme-ink); border-color:var(--theme-border); box-shadow:none; }
+#view .activity-cards > button:hover { background:var(--theme-row-alt); }
+#view .activity-cards > button.is-current { border-color:var(--theme-field-border); box-shadow:inset 0 -2px var(--theme-field-border); }
+#view .activity-cards > button .planning-control-icon { background:var(--theme-primary); color:var(--theme-green); }
+#view .activity-cards > :is([data-plan-progress],[data-action=reports]) .planning-control-icon { background:var(--theme-ink); color:var(--theme-surface); }

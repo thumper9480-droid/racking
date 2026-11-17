@@ -18,20 +18,18 @@ function planCard(p){const data=planProgress(p);return `<article class="plan-car
 function selectedDayPanel(){const day=planningSelected||planDayKey(),range=planBounds(day),plans=(state.dailyPlans||[]).filter(p=>p.day===day),target=plans.reduce((s,p)=>s+p.count*p.minutes,0),editable=planDayIsOpen(day);return `<section class="selected-plan-day"><div class="row"><h3>${new Date(range.start).toLocaleDateString('fa-IR',{weekday:'long',month:'long',day:'numeric'})}</h3><button type="button" class="primary small" data-add-day-plan ${editable?'':'disabled'}>＋ فعالیت این روز</button></div><p class="selected-day-total">جمع برنامهٔ این روز: <b>${fa(target)} دقیقه</b></p>${plans.map(planCard).join('')||(editable?'<p class="plan-empty">این روز را انتخاب کرده‌اید؛ فعالیت، تعداد نوبت و دقیقهٔ هر نوبت را مشخص کنید.</p>':'<p class="plan-empty">تعیین فعالیت روتین برای روزهای گذشته بسته است.</p>')}</section>`;}
 function planActionIcon(kind){
  const paths={
+  add:'M12 5v14M5 12h14',
   month:'M7 3v4m10-4v4M3 9h18M7 13h2m3 0h2m3 0h1M7 17h2m3 0h2m3 0h1',
   day:'M7 3v4m10-4v4M3 9h18m-11 5 2-1v5',
   routineReport:'M7 3v4m10-4v4M3 9h18m-13 6 2 2 5-5',
   allReport:'M3 20h18M7 17v-4m5 4V8m5 9V4'
  };
- const calendar=kind==='allReport'?'':'<rect x="3" y="5" width="18" height="16" rx="2"/>';
+ const calendar=['allReport','add'].includes(kind)?'':'<rect x="3" y="5" width="18" height="16" rx="2"/>';
  return `<svg class="planning-control-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${calendar}<path d="${paths[kind]}"/></svg>`;
 }
 function planningPage(){
  if(planningProgressView)return planningProgressPage();
- const heading=`<div class="planner-title"><h2>پلان‌ریزی فعالیت‌ها</h2><div class="planner-mode-actions" role="group" aria-label="نوع پلان‌ریزی">
-  <button type="button" data-plan-month-bulk>${planActionIcon('month')}<span>پلان‌ریزی ماهانه</span></button>
-  <button type="button" data-plan-daily>${planActionIcon('day')}<span>پلان‌ریزی روزانه</span></button>
- </div></div>`;
+ const heading='<div class="planner-title"><h2>پلان‌ریزی روزانه</h2></div>';
  if(!planningDailyOpen)return heading;
  const current=planJalali(),firstYear=current.year,lastYear=current.year+3;if(!planningMonth)planningMonth={year:current.year,month:current.month};const{year,month}=planningMonth,start=persianToLocal(year,month,1),offset=(start.getDay()+1)%7,days=planMonthDays(year,month),weeks=Math.ceil((offset+days)/7);if(!planningSelected)planningSelected=planDayKey();let calendar='';for(let week=0;week<weeks;week++){const first=Math.max(1,week*7-offset+1),last=Math.min(days,week*7-offset+7);calendar+=`<div class="calendar-week"><div class="calendar-week-label"><span>هفتهٔ ${fa(week+1)}</span><button type="button" class="small" data-plan-week="${first},${last}" ${planDayIsOpen(planDayKey(persianToLocal(year,month,last)))?'':'disabled'}>برنامهٔ این هفته</button></div><div class="calendar-week-grid">`;for(let col=0;col<7;col++){const day=week*7+col-offset+1;if(day<1||day>days){calendar+='<span class="calendar-empty" aria-hidden="true"></span>';continue;}const date=persianToLocal(year,month,day),key=planDayKey(date),isPast=!planDayIsOpen(key),holiday=planHoliday(year,month,day),plans=(state.dailyPlans||[]).filter(p=>p.day===key),total=plans.reduce((s,p)=>s+p.count*p.minutes,0);calendar+=`<button type="button" class="calendar-day ${holiday?'official-holiday':''} ${planningSelected===key?'selected':''} ${key===planDayKey()?'today':''} ${isPast?'past-day':''}" data-plan-day="${key}" aria-label="${PLAN_WEEKDAYS[col]} ${fa(day)} ${monthNames[month-1]} ${fa(year)}${holiday?'، تعطیل رسمی: '+esc(holiday.title):col===6?'، تعطیل هفتگی جمعه':''}${isPast?'، روز گذشته؛ پلان‌ریزی بسته است':''}"><span class="calendar-weekday">${PLAN_WEEKDAYS[col]}</span><b class="calendar-date">${fa(day)}</b>${holiday?'<i class="holiday-dot" aria-hidden="true"></i>':''}${total?`<small>${fa(total)} دقیقه</small>`:isPast?'':'<small>＋</small>'}</button>`;}calendar+='</div></div>';}
  const selectedParts=planJalali(planBounds(planningSelected).start),selectedHoliday=planHoliday(selectedParts.year,selectedParts.month,selectedParts.day);return `${heading}<section id="daily-planning-calendar" tabindex="-1" aria-label="تقویم پلان‌ریزی روزانه"><div class="plan-month-nav"><button type="button" class="small" data-plan-month-step="-1" aria-label="ماه قبل" ${year===firstYear&&month===1?'disabled':''}>→</button><select id="plan-month" aria-label="انتخاب ماه">${monthNames.map((m,i)=>`<option value="${i+1}" ${i+1===month?'selected':''}>${m}</option>`).join('')}</select><select id="plan-year" aria-label="انتخاب سال">${Array.from({length:4},(_,i)=>`<option value="${firstYear+i}" ${firstYear+i===year?'selected':''}>${fa(firstYear+i)}</option>`).join('')}</select><button type="button" class="small" data-plan-month-step="1" aria-label="ماه بعد" ${year===lastYear&&month===12?'disabled':''}>←</button></div><p class="plan-help">پیش‌نمایش آزمایشی · یک روز یا «برنامهٔ این هفته» را انتخاب کنید. مازاد زمان یک فعالیت، سهم روزهای بعدِ همان فعالیت را پر می‌کند؛ ثبت‌های مسیر روز جابه‌جا نمی‌شوند.</p>${!(state.dailyPlans||[]).length?'<button type="button" class="small plan-demo" data-plan-demo>ساخت نمونهٔ مطالعه: امروز ۵ × ۵ دقیقه</button>':''}<div class="calendar-week-head">${PLAN_WEEKDAYS.map(w=>`<b>${w}</b>`).join('')}</div>${calendar}<p class="calendar-legend"><span>● نام و تاریخ سبز: تعطیل رسمی</span> · جمعه: تعطیل هفتگی</p>${!IRAN_HOLIDAYS.years[year]?'<p class="calendar-data-note">برای این سال فقط تعطیلات ثابت شمسی بارگذاری شده‌اند؛ تعطیلات قمری آینده هنوز در این پیش‌نمایش تأیید نشده‌اند.</p>':''}${selectedHoliday?`<p class="selected-holiday">${esc(selectedHoliday.title)}</p>`:''}${selectedDayPanel()}<p class="plan-data-note">اطلاعات این پیش‌نمایش جدا از نسخهٔ اصلی ذخیره می‌شود. دادهٔ تعطیلات تقویم ایران؛ تاریخ تعطیلات قمری و تعطیلی‌های موردی ممکن است با اعلام رسمی نیاز به اصلاح داشته باشند.</p></section>`;}
@@ -46,7 +44,10 @@ function handlePlanningClick(b){
  if(b.dataset.planReportMode){if(['day','week','month'].includes(b.dataset.planReportMode)){planReportMode=b.dataset.planReportMode;render();}return true;}
  if(b.dataset.planPeriod){planReportAnchor=Number(b.dataset.planPeriod);render();return true;}
  if(b.dataset.planReportStep){const range=reportRange(planReportMode,planReportAnchor??Date.now()),step=Number(b.dataset.planReportStep);planReportAnchor=step<0?reportRange(planReportMode,range.start-1).start:range.end;render();return true;}
- if(b.hasAttribute('data-plan-progress')){planningProgressView=true;tab='planning';render();window.scrollTo(0,0);return true;}if(b.hasAttribute('data-plan-calendar')){planningProgressView=false;planningDailyOpen=true;render();return true;}if(b.hasAttribute('data-plan-demo')){const name=rememberActivity('مطالعه'),d=new Date();planningSelected=planDayKey(d);const j=planJalali(d);planningMonth={year:j.year,month:j.month};upsertDayPlan(planDayKey(d),name,5,5);d.setDate(d.getDate()+1);upsertDayPlan(planDayKey(d),name,5,10);d.setDate(d.getDate()+1);upsertDayPlan(planDayKey(d),name,2,15);save();render();return true;}if(b.hasAttribute('data-open-planning')){planningProgressView=false;planningDailyOpen=false;tab='planning';render();return true;}if(b.dataset.planDay){planningSelected=b.dataset.planDay;render();document.querySelector('.selected-plan-day')?.scrollIntoView({block:'nearest'});return true;}if(b.hasAttribute('data-add-day-plan')){dayPlanForm();return true;}if(b.dataset.editDayPlan){dayPlanForm((state.dailyPlans||[]).find(p=>p.id===b.dataset.editDayPlan));return true;}if(b.dataset.deletePlan){const plan=(state.dailyPlans||[]).find(p=>p.id===b.dataset.deletePlan);if(!plan||!planDayIsOpen(plan.day))return true;if(confirm('برنامهٔ این روز حذف شود؟ زمان‌های واقعی حذف نمی‌شوند.')){state.dailyPlans=state.dailyPlans.filter(p=>p.id!==b.dataset.deletePlan);dismissModal();save();render();}return true;}if(b.dataset.planWeek){const [first,last]=b.dataset.planWeek.split(',').map(Number);weekPatternForm(first,last);return true;}if(b.hasAttribute('data-plan-month-bulk')){monthlyPlanForm();return true;}if(b.hasAttribute('data-plan-daily')){if(!planningDailyOpen){planningDailyOpen=true;render();}document.querySelector('#daily-planning-calendar')?.focus();return true;}if(b.dataset.planMonthStep){let{year,month}=planningMonth;month+=Number(b.dataset.planMonthStep);if(month<1){month=12;year--;}if(month>12){month=1;year++;}const current=planJalali().year;if(year<current||year>current+3)return true;planningMonth={year,month};planningSelected=planDayKey(persianToLocal(year,month,1));render();return true;}return false;}
+ if(b.hasAttribute('data-plan-progress')){planningProgressView=true;tab='planning';render();window.scrollTo(0,0);return true;}if(b.hasAttribute('data-plan-calendar')){planningProgressView=false;planningDailyOpen=true;render();return true;}if(b.hasAttribute('data-plan-demo')){const name=rememberActivity('مطالعه'),d=new Date();planningSelected=planDayKey(d);const j=planJalali(d);planningMonth={year:j.year,month:j.month};upsertDayPlan(planDayKey(d),name,5,5);d.setDate(d.getDate()+1);upsertDayPlan(planDayKey(d),name,5,10);d.setDate(d.getDate()+1);upsertDayPlan(planDayKey(d),name,2,15);save();render();return true;}if(b.dataset.planDay){planningSelected=b.dataset.planDay;render();document.querySelector('.selected-plan-day')?.scrollIntoView({block:'nearest'});return true;}if(b.hasAttribute('data-add-day-plan')){dayPlanForm();return true;}if(b.dataset.editDayPlan){dayPlanForm((state.dailyPlans||[]).find(p=>p.id===b.dataset.editDayPlan));return true;}if(b.dataset.deletePlan){const plan=(state.dailyPlans||[]).find(p=>p.id===b.dataset.deletePlan);if(!plan||!planDayIsOpen(plan.day))return true;if(confirm('برنامهٔ این روز حذف شود؟ زمان‌های واقعی حذف نمی‌شوند.')){state.dailyPlans=state.dailyPlans.filter(p=>p.id!==b.dataset.deletePlan);dismissModal();save();render();}return true;}if(b.dataset.planWeek){const [first,last]=b.dataset.planWeek.split(',').map(Number);weekPatternForm(first,last);return true;}if(b.hasAttribute('data-plan-month-bulk')){monthlyPlanForm();return true;}if(b.hasAttribute('data-plan-daily')){
+  if(tab!=='planning'||planningProgressView||!planningDailyOpen){tab='planning';planningProgressView=false;planningDailyOpen=true;render();}
+  document.querySelector('#daily-planning-calendar')?.focus();return true;
+ }if(b.dataset.planMonthStep){let{year,month}=planningMonth;month+=Number(b.dataset.planMonthStep);if(month<1){month=12;year--;}if(month>12){month=1;year++;}const current=planJalali().year;if(year<current||year>current+3)return true;planningMonth={year,month};planningSelected=planDayKey(persianToLocal(year,month,1));render();return true;}return false;}
 function tickPlanning(){}
 document.addEventListener('input',refreshPlanQuota);document.addEventListener('change',e=>{if(e.target.id==='plan-month'||e.target.id==='plan-year'){planningMonth={year:Number(document.querySelector('#plan-year').value),month:Number(document.querySelector('#plan-month').value)};planningSelected=planDayKey(persianToLocal(planningMonth.year,planningMonth.month,1));render();}});
 function overviewPercent(assigned,target){return target?Math.min(100,Math.floor(assigned/target*1000)/10):0;}
@@ -105,17 +106,19 @@ function monthlyPlanForm(){
  const wakeChoice=(state.wakeMonthSelections||[]).find(x=>x.month===monthKey),monthWakes=(state.plannedWakes||[]).filter(w=>{const p=planJalali(planBounds(w.day).start);return p.year===year&&p.month===month;});
  const rows=Array.from({length:days},(_,i)=>{
   const d=i+1,date=persianToLocal(year,month,d),day=planDayKey(date),w=monthWakes.find(w=>w.day===day),holiday=planHoliday(year,month,d),on=wakeChoice?wakeChoice.days.includes(day):monthWakes.length?!!w:true;
-  return `<div class="month-plan-row" data-month-day="${day}"><label class="check month-day-label ${holiday?'official-holiday':''}"><input type="checkbox" data-month-goal ${planDayIsOpen(day)?'checked':'disabled'}><span><b>${PLAN_WEEKDAYS[(date.getDay()+1)%7]}</b><small>${fa(d)} ${monthNames[month-1]} ماه</small></span></label><div class="month-wake"><label class="check"><input type="checkbox" data-month-wake ${on?'checked':''}>بیدارباش</label><input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}></div><output data-month-total>۲۵ دقیقه</output><div class="month-quota-inputs"><label>نوبت<input type="number" min="1" max="1000" value="5" data-month-count></label><label>دقیقه<input type="number" min="1" max="1440" value="5" data-month-minutes></label></div><small class="month-wake-status" data-month-wake-status></small><p class="month-row-error" data-month-error hidden></p></div>`;
+  return `<div class="month-plan-row" data-month-day="${day}"><label class="check month-day-label ${holiday?'official-holiday':''}"><input type="checkbox" data-month-goal ${planDayIsOpen(day)?'checked':'disabled'}><span><b>${PLAN_WEEKDAYS[(date.getDay()+1)%7]}</b><small>${fa(d)} ${monthNames[month-1]} ماه</small></span></label><div class="month-wake"><label class="check"><input type="checkbox" data-month-wake ${on?'checked':''}>بیدارباش</label><input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}></div><output data-month-total>۰ دقیقه</output><div class="month-quota-inputs"><label>نوبت<input type="number" inputmode="numeric" min="0" max="1000" value="0" data-month-count></label><label>دقیقه<input type="number" inputmode="numeric" min="0" max="1440" value="0" data-month-minutes></label></div><small class="month-wake-status" data-month-wake-status></small><p class="month-row-error" data-month-error hidden></p></div>`;
  }).join('');
- const opened=modal('پلان‌ریزی ماهانه برای '+monthNames[month-1]+' '+fa(year),`${monthPicker}${activitySelect().replace(' required','')}<p class="plan-help">روزهای ناخواسته را خاموش کنید. بیدارباش مستقل از فعالیت است؛ زمان گذشته با زنگ خاموش ذخیره می‌شود. زنگ وب به بازبودن صفحه وابسته است.</p><p id="month-plan-error" class="month-form-error" role="alert" hidden></p><div class="month-total-heading"><span>جمع ماه برای فعالیت انتخاب‌شده</span><output id="month-plan-total">۰ دقیقه</output></div><div class="month-plan-scroll" role="region" aria-label="تمام روزهای ماه؛ اسکرول عمودی و افقی" tabindex="0">${rows}</div>`,()=>{
-  clearErrors();capture();if(!select.value&&Array.from(form.querySelectorAll('[data-month-goal]')).some(x=>!x.disabled&&x.checked))return fail('ابتدا فعالیت را از بالای پنجره انتخاب کنید.',null,select);
+ const opened=modal('پلان‌ریزی ماهانه برای '+monthNames[month-1]+' '+fa(year),`${monthPicker}${activitySelect().replace(' required','')}<p class="plan-help">روزهای ناخواسته را خاموش کنید. بیدارباش مستقل از فعالیت است؛ زمان گذشته با زنگ خاموش ذخیره می‌شود. زنگ وب به بازبودن صفحه وابسته است.</p><p id="month-plan-error" class="month-form-error" role="alert" hidden></p><div class="month-total-heading"><span>جمع ماه برای فعالیت انتخاب‌شده</span><output id="month-plan-total">۰ دقیقه</output></div><div class="monthly-select-all"><input type="checkbox" id="month-select-all" aria-label="تیک همهٔ روزهای قابل برنامه‌ریزی"></div><div class="month-plan-scroll" role="region" aria-label="تمام روزهای ماه؛ اسکرول عمودی و افقی" tabindex="0">${rows}</div>`,()=>{
+  clearErrors();capture();
+  if(!select.value&&unnamedDraft?.some(x=>x.on&&planDayIsOpen(x.day)&&(x.count!==0||x.minutes!==0)))return fail('ابتدا فعالیت را از بالای پنجره انتخاب کنید.',null,select);
   const changes=[];
   for(const[name,items]of drafts)for(const item of items){
    if(!planDayIsOpen(item.day))continue;
-   if(item.on&&!validDayQuota(item.day,item.count,item.minutes)){
+   const hasQuota=item.count!==0||item.minutes!==0;
+   if(item.on&&hasQuota&&!validDayQuota(item.day,item.count,item.minutes)){
     select.value=name;load(name);const row=form.querySelector(`[data-month-day="${item.day}"]`);return fail('تعداد نوبت و دقیقه باید عدد صحیح و مثبت باشند و جمع در یک روز جا شود.',row,row.querySelector('[data-month-count]'));
    }
-   changes.push({...item,name});
+   changes.push({...item,on:item.on&&hasQuota,name});
   }
   const wakes=[];
   for(const row of form.querySelectorAll('[data-month-day]')){
@@ -143,7 +146,7 @@ function monthlyPlanForm(){
    const goal=row.querySelector('[data-month-goal]');
    goal.disabled=!planDayIsOpen(day);
    goal.checked=goal.disabled?!!saved:old?old.on:choice?choice.days.includes(day):savedPlans.length?!!saved:initial?initial.on:true;
-   row.querySelector('[data-month-count]').value=old?.count??saved?.count??initial?.count??5;row.querySelector('[data-month-minutes]').value=old?.minutes??saved?.minutes??initial?.minutes??5;
+   row.querySelector('[data-month-count]').value=old?.count??saved?.count??initial?.count??0;row.querySelector('[data-month-minutes]').value=old?.minutes??saved?.minutes??initial?.minutes??0;
   }
   refreshMonthlyTotals();
  }
@@ -163,21 +166,53 @@ function monthlyPlanForm(){
   document.querySelector('#dialog[open] #form')?.elements[field]?.focus({preventScroll:true});
  }
  monthSelect.onchange=changePeriod;yearSelect.onchange=changePeriod;
+ const selectAll=form.querySelector('#month-select-all');
+ selectAll.onchange=()=>{
+  for(const toggle of form.querySelectorAll('[data-month-goal]:not(:disabled)'))toggle.checked=selectAll.checked;
+  dirtyRows=true;clearErrors();refreshMonthlyTotals();
+ };
+ for(const field of form.querySelectorAll('[data-month-count],[data-month-minutes]'))enableMonthNumberSwipe(field);
  select.onchange=()=>{capture();clearErrors();load(select.value);};
  form.oninput=event=>{if(event.target.closest('[data-month-day]'))dirtyRows=true;clearErrors();refreshMonthlyTotals();};
  form.onchange=event=>{if(event.target.closest('[data-month-day]'))dirtyRows=true;refreshMonthlyTotals();};
  // Time values remain on the row; expand only the active wheel, then restore the compact row.
  form.querySelectorAll('.shared-time-picker').forEach(picker=>{const close=document.createElement('button');close.type='button';close.className='month-time-done';close.textContent='تأیید ساعت';close.onclick=()=>{picker.hidden=true;picker.parentElement.querySelector('input').setAttribute('aria-expanded','false');picker.parentElement.querySelector('.time-wheel-toggle').setAttribute('aria-expanded','false');};picker.append(close);});load('');
 }
+function enableMonthNumberSwipe(field){
+ let gesture=null,skipClick=false;
+ field.addEventListener('pointerdown',event=>{
+  skipClick=false;
+  if(event.pointerType!=='touch'||field.disabled||!event.isPrimary)return;
+  gesture={id:event.pointerId,x:event.clientX,y:event.clientY,value:Number(field.value)||0,moved:false};
+ });
+ field.addEventListener('pointermove',event=>{
+  if(!gesture||event.pointerId!==gesture.id)return;
+  const dy=gesture.y-event.clientY;
+  if(!gesture.moved&&Math.abs(dy)<Math.max(12,Math.abs(event.clientX-gesture.x)))return;
+  gesture.moved=true;event.preventDefault();
+  const value=Math.max(0,Math.min(Number(field.max),gesture.value+Math.trunc(dy/12)));
+  if(field.value!==String(value)){field.value=String(value);field.dispatchEvent(new Event('input',{bubbles:true}));}
+ },{passive:false});
+ field.addEventListener('pointerup',event=>{
+  if(!gesture||event.pointerId!==gesture.id)return;
+  skipClick=gesture.moved;gesture=null;
+ });
+ field.addEventListener('pointercancel',()=>{gesture=null;skipClick=false;});
+ field.addEventListener('click',event=>{
+  if(!skipClick)return;
+  skipClick=false;event.preventDefault();
+ },true);
+}
 function refreshMonthlyTotals(){
- let sum=0;
+ let sum=0,eligible=0,checked=0;
  for(const row of document.querySelectorAll('[data-month-day]')){
-  const goal=row.querySelector('[data-month-goal]'),on=goal.checked,count=row.querySelector('[data-month-count]'),minutes=row.querySelector('[data-month-minutes]');count.disabled=!on||goal.disabled;minutes.disabled=!on||goal.disabled;
+  const goal=row.querySelector('[data-month-goal]'),on=goal.checked,count=row.querySelector('[data-month-count]'),minutes=row.querySelector('[data-month-minutes]');count.disabled=!on||goal.disabled;minutes.disabled=!on||goal.disabled;if(!goal.disabled){eligible++;if(on)checked++;}
   const total=on?Number(count.value)*Number(minutes.value):0;row.querySelector('[data-month-total]').textContent=fa(Number.isFinite(total)?total:0)+' دقیقه';sum+=Number.isFinite(total)?total:0;
   const wake=row.querySelector('[data-month-wake]').checked,input=row.querySelector('[data-month-time]');input.disabled=!wake;const control=row.querySelector('.time-picker-control');if(control)control.querySelectorAll('button').forEach(b=>b.disabled=!wake);
   const at=journalParseTime(input.value,planBounds(row.dataset.monthDay)),status=row.querySelector('[data-month-wake-status]');status.textContent=wake&&at!==null&&at<=Date.now()?'گذشته؛ زنگ خاموش':'';status.hidden=!status.textContent;
  }
  const output=document.querySelector('#month-plan-total');if(output)output.textContent=fa(sum)+' دقیقه';
+ const master=document.querySelector('#month-select-all');if(master){master.disabled=eligible===0;master.checked=eligible>0&&checked===eligible;master.indeterminate=checked>0&&checked<eligible;}
 }
 let planReportMode='day',planReportAnchor=null;
 function planPeriodTitle(range,mode=planReportMode){

@@ -30,18 +30,15 @@ function recoverySummary(now=Date.now()){
 }
 function todayPlannedActivities(){const day=planDayKey(),plans=(state.dailyPlans||[]).filter(p=>p.day===day);if(!plans.length)return'';return `<article class="card today-plan-card"><div class="row"><h2>فعالیت‌های روتین امروز</h2><button type="button" class="small" data-today-plan-report>گزارش</button></div>${plans.map(p=>{const data=planProgress(p);return `<div class="today-plan-item ${data.complete?'is-complete':''}" data-today-plan="${esc(p.id)}"><span class="today-plan-check" role="checkbox" aria-checked="${data.complete}" aria-label="تکمیل ${esc(p.name)}">${data.complete?'✓':'○'}</span><div><b>${esc(p.name)}</b><small>${fa(p.count)} نوبت × ${fa(p.minutes)} دقیقه · ${planMinutes(data.assigned)} از ${planMinutes(data.target)} دقیقه</small><progress value="${data.assigned}" max="${data.target}" aria-label="پیشرفت ${esc(p.name)}"></progress></div></div>`;}).join('')}</article>`;}
 function activityToolbar(){
- const planSelected=tab==='planning'&&!planningProgressView;
- const routineReportSelected=tab==='planning'&&planningProgressView;
- const reportSelected=tab==='reports';
- return `<div class="activities-toolbar" aria-label="منوی فعالیت‌های روتین">
-  <div class="activities-pair activities-pair-plan" role="group" aria-label="ثبت و پلان‌ریزی">
-   <button type="button" data-action="add-activity">＋ فعالیت روتین جدید</button>
-   <button type="button" ${planSelected?'class="is-current" aria-current="page"':''} data-open-planning>پلان‌ریزی فعالیت‌ها</button>
-  </div>
-  <div class="activities-pair activities-pair-report" role="group" aria-label="گزارش‌ها">
-   <button type="button" ${routineReportSelected?'class="is-current" aria-current="page"':''} data-plan-progress>${planActionIcon('routineReport')}<span>گزارش فعالیت‌های روتین</span></button>
-   <button type="button" ${reportSelected?'class="is-current" aria-current="page"':''} data-action="reports">${planActionIcon('allReport')}<span>گزارش کل فعالیت‌ها</span></button>
-  </div>
+ const daily=tab==='planning'&&!planningProgressView;
+ const routineReport=tab==='planning'&&planningProgressView;
+ const active=on=>on?'class="is-current" aria-current="page"':'';
+ return `<div class="activities-toolbar activity-cards" role="group" aria-label="منوی فعالیت‌های روتین">
+  <button type="button" data-action="add-activity">${planActionIcon('add')}<span>فعالیت روتین جدید</span></button>
+  <button type="button" data-plan-month-bulk aria-haspopup="dialog">${planActionIcon('month')}<span>پلان‌ریزی ماهانه</span></button>
+  <button type="button" ${active(daily)} data-plan-daily>${planActionIcon('day')}<span>پلان‌ریزی روزانه</span></button>
+  <button type="button" ${active(routineReport)} data-plan-progress>${planActionIcon('routineReport')}<span>گزارش فعالیت‌های روتین</span></button>
+  <button type="button" ${active(tab==='reports')} data-action="reports">${planActionIcon('allReport')}<span>گزارش کل فعالیت‌ها</span></button>
  </div>`;
 }
 function recoveryResume(){
