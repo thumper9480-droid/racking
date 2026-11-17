@@ -132,3 +132,7 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
  pointer-events:none;
 }
 .calendar-day.past-day::after { transform:scaleX(-1); }
+
+.planner-title { flex-wrap:wrap; gap:8px; }
+.planner-title .actions { flex-wrap:wrap; }
+#daily-planning-calendar { scroll-margin-top:10px; }
