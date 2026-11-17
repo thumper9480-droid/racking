@@ -1,0 +1,155 @@
+
+/* Neutral surfaces and amber actions shared by all preview screens. */
+:root {
+ --amber:#ffbf39;
+ --amber-strong:#e5a015;
+ --amber-ink:#76510a;
+ --amber-soft:#fff3d4;
+ --app-paper:#f3f2ef;
+ --app-card:#fff;
+ --app-ink:#262119;
+ --app-muted:#625d54;
+ --app-border:#e3ded5;
+ --app-shadow:0 3px 12px #33260d0b;
+ --teal:#80530b;
+ --line:var(--app-border);
+ color:var(--app-ink);
+ background:var(--app-paper);
+}
+body { color:var(--app-ink); background:var(--app-paper); }
+button { background:#f4f2ee; }
+button:focus-visible,a:focus-visible,.import:focus-visible {
+ outline-color:#9b6807;
+}
+input,select,textarea { background:var(--app-card); border-color:var(--app-border); color:var(--app-ink); }
+input[type=checkbox],input[type=radio],.check input,.toggle { accent-color:var(--amber-strong); }
+.card,dialog,.projects-screen,.is-today .due-project-tasks {
+ border:1px solid var(--app-border);
+ border-radius:20px;
+ background:var(--app-card);
+ color:var(--app-ink);
+ box-shadow:var(--app-shadow);
+}
+dialog::backdrop { background:#24211b6b; }
+.muted,.report-summary span,.report-note,.plan-help,.plan-empty,.life-explainer { color:var(--app-muted); }
+
+/* The masthead keeps its original identity and buttons. */
+#today-header .header-education:not(#countdown-button),#countdown-button:not(.is-running) {
+ background:var(--amber-soft);
+ border-color:#e8cd8f;
+ color:var(--amber-ink);
+ box-shadow:var(--app-shadow);
+}
+#life-weeks-open,#life-weeks-open.selected {
+ background:var(--amber-soft);
+ border-color:#e6c981;
+ color:var(--amber-ink);
+}
+#life-weeks-open.selected { background:var(--amber); color:var(--app-ink); }
+#countdown-header-status { background:#fff6e0; color:#7b241e; }
+#wall-clock.has-segment-clock { background:var(--app-card); border-color:var(--app-border); box-shadow:var(--app-shadow); }
+.wall-clock,.wall-digit polygon.lit,.wall-colon { color:var(--app-ink); fill:var(--app-ink); }
+.wall-digit polygon { fill:#a88e54; }
+#date .date-line,#date .date-line b { color:var(--app-ink); }
+#date .gregorian-date { color:var(--app-muted); }
+nav {
+ border-color:var(--app-border);
+ border-radius:18px;
+ background:var(--app-card);
+ box-shadow:var(--app-shadow);
+}
+nav [data-tab] { --tab-color:var(--amber); background:#f6f5f2; color:var(--app-ink); }
+nav [data-tab].selected {
+ border-color:var(--amber);
+ background:var(--amber);
+ color:var(--app-ink);
+ box-shadow:0 2px 5px #b67a151b;
+}
+nav [data-tab] span { filter:none; }
+
+/* Bright primary actions and quieter secondary actions. */
+.primary,.activities-toolbar .primary,.projects-screen .projects-heading .primary,
+.projects-screen .project-detail .primary,.is-today .session-actions .circle-action,
+#countdown-dialog .countdown:not(.is-running) .primary,#update-banner button {
+ border-color:var(--amber-strong);
+ background:var(--amber);
+ color:var(--app-ink);
+ font-weight:800;
+}
+.is-today .activity-session {
+ border-color:#eadfc6;
+ background:radial-gradient(ellipse at 0 100%,#ffe6ac7d,transparent 55%),#fffdf8;
+ box-shadow:var(--app-shadow);
+}
+.is-today .session-clock .clock,.life-weeks-page h2 { color:var(--app-ink); }
+.is-today .session-caption,.day-total { color:var(--app-muted); }
+.is-today .session-quick-button:not(:disabled) {
+ border-color:#e4c988;
+ background:var(--amber);
+ color:var(--app-ink);
+ box-shadow:var(--app-shadow);
+}
+.is-today .session-quick-button.past-quick:not(:disabled),
+.is-today .reset-day-button,.activities-toolbar .is-current,.reset-now-button.selected,
+.reset-wheel-toggle[aria-expanded=true],.education-topics button,
+#activity-suggestions button[aria-selected=true],#activity-suggestions button:hover {
+ background:var(--amber-soft);
+ border-color:#e8d4a7;
+ color:var(--amber-ink);
+}
+
+/* Today, planner, and report surfaces. */
+.is-today .due-project-tasks > h2,.is-today .day-chart > h2 { background:var(--amber-soft); }
+.is-today .due-project-tasks .section-toggle,.is-today .day-chart .section-toggle,
+.is-today .day-chart .section-chevron,.is-today .due-project-tasks .section-chevron,
+.today-plan-card h2,.report-period-nav h3,.report-summary strong,.progress-ring:not(.complete) span {
+ color:var(--amber-ink);
+}
+.is-today .day-chart { background:var(--app-card); border-color:var(--app-border); box-shadow:var(--app-shadow); }
+.is-today .day-chart .legend-item,.is-today .day-chart .legend-duration,.is-today .day-chart .legend-percent,
+.is-today .day-chart .donut-center strong { color:var(--app-ink); }
+.today-plan-card,.daily-progress-row,.selected-plan-day,.overview-week,.overview-all-total,
+.report-summary > div,#plan-period-wheel,.life-metric:not(.past):not(.future) {
+ background:var(--app-card);
+ border-color:var(--app-border);
+}
+.report-period-tabs button,.plan-report-modes button,.calendar-week-label button,.planner-title .small {
+ background:var(--app-card);
+ border-color:var(--app-border);
+ color:var(--app-ink);
+}
+.plan-report-modes .selected,.report-period-tabs button.selected,.calendar-day.selected,
+#plan-period-wheel > [aria-selected=true],.projects-screen .project-status-tabs button.selected {
+ background:var(--amber-soft);
+ border-color:var(--amber-strong);
+ color:var(--amber-ink);
+}
+.calendar-day.today:not(.selected) { box-shadow:inset 0 -3px var(--amber); }
+.plan-card:not(.is-complete) progress,.today-plan-item:not(.is-complete) progress,.overview-progress progress { accent-color:var(--amber-strong); }
+.progress-ring:not(.complete) { background:conic-gradient(var(--amber-strong) var(--ring-progress),#eee9e0 0); }
+.overview-table thead th,.report-table th { background:#fff6e4; color:var(--app-ink); border-color:var(--app-border); }
+
+/* The open project tab and the Today projects card share the same palette. */
+.projects-screen,.is-today .due-project-tasks {
+ --project-ink:var(--amber-ink);
+ --project-line:#eddbaf;
+ --project-surface:var(--app-card);
+}
+.projects-screen[data-project-theme=done] { background:#f2f8f1; }
+.projects-screen[data-project-theme=deleted] { background:#f5f3f0; }
+.projects-screen .project-list-row:not(.project-tinted),.projects-screen .project-detail:not(.project-tinted) {
+ background:var(--app-card);
+}
+.projects-screen .project-list-row.selected:not(.project-tinted) { border-color:var(--amber-strong); background:var(--amber-soft); }
+.is-today .due-task-row:not(.project-tinted) { border-color:var(--project-line); background:var(--app-card); }
+.due-task-row > .small { background:var(--amber-soft); border-color:#e8d4a7; color:var(--amber-ink); }
+
+/* Keep the distinct dark history card and status colours. */
+.is-today .journey { background:#171717; border-color:#414141; color:#f4f4f4; box-shadow:none; }
+#countdown-dialog .countdown:not(.is-running) { background:#fff9e9; border-color:#e9d9af; }
+#countdown-dialog #count-clock { color:var(--app-ink); }
+#countdown-dialog .countdown.is-running { background:#fff0ef; border-color:#efb8b3; }
+#countdown-dialog .countdown.is-running #count-clock { color:#a82929; }
+#update-banner { background:#fff4d9; border-color:#e9c46c; box-shadow:var(--app-shadow); }
+#update-banner b,#update-banner small { color:var(--amber-ink); }
+#update-banner .release-notice + .release-notice { border-color:#ebd9aa; }
