@@ -122,3 +122,13 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
 
 .routine-plan-overview { margin-top:20px; }
 .routine-plan-overview .overview-day-header { cursor:default; }
+
+.calendar-day.past-day::before,.calendar-day.past-day::after {
+ content:"";
+ position:absolute;
+ inset:13% 17%;
+ background:linear-gradient(to bottom right,transparent calc(50% - 1px),#111 calc(50% - 1px),#111 calc(50% + 1px),transparent calc(50% + 1px));
+ opacity:.8;
+ pointer-events:none;
+}
+.calendar-day.past-day::after { transform:scaleX(-1); }
