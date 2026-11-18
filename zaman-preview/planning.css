@@ -157,3 +157,9 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
 .monthly-select-all #month-select-all { width:20px; height:20px; margin:0; }
 .month-quota-inputs input { touch-action:none; }
 
+
+#dialog .month-wake [data-month-time].is-wake-preset {
+ background:#bbf943; border-color:#5b8a1a; color:#18351a;
+}
+.month-wake-saved { display:block; margin-block-start:3px; color:#2d5b20; font-size:10px; font-weight:750; }
+.month-wake-saved[hidden] { display:none; }

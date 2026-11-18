@@ -116,7 +116,7 @@ function monthlyPlanForm(){
   <label>سال<select name="monthlyPlanYear">${Array.from({length:4},(_,i)=>currentYear+i).map(value=>`<option value="${value}" ${value===year?'selected':''}>${fa(value)}</option>`).join('')}</select></label>
  </div>`;
  const wakeChoice=(state.wakeMonthSelections||[]).find(x=>x.month===monthKey),monthWakes=(state.plannedWakes||[]).filter(w=>{const p=planJalali(planBounds(w.day).start);return p.year===year&&p.month===month;});
- const wakeOffsets=[5,10,15,30];
+ const wakeOffsets=[5,10,15,30],knownWakeDays=new Set(monthWakes.map(w=>w.day)),editedWakeDays=new Set();
  const visibleDays=Array.from({length:days},(_,i)=>{
   const d=i+1,date=persianToLocal(year,month,d);
   return {d,date,day:planDayKey(date)};
@@ -129,8 +129,8 @@ function monthlyPlanForm(){
    <output data-month-total>۰ دقیقه</output>
    <div class="month-wake"><div class="month-wake-fields">
     <label class="check"><input type="checkbox" data-month-wake ${on?'checked':''}>بیدارباش</label>
-    <input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}>
-   </div></div>
+    <input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" aria-describedby="wake-saved-${d}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}>
+   </div><small class="month-wake-saved" id="wake-saved-${d}" data-month-wake-saved hidden>از قبل تنظیم شده</small></div>
    <div class="month-quota-inputs">
     <label>نوبت<input type="number" inputmode="numeric" min="0" max="1000" value="0" data-month-count></label>
     <label>دقیقه<input type="number" inputmode="numeric" min="0" max="1440" value="0" data-month-minutes></label>
@@ -213,6 +213,10 @@ function monthlyPlanForm(){
    }
    const quotaCopy=row.querySelector('[data-month-copy]'),wakeCopy=row.querySelector('[data-month-wake-copy]');
    if(quotaCopy)quotaCopy.disabled=!open||!previousQuota(row);
+   const wake=row.querySelector('[data-month-time]');
+   const existing=knownWakeDays.has(row.dataset.monthDay)&&row.querySelector('[data-month-wake]').checked&&!!earlierWakeTime(wake.value,0);
+   wake.classList.toggle('is-wake-preset',existing);
+   row.querySelector('[data-month-wake-saved]').hidden=!existing;
    const time=previousWake(row);
    if(wakeCopy)wakeCopy.disabled=!open||!earlierWakeTime(time,0);
    for(const button of row.querySelectorAll('[data-month-wake-offset]')){
@@ -277,9 +281,21 @@ function monthlyPlanForm(){
   dirtyRows=true;clearErrors();refreshMonthlyForm();
  };
  for(const field of form.querySelectorAll('[data-month-count],[data-month-minutes]'))enableMonthNumberSwipe(field);
- select.onchange=()=>{capture();clearErrors();load(select.value);};
+ select.onchange=()=>{
+  capture();
+  for(const day of editedWakeDays){
+   const row=monthRows.get(day);
+   if(row.querySelector('[data-month-wake]').checked&&earlierWakeTime(row.querySelector('[data-month-time]').value,0))knownWakeDays.add(day);
+   else knownWakeDays.delete(day);
+  }
+  editedWakeDays.clear();
+  clearErrors();
+  load(select.value);
+ };
  form.oninput=event=>{
-  if(!event.target.closest('[data-month-day]'))return;
+  const row=event.target.closest('[data-month-day]');
+  if(!row)return;
+  if(event.target.matches('[data-month-time],[data-month-wake]'))editedWakeDays.add(row.dataset.monthDay);
   dirtyRows=true;
   clearErrors();
   refreshMonthlyForm();

@@ -246,3 +246,7 @@ body.install-page {
 #view .activity-cards > button.is-current { border-color:var(--theme-field-border); box-shadow:inset 0 -2px var(--theme-field-border); }
 #view .activity-cards > button .planning-control-icon { background:var(--theme-primary); color:var(--theme-green); }
 #view .activity-cards > :is([data-plan-progress],[data-action=reports]) .planning-control-icon { background:var(--theme-ink); color:var(--theme-surface); }
+
+.routine-row-actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:5px; }
+.routine-catalog-heading { flex-wrap:wrap; gap:6px; margin-block-end:8px; }
+.routine-catalog-heading h2 { margin:0; }

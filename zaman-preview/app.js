@@ -3,7 +3,7 @@ const KEY='zaman-planning-preview-v1', $=s=>document.querySelector(s), uid=()=>c
 const fresh=()=>({version:1,day:null,history:[],sleeps:[],activities:[],countdown:{remaining:600000,end:null},alarms:[],projects:[]});
 let state=fresh(),tab=location.hash==='#planning'?'planning':location.hash==='#life-weeks'?'life-weeks':'today',projectId=null,audio=null,ringInterval=null,historyOffset=0,projectsMode='open';
 try{const saved=localStorage.getItem(KEY);if(saved)state=validate(JSON.parse(saved));}catch{$('#warning').textContent='اطلاعات ذخیره‌شده قابل خواندن نیست؛ پیش از ذخیرهٔ اطلاعات جدید، پشتیبان خود را بررسی کنید.';}
-function validate(s){const obj=x=>x&&typeof x==='object', num=x=>Number.isFinite(x)&&x>=0, str=x=>typeof x==='string';if(!obj(s)||s.version!==1||!Array.isArray(s.history)||!Array.isArray(s.alarms)||!Array.isArray(s.projects)||!obj(s.countdown)||!num(s.countdown.remaining)||(s.countdown.end!==null&&!num(s.countdown.end))||(s.day!==null&&(!obj(s.day)||!num(s.day.start)||!num(s.day.segment)||!str(s.day.activity))))throw Error('invalid');for(const h of s.history)if(!str(h.name)||!num(h.start)||!num(h.end)||h.end<h.start||(h.durationOnly!==undefined&&typeof h.durationOnly!=='boolean')||(h.durationOnly&&(!num(h.durationMs)||h.durationMs<=0||h.durationMs>90000000||h.start!==h.end)))throw Error('history');for(const a of s.alarms)if(!str(a.id)||!str(a.title)||!num(a.at)||!['none','daily','weekly'].includes(a.repeat)||typeof a.enabled!=='boolean'||(a.itemId!==undefined&&(!str(a.itemId)||!['task','idea'].includes(a.itemKind))))throw Error('alarm');for(const p of s.projects){if(!str(p.id)||!str(p.name)||!Array.isArray(p.tasks)||!Array.isArray(p.ideas)||!validStatusMetadata(p)||(p.color!==undefined&&!validProjectColor(p.color))||(p.deletedAt!==undefined&&!num(p.deletedAt))||(p.deletedAlarmIds!==undefined&&(!Array.isArray(p.deletedAlarmIds)||p.deletedAlarmIds.some(id=>!str(id)))))throw Error('project');for(const t of p.tasks)if(!str(t.id)||!str(t.title)||typeof t.done!=='boolean'||!validStatusMetadata(t)||(t.dueAt!==undefined&&!num(t.dueAt))||(t.dueRepeat!==undefined&&!['none','daily','weekly'].includes(t.dueRepeat)))throw Error('task');for(const n of p.ideas)if(!str(n.id)||!str(n.text))throw Error('idea');}if(s.collapsedSections!==undefined&&(!obj(s.collapsedSections)||Object.values(s.collapsedSections).some(v=>typeof v!=='boolean')))throw Error('layout');for(const p of s.projects)for(const task of p.tasks)if(task.voiceNotes!==undefined&&(!Array.isArray(task.voiceNotes)||task.voiceNotes.length>1000||task.voiceNotes.some(note=>!validVoiceMeta(note))))throw Error('voice notes');if(s.activities!==undefined&&(!Array.isArray(s.activities)||s.activities.some(a=>!obj(a)||!str(a.id)||!str(a.name)||!a.name.trim())))throw Error('activities');if(s.unassigned!==undefined&&(!Array.isArray(s.unassigned)||s.unassigned.some(g=>!obj(g)||!str(g.id)||!num(g.start)||!num(g.end)||g.end<=g.start)))throw Error('unassigned');if(s.lastDayClosedAt!==undefined&&!num(s.lastDayClosedAt))throw Error('closed day');if(s.pendingSegment!==undefined){const d=s.pendingSegment;if(!obj(d)||!num(d.start)||!num(d.end)||d.end<d.start||typeof d.ending!=='boolean'||(d.detached!==undefined&&typeof d.detached!=='boolean')||(!d.detached&&(!s.day||s.day.segment!==d.end)))throw Error('pending segment');}validateRecoveryData(s);validatePlanning(s);return validateSleepData(s);}
+function validate(s){const obj=x=>x&&typeof x==='object', num=x=>Number.isFinite(x)&&x>=0, str=x=>typeof x==='string';if(!obj(s)||s.version!==1||!Array.isArray(s.history)||!Array.isArray(s.alarms)||!Array.isArray(s.projects)||!obj(s.countdown)||!num(s.countdown.remaining)||(s.countdown.end!==null&&!num(s.countdown.end))||(s.day!==null&&(!obj(s.day)||!num(s.day.start)||!num(s.day.segment)||!str(s.day.activity))))throw Error('invalid');for(const h of s.history)if(!str(h.name)||!num(h.start)||!num(h.end)||h.end<h.start||(h.durationOnly!==undefined&&typeof h.durationOnly!=='boolean')||(h.durationOnly&&(!num(h.durationMs)||h.durationMs<=0||h.durationMs>90000000||h.start!==h.end)))throw Error('history');for(const a of s.alarms)if(!str(a.id)||!str(a.title)||!num(a.at)||!['none','daily','weekly'].includes(a.repeat)||typeof a.enabled!=='boolean'||(a.itemId!==undefined&&(!str(a.itemId)||!['task','idea'].includes(a.itemKind))))throw Error('alarm');for(const p of s.projects){if(!str(p.id)||!str(p.name)||!Array.isArray(p.tasks)||!Array.isArray(p.ideas)||!validStatusMetadata(p)||(p.color!==undefined&&!validProjectColor(p.color))||(p.deletedAt!==undefined&&!num(p.deletedAt))||(p.deletedAlarmIds!==undefined&&(!Array.isArray(p.deletedAlarmIds)||p.deletedAlarmIds.some(id=>!str(id)))))throw Error('project');for(const t of p.tasks)if(!str(t.id)||!str(t.title)||typeof t.done!=='boolean'||!validStatusMetadata(t)||(t.dueAt!==undefined&&!num(t.dueAt))||(t.dueRepeat!==undefined&&!['none','daily','weekly'].includes(t.dueRepeat)))throw Error('task');for(const n of p.ideas)if(!str(n.id)||!str(n.text))throw Error('idea');}if(s.collapsedSections!==undefined&&(!obj(s.collapsedSections)||Object.values(s.collapsedSections).some(v=>typeof v!=='boolean')))throw Error('layout');for(const p of s.projects)for(const task of p.tasks)if(task.voiceNotes!==undefined&&(!Array.isArray(task.voiceNotes)||task.voiceNotes.length>1000||task.voiceNotes.some(note=>!validVoiceMeta(note))))throw Error('voice notes');if(s.activities!==undefined&&(!Array.isArray(s.activities)||s.activities.some(a=>!obj(a)||!str(a.id)||!str(a.name)||!a.name.trim()||(a.archived!==undefined&&typeof a.archived!=='boolean'))))throw Error('activities');if(s.unassigned!==undefined&&(!Array.isArray(s.unassigned)||s.unassigned.some(g=>!obj(g)||!str(g.id)||!num(g.start)||!num(g.end)||g.end<=g.start)))throw Error('unassigned');if(s.lastDayClosedAt!==undefined&&!num(s.lastDayClosedAt))throw Error('closed day');if(s.pendingSegment!==undefined){const d=s.pendingSegment;if(!obj(d)||!num(d.start)||!num(d.end)||d.end<d.start||typeof d.ending!=='boolean'||(d.detached!==undefined&&typeof d.detached!=='boolean')||(!d.detached&&(!s.day||s.day.segment!==d.end)))throw Error('pending segment');}validateRecoveryData(s);validatePlanning(s);return validateSleepData(s);}
 function validStatusMetadata(item){return (item.createdAt===undefined||(Number.isFinite(item.createdAt)&&item.createdAt>=0))&&(item.completedAt===undefined||(Number.isFinite(item.completedAt)&&item.completedAt>=0))&&(item.statusHistory===undefined||(Array.isArray(item.statusHistory)&&item.statusHistory.every(event=>event&&typeof event.done==='boolean'&&Number.isFinite(event.at)&&event.at>=0)));}
 function projectIsComplete(p){return !!p.completedAt;}
 function recordStatus(item,done,at=Date.now()){item.statusHistory??=[];item.statusHistory.push({done,at});if(done)item.completedAt=at;else delete item.completedAt;}
@@ -159,8 +159,9 @@ function alarmForm(existing=null,title='',pid='',link=null){link=link||(existing
 const currentProject=()=>state.projects.find(p=>p.id===projectId);
 function normalizeActivity(value){return String(value).normalize('NFKC').replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[\u064b-\u065f\u0670]/g,'').replace(/\u200c/g,' ').replace(/\s+/g,' ').trim().toLocaleLowerCase('fa');}
 function usableActivity(name){return name.trim()&&!['فعالیت بدون نام','فعالیت جاری','فعالیت روزانه','در انتظار ثبت'].includes(name.trim());}
-function activityCatalog(){const entries=new Map();for(const plan of state.dailyPlans||[])entries.set(normalizeActivity(plan.name),{id:'plan:'+plan.id,name:plan.name,count:0,last:0});for(const item of state.activities||[])entries.set(normalizeActivity(item.name),{...item,count:0,last:0});for(const h of state.history){if(h.unknown||!usableActivity(h.name))continue;const key=normalizeActivity(h.name),item=entries.get(key)||{id:'history:'+key,name:h.name,count:0,last:0};item.count++;item.last=Math.max(item.last,h.end);entries.set(key,item);}return [...entries.values()].sort((a,b)=>b.count-a.count||b.last-a.last||a.name.localeCompare(b.name,'fa'));}
-function rememberActivity(value){const name=value.replace(/\s+/g,' ').trim();state.activities??=[];const existing=activityCatalog().find(a=>normalizeActivity(a.name)===normalizeActivity(name));if(existing){if(!state.activities.some(a=>normalizeActivity(a.name)===normalizeActivity(name)))state.activities.push({id:uid(),name:existing.name});return existing.name;}state.activities.push({id:uid(),name});return name;}
+function hasRoutineReportDuration(item){return item.durationOnly?item.durationMs>0:item.end>item.start;}
+function activityCatalog(includeArchived=false){const entries=new Map();for(const plan of state.dailyPlans||[])entries.set(normalizeActivity(plan.name),{id:'plan:'+plan.id,name:plan.name,count:0,last:0});for(const item of state.activities||[])entries.set(normalizeActivity(item.name),{...item,count:0,last:0});for(const h of state.history){if(h.unknown||!usableActivity(h.name)||!hasRoutineReportDuration(h))continue;const key=normalizeActivity(h.name),item=entries.get(key)||{id:'history:'+key,name:h.name,count:0,last:0};item.count++;item.last=Math.max(item.last,h.end);entries.set(key,item);}return [...entries.values()].filter(item=>includeArchived||!item.archived).sort((a,b)=>b.count-a.count||b.last-a.last||a.name.localeCompare(b.name,'fa'));}
+function rememberActivity(value){const name=value.replace(/\s+/g,' ').trim();state.activities??=[];const existing=activityCatalog(true).find(a=>normalizeActivity(a.name)===normalizeActivity(name));if(existing){if(!state.activities.some(a=>normalizeActivity(a.name)===normalizeActivity(name)))state.activities.push({id:uid(),name:existing.name});return existing.name;}state.activities.push({id:uid(),name});return name;}
 function editDistance(a,b){let prev=Array.from({length:b.length+1},(_,i)=>i);for(let i=1;i<=a.length;i++){const next=[i];for(let j=1;j<=b.length;j++)next[j]=Math.min(next[j-1]+1,prev[j]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));prev=next;}return prev[b.length];}
 function activityMatches(query){const key=normalizeActivity(query);if(!key)return [];return activityCatalog().map(a=>{const name=normalizeActivity(a.name);return {a,score:name===key?0:name.startsWith(key)?1:name.includes(key)?2:key.length>=3&&editDistance(key,name)<=Math.max(1,Math.floor(key.length/4))?3:99};}).filter(r=>r.score<99).sort((a,b)=>a.score-b.score||b.a.count-a.a.count).slice(0,6).map(r=>r.a);}
 function activityInput(value=''){const frequent=activityCatalog().slice(0,6);return `<label for="activity-input">تا الان چه کار می‌کردیم؟</label><input id="activity-input" name="name" data-activity-input required maxlength="100" value="${esc(value)}" autocomplete="off" autofocus role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="activity-suggestions"><div id="activity-suggestions" role="listbox" hidden></div>${frequent.length?`<div class="frequent-activities"><span>پرکاربردها</span><div class="activity-chips">${frequent.map(a=>`<button type="button" data-pick-activity="${esc(a.name)}">${esc(a.name)}</button>`).join('')}</div></div>`:''}`;}
@@ -172,9 +173,64 @@ function nameSegment(h){if(!modal('',activityInput(h.name==='فعالیت بدو
 function rollbackPending(draft){if(state.pendingSegment!==draft)return;if(draft.detached)journalAddGap(draft.start,draft.end);else if(state.day)state.day.segment=draft.start;delete state.pendingSegment;save();render();}
 function namePendingSegment(){if(state.pendingSegment)pastTimeForm({pending:state.pendingSegment});}
 function segment(ending){if(closeExpiredDay()){render();return;}if(!state.day||$('#dialog').open||$('#settings-dialog').open)return;if(state.pendingSegment){namePendingSegment();return;}const now=Date.now();if(now<=state.day.segment){toast('هنوز زمانی از فعالیت جاری نگذشته است.');return;}state.pendingSegment={start:state.day.segment,end:now,ending};state.day.segment=now;save();render();namePendingSegment();}
-function activitiesRows(query=''){const key=normalizeActivity(query);return activityCatalog().filter(a=>normalizeActivity(a.name).includes(key)).map(a=>`<div class="item"><div class="content"><b>${esc(a.name)}</b><span class="muted">${fa(a.count)} بار استفاده</span></div><button class="small" data-edit-activity="${esc(a.name)}">ویرایش</button></div>`).join('')||'<p class="empty">فعالیتی پیدا نشد.</p>';}
-function activitiesPage(){return `<h2>فعالیت‌ها</h2><label for="activity-search" class="sr-only">جستجوی فعالیت‌ها</label><input id="activity-search" placeholder="جستجوی فعالیت‌ها…" type="search"><article class="card activity-catalog" id="activity-catalog">${activitiesRows()}</article>`;}
-function editActivity(oldName=null){modal(oldName?'ویرایش فعالیت':'فعالیت روتین جدید',`<label>نام فعالیت<input name="name" maxlength="100" required value="${esc(oldName||'')}" autofocus></label>`,f=>{const name=f.get('name').replace(/\s+/g,' ').trim();if(!name)return false;const key=normalizeActivity(name),oldKey=normalizeActivity(oldName||'');if(activityCatalog().some(a=>normalizeActivity(a.name)===key&&key!==oldKey)){toast('این فعالیت از قبل وجود دارد.');return false;}state.activities??=[];if(oldName){for(const p of [...(state.dailyPlans||[]),...(state.planMonthSelections||[])])if(normalizeActivity(p.name)===oldKey)p.name=name;for(const h of state.history)if(!h.unknown&&normalizeActivity(h.name)===oldKey)h.name=name;state.activities=state.activities.filter(a=>normalizeActivity(a.name)!==oldKey);}rememberActivity(name);});}
+let showArchivedActivities=false;
+function activityHasReportData(name){
+ const key=normalizeActivity(name);
+ return state.history.some(item=>normalizeActivity(item.name)===key&&hasRoutineReportDuration(item))
+  ||(state.dailyPlans||[]).some(plan=>normalizeActivity(plan.name)===key)
+  ||(key==='خواب'&&(state.sleeps||[]).length>0);
+}
+function activitiesRows(query=''){
+ const key=normalizeActivity(query),items=activityCatalog(true).filter(item=>!!item.archived===showArchivedActivities&&normalizeActivity(item.name).includes(key));
+ return items.map(item=>{
+  const name=esc(item.name);
+  const actions=item.archived
+   ?`<button type="button" class="small" data-restore-routine="${name}">بازگرداندن</button>`
+   :`<button type="button" class="small" data-edit-activity="${name}">ویرایش</button>
+    ${activityHasReportData(item.name)?`<button type="button" class="small" data-archive-routine="${name}">بایگانی</button>`:`<button type="button" class="small danger" data-delete-routine="${name}">حذف</button>`}`;
+  return `<div class="item"><div class="content"><b>${name}</b><span class="muted">${fa(item.count)} بار استفاده</span></div><div class="routine-row-actions">${actions}</div></div>`;
+ }).join('')||`<p class="empty">${showArchivedActivities?'فعالیت بایگانی‌شده‌ای پیدا نشد.':'فعالیتی پیدا نشد.'}</p>`;
+}
+function activitiesPage(){
+ return `<div class="row routine-catalog-heading"><h2>${showArchivedActivities?'فعالیت‌های بایگانی‌شده':'فعالیت‌های روتین'}</h2>
+ <button type="button" class="small" data-toggle-routine-archive>${showArchivedActivities?'فعالیت‌های فعال':'بایگانی فعالیت‌ها'}</button></div>
+ <label for="activity-search" class="sr-only">جستجوی فعالیت‌ها</label><input id="activity-search" placeholder="جستجوی فعالیت‌ها…" type="search"><article class="card activity-catalog" id="activity-catalog">${activitiesRows()}</article>`;
+}
+function handleRoutineCatalog(button){
+ if(button.hasAttribute('data-toggle-routine-archive')){
+  showArchivedActivities=!showArchivedActivities;
+  render();
+  return true;
+ }
+ const {restoreRoutine,archiveRoutine,deleteRoutine}=button.dataset;
+ const name=restoreRoutine??archiveRoutine??deleteRoutine;
+ if(name===undefined)return false;
+ const key=normalizeActivity(name),activity=activityCatalog(true).find(item=>normalizeActivity(item.name)===key);
+ if(!activity)return true;
+ if(deleteRoutine!==undefined){
+  if(activityHasReportData(name)){
+   toast('این فعالیت سابقه دارد و می‌توانید آن را بایگانی کنید.');
+   return true;
+  }
+  if(!confirm('این فعالیت حذف شود؟'))return true;
+  state.activities=(state.activities||[]).filter(item=>normalizeActivity(item.name)!==key);
+  if(state.planMonthSelections)state.planMonthSelections=state.planMonthSelections.filter(item=>normalizeActivity(item.name)!==key);
+ }else{
+  const archived=archiveRoutine!==undefined;
+  if(archived&&!activityHasReportData(name)){
+   toast('این فعالیت سابقه ندارد و می‌توانید آن را حذف کنید.');
+   return true;
+  }
+  state.activities??=[];
+  const record=state.activities.find(item=>normalizeActivity(item.name)===key);
+  if(record)record.archived=archived;
+  else state.activities.push({id:uid(),name:activity.name,archived});
+ }
+ save();
+ render();
+ return true;
+}
+function editActivity(oldName=null){modal(oldName?'ویرایش فعالیت':'فعالیت روتین جدید',`<label>نام فعالیت<input name="name" maxlength="100" required value="${esc(oldName||'')}" autofocus></label>`,f=>{const name=f.get('name').replace(/\s+/g,' ').trim();if(!name)return false;const key=normalizeActivity(name),oldKey=normalizeActivity(oldName||'');if(activityCatalog(true).some(a=>normalizeActivity(a.name)===key&&key!==oldKey)){toast('این فعالیت از قبل وجود دارد.');return false;}state.activities??=[];if(oldName){for(const p of [...(state.dailyPlans||[]),...(state.planMonthSelections||[])])if(normalizeActivity(p.name)===oldKey)p.name=name;for(const h of state.history)if(!h.unknown&&normalizeActivity(h.name)===oldKey)h.name=name;state.activities=state.activities.filter(a=>normalizeActivity(a.name)!==oldKey);}rememberActivity(name);});}
 document.addEventListener('input',e=>{if(e.target.matches('[data-activity-input]'))updateActivitySuggestions();if(e.target.id==='activity-search')$('#activity-catalog').innerHTML=activitiesRows(e.target.value);});
 document.addEventListener('keydown',e=>{if(!e.target.matches('[data-activity-input]'))return;const list=$('#activity-suggestions'),options=[...list.querySelectorAll('[role=option]')];if((e.key==='ArrowDown'||e.key==='ArrowUp')&&!list.hidden&&options.length){e.preventDefault();suggestionIndex=(suggestionIndex+(e.key==='ArrowDown'?1:-1)+options.length)%options.length;options.forEach((b,i)=>b.setAttribute('aria-selected',String(i===suggestionIndex)));e.target.setAttribute('aria-activedescendant',options[suggestionIndex].id);}if(e.key==='Enter'&&!list.hidden&&suggestionIndex>=0){e.preventDefault();pickActivity(options[suggestionIndex].dataset.pickActivity);}if(e.key==='Escape'&&!list.hidden){e.preventDefault();e.stopPropagation();list.hidden=true;e.target.setAttribute('aria-expanded','false');}});
 
@@ -215,7 +271,7 @@ function resetDayForm(){
   if(previous&&!String(f.get('previousName')||'').trim())return false;
   if(sleepOverlap(start,now)){toast('زمان شروع با خواب ثبت‌شده تداخل دارد؛ زمان پس از بیداری را انتخاب کنید.');return false;}
   // Keep the names available even when all of today's uses are removed.
-  state.activities=activityCatalog().map(a=>({id:a.id,name:a.name}));
+  state.activities=activityCatalog(true).map(({id,name,archived})=>({id,name,...(archived?{archived:true}:{})}));
   const kept=[];for(const h of state.history){if(h.start===h.end&&h.start>=day.start&&h.start<day.end)continue;if(h.end<=day.start||h.start>=day.end){kept.push(h);continue;}if(h.start<day.start)kept.push({...h,end:day.start});if(h.end>day.end)kept.push({...h,start:day.end});}
   if(previous)kept.push({name:rememberActivity(String(f.get('previousName')||'').trim()),start:state.day.segment,end:day.start});
   state.history=kept;journalClaimRange(day.start,day.end);delete state.pendingSegment;state.day={start,segment:start,activity:'فعالیت جاری'};historyOffset=0;tab='today';return true;
@@ -245,6 +301,7 @@ document.addEventListener('click',e=>{
  if(b.dataset.taskAlarm){if($('#dialog').open)dismissModal();openItemReminder('task',b.dataset.taskAlarm,p?.id);return;}
  if(b.dataset.deleteTask&&p){if($('#dialog').open)dismissModal();removeItemReminders('task',b.dataset.deleteTask,p.id);p.tasks=p.tasks.filter(t=>t.id!==b.dataset.deleteTask);save();pruneVoiceNotes().catch(()=>{});render();return;}
  if(b.dataset.pickActivity!==undefined)pickActivity(b.dataset.pickActivity);
+ if(handleRoutineCatalog(b))return;
  if(b.dataset.editActivity!==undefined)editActivity(b.dataset.editActivity);
  if(b.dataset.editHistory!==undefined){const index=Number(b.dataset.editHistory);if(state.history[index])manualHistoryForm(index);}
  if(b.dataset.editAlarm)alarmForm(state.alarms.find(a=>a.id===b.dataset.editAlarm));
