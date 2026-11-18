@@ -2,8 +2,7 @@
 
 const LIFE_WEEKS_TITLE='هفته‌های باقی‌مانده عمرتان';
 const LIFE_DAY_MS=86400000;
-let lifeWeeksForm={years:'',birthYear:'',birthMonth:'',birthDay:''};
-let lifeWeeksResult=null;
+const emptyLifeWeeksForm={years:'',birthYear:'',birthMonth:'',birthDay:''};
 
 function lifeCalendarDay(date){
  return Date.UTC(date.getFullYear(),date.getMonth(),date.getDate())/LIFE_DAY_MS;
@@ -52,7 +51,10 @@ function lifeWeeksResults(result){
 }
 
 function lifeWeeksPage(){
- const field=(name,label,limit)=>'<label>'+label+'<input type="text" inputmode="numeric" name="'+name+'" maxlength="'+limit+'" value="'+esc(lifeWeeksForm[name])+'" required></label>';
+ const stored=state.lifeWeeks;
+ const estimate=stored?calculateLifeWeeks(stored):null;
+ const values=estimate&&!estimate.error?stored:emptyLifeWeeksForm;
+ const field=(name,label,limit)=>'<label>'+label+'<input type="text" inputmode="numeric" name="'+name+'" maxlength="'+limit+'" value="'+esc(values[name])+'" required></label>';
  return '<section class="card life-weeks-page" aria-labelledby="life-weeks-title">'
   +'<h2 id="life-weeks-title">'+LIFE_WEEKS_TITLE+'</h2>'
   +'<form id="life-weeks-form" class="life-weeks-form">'
@@ -61,16 +63,20 @@ function lifeWeeksPage(){
   +'<button type="submit" class="primary">نمایش هفته‌ها</button>'
   +'</form><p id="life-weeks-error" class="life-weeks-error" role="alert" hidden></p>'
   +'<p class="life-explainer">این یک برآورد بر اساس تعداد سالی است که وارد می‌کنید. هر خانه یک هفتهٔ کامل است.</p>'
-  +'<div id="life-weeks-results" aria-live="polite">'+lifeWeeksResults(lifeWeeksResult)+'</div></section>';
+  +'<div id="life-weeks-results" aria-live="polite">'+lifeWeeksResults(estimate&&!estimate.error?estimate:null)+'</div></section>';
 }
 
 document.addEventListener('submit',event=>{
  if(event.target.id!=='life-weeks-form')return;
  event.preventDefault();
  const entries=new FormData(event.target);
- lifeWeeksForm=Object.fromEntries(Object.keys(lifeWeeksForm).map(name=>[name,String(entries.get(name)||'')]));
- const calculated=calculateLifeWeeks(lifeWeeksForm),error=document.querySelector('#life-weeks-error');
- error.textContent=calculated.error||'';error.hidden=!calculated.error;
- lifeWeeksResult=calculated.error?null:calculated;
- document.querySelector('#life-weeks-results').innerHTML=lifeWeeksResults(lifeWeeksResult);
+ const values=Object.fromEntries(Object.keys(emptyLifeWeeksForm).map(name=>[name,asciiDigits(String(entries.get(name)||'')).trim()]));
+ const calculated=calculateLifeWeeks(values),error=document.querySelector('#life-weeks-error');
+ error.textContent=calculated.error||'';
+ error.hidden=!calculated.error;
+ if(!calculated.error){
+  state.lifeWeeks=values;
+  save();
+ }
+ document.querySelector('#life-weeks-results').innerHTML=lifeWeeksResults(calculated.error?null:calculated);
 });

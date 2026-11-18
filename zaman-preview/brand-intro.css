@@ -129,3 +129,10 @@
  min-height:28px; flex-direction:row; padding:3px 4px; font-size:clamp(8px,9cqi,11px);
 }
 #today-header #today-brand #brand-weeks-tile #life-weeks-open svg { width:12px; height:12px; }
+
+#today-header #today-brand #replay-brand-intro {
+ display:block; max-width:100%; min-width:0; margin:0; padding:0; border:0;
+ border-radius:7px; background:transparent; cursor:pointer;
+}
+#today-header #today-brand #replay-brand-intro:hover { background:transparent; }
+#today-header #today-brand #replay-brand-intro:focus-visible { outline-offset:-2px; }

@@ -30,6 +30,11 @@ public class MainActivity extends Activity {
     web.setWebViewClient(new WebViewClient(){
       @Override public WebResourceResponse shouldInterceptRequest(WebView v,WebResourceRequest request){
         Uri u=request.getUrl();String path=u.getPath();
+        // This read-only public metadata file is the sole remote subresource the app needs.
+        if (!request.isForMainFrame() && "GET".equals(request.getMethod())
+            && "https://raw.githubusercontent.com/thumper9480-droid/racking/gh-pages/zaman-preview/published-versions.json".equals(u.toString())) {
+          return null;
+        }
         if(!"https".equals(u.getScheme())||!"appassets.androidplatform.net".equals(u.getHost())||path==null||path.contains(".."))return missing();
         try {String file=path.equals("/")?"index.html":path.substring(1);String mime=file.endsWith(".js")?"text/javascript":file.endsWith(".css")?"text/css":file.endsWith(".ttf")?"font/ttf":file.endsWith(".png")?"image/png":file.endsWith(".svg")?"image/svg+xml":file.endsWith(".pdf")?"application/pdf":file.endsWith(".json")?"application/json":"text/html";return new WebResourceResponse(mime,"UTF-8",getAssets().open(file));}catch(IOException e){return missing();}
       }
@@ -125,7 +130,7 @@ public class MainActivity extends Activity {
       }catch(Exception e){return "{\"ok\":false,\"error\":\"پاک‌کردن همهٔ تنظیمات اندروید کامل نشد؛ دوباره تلاش کنید.\"}";}
     }
     @JavascriptInterface public void openDownloads(){runOnUiThread(()->{try{startActivity(new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS));}catch(ActivityNotFoundException ignored){toast("پوشهٔ Downloads را در فایل‌های گوشی باز کنید.");}});}
-    @JavascriptInterface public void openHelpSection(String section){if(section==null||!section.matches("today|sleep|journey|timers|projects|audio|reports|settings|updates|answers"))return;runOnUiThread(()->web.loadUrl("https://appassets.androidplatform.net/help.html#"+section));}
+    @JavascriptInterface public void openHelpSection(String section){if(section==null||!section.matches("today|sleep|journey|timers|projects|audio|reports|planning|life-weeks|settings|updates|answers"))return;runOnUiThread(()->web.loadUrl("https://appassets.androidplatform.net/help.html#"+section));}
     @JavascriptInterface public void openHelp(){runOnUiThread(()->web.loadUrl("https://appassets.androidplatform.net/help.html"));}
     @JavascriptInterface public void openGuide(){runOnUiThread(()->{try{startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/pdf").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"ali-mirza-user-guide.pdf"),12);}catch(ActivityNotFoundException ignored){toast("ذخیره‌ساز فایل در دسترس نیست.");}});}
     @JavascriptInterface public void export(String text){if(text.length()>104857600)return;runOnUiThread(()->{exportText=text;startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE).putExtra(Intent.EXTRA_TITLE,"zaman-backup.json"),11);});}

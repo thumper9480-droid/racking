@@ -5,23 +5,39 @@
  if(!root)return;
  const stage=root.querySelector('.amd-stage'),brand=root.closest('#today-brand');
  const wordmark=brand.querySelector(':scope > img'),weeks=brand.querySelector('#brand-weeks-tile');
- const stars=root.querySelector('.amd-stars');
- if(!wordmark||!weeks)return;
- let opened=false,finishTimer;
+ const stars=root.querySelector('.amd-stars'),replay=brand.querySelector('#replay-brand-intro');
+ if(!wordmark||!weeks||!replay)return;
+ const reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)');
+ let initialStarted=false,running=false,restoreFocus=false,finishTimer;
 
  function finish(){
   window.clearTimeout(finishTimer);
   root.hidden=true;
+  stage.classList.remove('amd-playing');
   brand.classList.remove('brand-intro-active');
   wordmark.hidden=true;
   weeks.hidden=false;
+  running=false;
+  if(restoreFocus&&document.activeElement===document.body)replay.focus({preventScroll:true});
+  restoreFocus=false;
  }
- if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){finish();return;}
-
- async function start(){
-  if(opened||document.hidden)return;
-  opened=true;
-  document.removeEventListener('visibilitychange',start);
+ function startOnOpen(){
+  if(initialStarted||document.hidden)return;
+  initialStarted=true;
+  document.removeEventListener('visibilitychange',startOnOpen);
+  if(reducedMotion.matches)finish();
+  else void play();
+ }
+ async function play(){
+  if(running||document.hidden)return;
+  if(reducedMotion.matches){
+   replay.animate?.([{opacity:.55},{opacity:1}],{duration:180});
+   return;
+  }
+  running=true;
+  restoreFocus=document.activeElement===replay;
+  weeks.hidden=true;
+  wordmark.hidden=false;
   const images=[wordmark,root.querySelector('.amd-bloom img')];
   const imageReady=images.map(img=>typeof img.decode==='function'?img.decode():Promise.resolve());
   const fontsReady=document.fonts?[document.fonts.load('700 45px "Noto Nastaliq Urdu"','پدرم'),document.fonts.load('900 16px Vazirmatn','به یاد معدن معرفت')]:[];
@@ -30,6 +46,7 @@
    new Promise(resolve=>window.setTimeout(resolve,900))
   ]);
   const tones=['#c59734','#e0b957','#8ac7ac','#6da88e','#9474a0'];
+  stars.replaceChildren();
   for(let i=0;i<36;i++){
    const star=document.createElement('i');
    star.className='amd-star';
@@ -46,6 +63,7 @@
  }
 
  stage.addEventListener('animationend',event=>{if(event.animationName==='amd-wordmark')finish();});
- document.addEventListener('visibilitychange',start);
- void start();
+ replay.addEventListener('click',()=>{void play();});
+ document.addEventListener('visibilitychange',startOnOpen);
+ startOnOpen();
 })();
