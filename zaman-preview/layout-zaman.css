@@ -333,3 +333,17 @@ dialog#dialog { border-radius:22px; }
  .is-today .session-quick-button { min-height:60px; }
  .is-today .session-utilities:empty { display:none; }
 }
+
+.is-today .activity-session { grid-template-rows:auto auto auto; row-gap:5px; }
+.is-today .activity-session .session-clock { display:contents; }
+.is-today .activity-session .session-caption {
+ grid-column:1; grid-row:1; margin:0; text-align:center;
+}
+.is-today .activity-session #day-clock {
+ grid-column:1; grid-row:2; align-self:stretch; height:100%; margin:0;
+}
+.is-today .activity-session .day-total {
+ grid-column:1; grid-row:3; margin:0; text-align:center;
+}
+.is-today .activity-session .session-quick-actions { grid-column:2; grid-row:2; align-self:stretch; }
+.is-today .activity-session .session-utilities { grid-column:3; grid-row:2; }

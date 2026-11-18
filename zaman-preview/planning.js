@@ -117,11 +117,29 @@ function monthlyPlanForm(){
  </div>`;
  const wakeChoice=(state.wakeMonthSelections||[]).find(x=>x.month===monthKey),monthWakes=(state.plannedWakes||[]).filter(w=>{const p=planJalali(planBounds(w.day).start);return p.year===year&&p.month===month;});
  const wakeOffsets=[5,10,15,30];
- const rows=Array.from({length:days},(_,i)=>{
-  const d=i+1,date=persianToLocal(year,month,d),day=planDayKey(date);
-  if(!planDayIsOpen(day))return '';
+ const visibleDays=Array.from({length:days},(_,i)=>{
+  const d=i+1,date=persianToLocal(year,month,d);
+  return {d,date,day:planDayKey(date)};
+ }).filter(({day})=>planDayIsOpen(day));
+ const rows=visibleDays.map(({d,date,day},index)=>{
   const w=monthWakes.find(w=>w.day===day),holiday=planHoliday(year,month,d),on=wakeChoice?wakeChoice.days.includes(day):monthWakes.length?!!w:true;
-  return `<div class="month-plan-row" data-month-day="${day}"><label class="check month-day-label ${holiday?'official-holiday':''}"><input type="checkbox" data-month-goal checked><span><b>${PLAN_WEEKDAYS[(date.getDay()+1)%7]}</b><small>${fa(d)} ${monthNames[month-1]} ماه</small></span></label><div class="month-wake"><div class="month-wake-offsets" role="group" aria-label="بیدارباش زودتر از روز قبل">${wakeOffsets.map(offset=>`<button type="button" data-month-wake-offset="${offset}" aria-label="${fa(offset)} دقیقه زودتر از بیدارباش روز قبل">${fa(offset)}−</button>`).join('')}</div><label class="check"><input type="checkbox" data-month-wake ${on?'checked':''}>بیدارباش</label><input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}></div><output data-month-total>۰ دقیقه</output><div class="month-quota-inputs"><label>نوبت<input type="number" inputmode="numeric" min="0" max="1000" value="0" data-month-count></label><label>دقیقه<input type="number" inputmode="numeric" min="0" max="1440" value="0" data-month-minutes></label><div class="month-quota-actions"><button type="button" data-month-step="1" aria-label="افزایش نوبت">+</button><button type="button" data-month-step="-1" aria-label="کاهش نوبت">−</button><button type="button" data-month-copy>مثل روز قبل</button></div></div><small class="month-wake-status" data-month-wake-status></small><p class="month-row-error" data-month-error hidden></p></div>`;
+  const previous=index>0;
+  return `<div class="month-plan-row" data-month-day="${day}">
+   <label class="check month-day-label ${holiday?'official-holiday':''}"><input type="checkbox" data-month-goal checked><span><b>${PLAN_WEEKDAYS[(date.getDay()+1)%7]}</b><small>${fa(d)} ${monthNames[month-1]} ماه</small></span></label>
+   <output data-month-total>۰ دقیقه</output>
+   <div class="month-wake"><div class="month-wake-fields">
+    <label class="check"><input type="checkbox" data-month-wake ${on?'checked':''}>بیدارباش</label>
+    <input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}>
+   </div></div>
+   <div class="month-quota-inputs">
+    <label>نوبت<input type="number" inputmode="numeric" min="0" max="1000" value="0" data-month-count></label>
+    <label>دقیقه<input type="number" inputmode="numeric" min="0" max="1440" value="0" data-month-minutes></label>
+   </div>
+   ${previous?`<div class="month-wake-offsets" role="group" aria-label="بیدارباش زودتر از روز قبل">${wakeOffsets.map(offset=>`<button type="button" data-month-wake-offset="${offset}" aria-label="${fa(offset)} دقیقه زودتر از بیدارباش روز قبل">${fa(offset)}−</button>`).join('')}</div>`:''}
+   <div class="month-quota-actions"><button type="button" data-month-step="1" aria-label="افزایش نوبت">+</button><button type="button" data-month-step="-1" aria-label="کاهش نوبت">−</button></div>
+   ${previous?'<button type="button" class="month-copy-wake" data-month-wake-copy aria-label="کپی ساعت بیدارباش روز قبل">مثل روز قبل</button><button type="button" class="month-copy-quota" data-month-copy aria-label="کپی نوبت و دقیقهٔ روز قبل">مثل روز قبل</button>':''}
+   <small class="month-wake-status" data-month-wake-status hidden></small><p class="month-row-error" data-month-error hidden></p>
+  </div>`;
  }).join('');
  const opened=modal('پلان‌ریزی ماهانه برای '+monthNames[month-1]+' '+fa(year),`${monthPicker}${activitySelect().replace(' required','')}<p class="plan-help">روزهای ناخواسته را خاموش کنید. دکمه‌های کنار بیدارباش، ساعت را نسبت به بیدارباش روز قبل جلو می‌آورند. زنگ وب به بازبودن صفحه وابسته است.</p><p id="month-plan-error" class="month-form-error" role="alert" hidden></p><div class="month-total-heading"><span>جمع ماه برای فعالیت انتخاب‌شده</span><output id="month-plan-total">۰ دقیقه</output></div><div class="monthly-select-all"><input type="checkbox" id="month-select-all" aria-label="تیک همهٔ روزهای قابل برنامه‌ریزی"></div><div class="month-plan-scroll" role="region" aria-label="امروز و روزهای آیندهٔ ماه" tabindex="0">${rows||'<p class="plan-empty">در این ماه روزی برای برنامه‌ریزی باقی نمانده است.</p>'}</div>`,()=>{
   if(!rows)return false;
@@ -173,20 +191,14 @@ function monthlyPlanForm(){
  }
  const monthRows=new Map(Array.from(form.querySelectorAll('[data-month-day]'),row=>[row.dataset.monthDay,row]));
  function previousQuota(row){
-  const day=previousPlanDay(row.dataset.monthDay),draft=monthRows.get(day);
-  if(draft){
-   if(!draft.querySelector('[data-month-goal]').checked)return null;
-   const count=Number(draft.querySelector('[data-month-count]').value),minutes=Number(draft.querySelector('[data-month-minutes]').value);
-   return validDayQuota(day,count,minutes)?{count,minutes}:null;
-  }
-  if(!currentName)return null;
-  return (state.dailyPlans||[]).find(plan=>plan.day===day&&normalizeActivity(plan.name)===normalizeActivity(currentName));
+  const day=previousPlanDay(row.dataset.monthDay),previous=monthRows.get(day);
+  if(!previous?.querySelector('[data-month-goal]').checked)return null;
+  const count=Number(previous.querySelector('[data-month-count]').value),minutes=Number(previous.querySelector('[data-month-minutes]').value);
+  return validDayQuota(day,count,minutes)?{count,minutes}:null;
  }
  function previousWake(row){
-  const day=previousPlanDay(row.dataset.monthDay),draft=monthRows.get(day);
-  if(draft)return draft.querySelector('[data-month-wake]').checked?draft.querySelector('[data-month-time]').value:'';
-  const wake=(state.plannedWakes||[]).find(item=>item.day===day);
-  return wake?journalTime(wake.at):'';
+  const previous=monthRows.get(previousPlanDay(row.dataset.monthDay));
+  return previous?.querySelector('[data-month-wake]').checked?previous.querySelector('[data-month-time]').value:'';
  }
  function refreshMonthlyForm(){
   refreshMonthlyTotals();
@@ -199,8 +211,10 @@ function monthlyPlanForm(){
     button.setAttribute('aria-label',(up?'افزایش ':'کاهش ')+label);
     button.disabled=!open||target.disabled||(up?Number(target.value)>=Number(target.max):Number(target.value)<=0);
    }
-   row.querySelector('[data-month-copy]').disabled=!open||!previousQuota(row);
+   const quotaCopy=row.querySelector('[data-month-copy]'),wakeCopy=row.querySelector('[data-month-wake-copy]');
+   if(quotaCopy)quotaCopy.disabled=!open||!previousQuota(row);
    const time=previousWake(row);
+   if(wakeCopy)wakeCopy.disabled=!open||!earlierWakeTime(time,0);
    for(const button of row.querySelectorAll('[data-month-wake-offset]')){
     button.disabled=!open||!earlierWakeTime(time,Number(button.dataset.monthWakeOffset));
    }
@@ -215,7 +229,7 @@ function monthlyPlanForm(){
   refreshMonthlyForm();
  });
  scroll.addEventListener('click',event=>{
-  const button=event.target.closest('button[data-month-step],button[data-month-copy],button[data-month-wake-offset]');
+  const button=event.target.closest('button[data-month-step],button[data-month-copy],button[data-month-wake-copy],button[data-month-wake-offset]');
   if(!button||button.disabled)return;
   const row=button.closest('[data-month-day]');
   if(!planDayIsOpen(row.dataset.monthDay))return;
@@ -230,7 +244,7 @@ function monthlyPlanForm(){
    count.value=previous.count;
    minutes.value=previous.minutes;
   }else{
-   const time=earlierWakeTime(previousWake(row),Number(button.dataset.monthWakeOffset));
+   const time=earlierWakeTime(previousWake(row),Number(button.dataset.monthWakeOffset||0));
    if(!time)return;
    row.querySelector('[data-month-wake]').checked=true;
    const input=row.querySelector('[data-month-time]');

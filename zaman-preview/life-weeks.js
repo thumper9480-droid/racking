@@ -2,7 +2,7 @@
 
 const LIFE_WEEKS_TITLE='هفته‌های باقی‌مانده عمرتان';
 const LIFE_DAY_MS=86400000;
-let lifeWeeksForm={years:'70',birthYear:'',birthMonth:'',birthDay:''};
+let lifeWeeksForm={years:'',birthYear:'',birthMonth:'',birthDay:''};
 let lifeWeeksResult=null;
 
 function lifeCalendarDay(date){
@@ -52,12 +52,12 @@ function lifeWeeksResults(result){
 }
 
 function lifeWeeksPage(){
- const field=(name,label,placeholder,limit)=>'<label>'+label+'<input type="text" inputmode="numeric" name="'+name+'" maxlength="'+limit+'" placeholder="'+placeholder+'" value="'+esc(lifeWeeksForm[name])+'" required></label>';
+ const field=(name,label,limit)=>'<label>'+label+'<input type="text" inputmode="numeric" name="'+name+'" maxlength="'+limit+'" value="'+esc(lifeWeeksForm[name])+'" required></label>';
  return '<section class="card life-weeks-page" aria-labelledby="life-weeks-title">'
   +'<h2 id="life-weeks-title">'+LIFE_WEEKS_TITLE+'</h2>'
   +'<form id="life-weeks-form" class="life-weeks-form">'
-  +'<fieldset><legend>میانگین عمر یک انسان</legend>'+field('years','تعداد سال','۷۰',3)+'</fieldset>'
-  +'<fieldset><legend>تاریخ تولد شمسی</legend><div class="life-birth">'+field('birthDay','روز','۲۶',2)+field('birthMonth','ماه','۰۸',2)+field('birthYear','سال','۱۳۷۰',4)+'</div></fieldset>'
+  +'<fieldset><legend>میانگین عمر یک انسان</legend>'+field('years','تعداد سال',3)+'</fieldset>'
+  +'<fieldset><legend>تاریخ تولد شمسی</legend><div class="life-birth">'+field('birthDay','روز',2)+field('birthMonth','ماه',2)+field('birthYear','سال',4)+'</div></fieldset>'
   +'<button type="submit" class="primary">نمایش هفته‌ها</button>'
   +'</form><p id="life-weeks-error" class="life-weeks-error" role="alert" hidden></p>'
   +'<p class="life-explainer">این یک برآورد بر اساس تعداد سالی است که وارد می‌کنید. هر خانه یک هفتهٔ کامل است.</p>'

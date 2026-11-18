@@ -123,7 +123,7 @@
  width:100%; display:grid; justify-items:center; gap:4px;
 }
 #today-header #today-brand #brand-weeks-tile .brand-launcher-icon {
- display:block; width:36px; height:36px; object-fit:contain; border-radius:9px;
+ display:block; width:min(100%,114px); height:38px; object-fit:contain;
 }
 #today-header.app-masthead #today-brand #brand-weeks-tile #life-weeks-open {
  min-height:28px; flex-direction:row; padding:3px 4px; font-size:clamp(8px,9cqi,11px);
