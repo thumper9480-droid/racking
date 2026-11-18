@@ -31,7 +31,7 @@
  --theme-shadow:0 3px 13px var(--theme-shadow-ink);
  --teal:var(--theme-green);
  --line:var(--theme-border);
- font-family:"Vazirmatn RD",Tahoma,sans-serif;
+ font-family:Vazirmatn,"Vazirmatn RD",Tahoma,sans-serif;
  color:var(--theme-ink);
  background:var(--theme-background);
  color-scheme:light;
@@ -196,7 +196,7 @@ body.install-page {
 .themed-guide .page-heading { border-color:var(--theme-border); }
 .install-page progress { accent-color:var(--theme-install-primary); }
 
-.arc-percent { font-family:"Vazirmatn RD",Tahoma,sans-serif; }
+.arc-percent { font-family:Vazirmatn,"Vazirmatn RD",Tahoma,sans-serif; }
 .is-today .journey .history-table :is(th,td) { padding-inline:5px; }
 
 
