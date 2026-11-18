@@ -12,13 +12,7 @@
 .today-plan-card h2 { font-size:13px; margin:0; color:#3a6b4c; }
 .today-plan-card .small { padding:5px 8px; font-size:10px; }
 .today-plan-item { display:flex; align-items:center; gap:7px; padding:8px; margin-top:7px; border:1px solid #d5e3d1; border-radius:9px; background:#fff; }
-.today-plan-item>div { flex:1; min-width:0; display:grid; gap:4px; }
 .today-plan-item b { font-size:12px; overflow-wrap:anywhere; }
-.today-plan-item small { font-size:10px; color:#6d826c; }
-.today-plan-item progress { width:100%; height:6px; accent-color:#32875b; }
-.today-plan-check { font-size:21px; color:#8aa38a; width:23px; text-align:center; }
-.today-plan-item.is-complete { background:#e0f1df; border-color:#75b886; }
-.today-plan-item.is-complete .today-plan-check { color:#257c43; font-weight:850; }
 .time-approx { display:block; font-size:9px; color:#9a701c; }
 .recovery-dialog { width:min(520px,94vw); padding:20px; }
 .recovery-lead,.recovery-window { font-size:12px; line-height:1.9; color:#4b7054; background:#eef5e9; border-radius:9px; padding:9px; }
@@ -28,7 +22,7 @@
 #recovery-error { border:1px solid #e8a79e; background:#fff0ec; color:#982f20; border-radius:8px; padding:8px; font-size:12px; line-height:1.8; }
 [data-recovery-unknown-now] { width:100%; background:#f7eddb; color:#7c5c27; margin-top:8px; }
 @media(max-width:450px) { .activities-toolbar { gap:3px; } .activities-toolbar button { font-size:9px; padding:4px 2px; } .recovery-dialog { padding:16px; } }
-@media(max-width:350px) { .activities-toolbar button { font-size:8px; min-height:52px; } .today-plan-item small { font-size:9px; } .recovery-totals { font-size:9px; gap:5px 8px; } }
+@media(max-width:350px) { .activities-toolbar button { font-size:8px; min-height:52px; } .recovery-totals { font-size:9px; gap:5px 8px; } }
 /* Three permanent actions share the space beside the session timer. */
 .is-today .activity-session { grid-template-columns:minmax(0,1.1fr) minmax(0,1.3fr); gap:12px; }
 .session-actions.session-quick-actions { grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; align-items:stretch; justify-items:stretch; }
@@ -44,3 +38,10 @@
 @media(prefers-reduced-motion:no-preference) {
  .is-today .today-plan-card h2 { animation:routine-today-blink .6s ease-in-out infinite; }
 }
+
+.today-plan-item { flex-wrap:wrap; gap:6px 9px; }
+.today-plan-slots { position:relative; display:flex; flex-wrap:wrap; gap:4px; min-width:0; }
+.today-plan-slot { display:inline-flex; justify-content:center; align-items:center; gap:2px; inline-size:29px; block-size:29px; border:1px solid var(--line,#e8dff0); border-radius:5px; background:#fff; color:#35283f; font-size:10px; font-weight:700; font-variant-numeric:tabular-nums; }
+.today-plan-slot.is-done { background:#bee5c8; color:#103f36; border-color:#87bd98; }
+.today-plan-tick { font-size:9px; }
+.today-plan-status { position:absolute; inline-size:1px; block-size:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }

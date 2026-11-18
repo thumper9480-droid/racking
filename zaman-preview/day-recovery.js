@@ -28,7 +28,19 @@ function recoverySummary(now=Date.now()){
  const day=journalBounds(now),unknown=state.history.filter(h=>h.unknown).reduce((sum,h)=>sum+journalDuration(h,day),0),sleep=sleepStats(day,now).total,total=recoveryTotal(day,state,now);
  return{day,unknown,sleep,missing:Math.max(0,now-day.start-total)};
 }
-function todayPlannedActivities(){const day=planDayKey(),plans=(state.dailyPlans||[]).filter(p=>p.day===day);if(!plans.length)return'';return `<article class="card today-plan-card"><div class="row"><h2>فعالیت‌های روتین امروز</h2><button type="button" class="small" data-today-plan-report>گزارش</button></div>${plans.map(p=>{const data=planProgress(p);return `<div class="today-plan-item ${data.complete?'is-complete':''}" data-today-plan="${esc(p.id)}"><span class="today-plan-check" role="checkbox" aria-checked="${data.complete}" aria-label="تکمیل ${esc(p.name)}">${data.complete?'✓':'○'}</span><div><b>${esc(p.name)}</b><small>${fa(p.count)} نوبت × ${fa(p.minutes)} دقیقه · ${planMinutes(data.assigned)} از ${planMinutes(data.target)} دقیقه</small><progress value="${data.assigned}" max="${data.target}" aria-label="پیشرفت ${esc(p.name)}"></progress></div></div>`;}).join('')}</article>`;}
+function todayPlannedActivities(){
+ const day=planDayKey(),plans=(state.dailyPlans||[]).filter(p=>p.day===day);
+ if(!plans.length)return '';
+ return `<article class="card today-plan-card"><div class="row"><h2>فعالیت‌های روتین امروز</h2><button type="button" class="small" data-today-plan-report>گزارش</button></div>${plans.map(plan=>{
+  const progress=planProgress(plan);
+  const slots=Array.from({length:plan.count},(_,index)=>{
+   const done=index<progress.done;
+   return `<span class="today-plan-slot${done?' is-done':''}" aria-hidden="true">${fa(plan.minutes)}${done?'<span class="today-plan-tick">✓</span>':''}</span>`;
+  }).join('');
+  const label=`${fa(progress.done)} از ${fa(plan.count)} نوبت ${fa(plan.minutes)} دقیقه‌ای انجام شده`;
+  return `<div class="today-plan-item" data-today-plan="${esc(plan.id)}"><b>${esc(plan.name)}</b><div class="today-plan-slots" role="group" aria-label="${label}"><span class="today-plan-status">${label}</span>${slots}</div></div>`;
+ }).join('')}</article>`;
+}
 function activityToolbar(){
  const daily=tab==='planning'&&!planningProgressView;
  const routineReport=tab==='planning'&&planningProgressView;
