@@ -135,8 +135,6 @@ main { max-width:880px; padding:16px clamp(12px,3vw,26px) 32px; }
 #settings-dialog > section h3 { margin-top:0; }
 dialog#dialog { border-radius:22px; }
 
-@media(min-width:660px) {
- }
 @media(max-width:600px) {
  main { padding:8px 9px 22px; }
  #today-header.app-masthead {
@@ -261,4 +259,37 @@ dialog#dialog { border-radius:22px; }
  #view .activity-cards > button { min-height:47px; font-size:11px; }
  #view .activity-cards > button:nth-child(4) { grid-column:span 2; }
  #view .activity-cards > button:nth-child(5) { grid-column:2 / span 2; }
+}
+
+@media(max-width:600px) {
+ #today-header .app-nav {
+  display:grid; grid-template-columns:minmax(0,.85fr) minmax(0,.95fr) minmax(0,1.2fr);
+  align-items:stretch; gap:4px;
+ }
+ #today-header .app-nav [data-tab] { width:100%; height:100%; min-height:44px; padding:5px 3px; }
+ #today-header .app-nav [data-tab] span { min-width:0; }
+ #today-header .masthead-datetime,#today-header #today-brand { min-width:0; }
+ #view:is([data-screen=alarms],[data-screen=activities],[data-screen=planning],[data-screen=reports],[data-screen=projects]) {
+  padding:9px; border-radius:16px;
+ }
+ #view .plan-month-nav { grid-template-columns:32px minmax(0,1fr) minmax(62px,.55fr) 32px; gap:4px; }
+ #view .plan-month-nav select { min-width:0; }
+ .today-plan-slots { max-width:100%; }
+ .is-today .journey #journey-content { padding-inline:7px; }
+ .is-today .journey .history-table :is(td,th) { padding-inline:3px; }
+}
+@media(max-width:520px) {
+ .is-today .activity-session { grid-template-columns:minmax(0,1fr); gap:9px; }
+ .is-today .session-quick-button { min-height:48px; padding:6px; }
+ .is-today .session-clock .clock { font-size:clamp(26px,9vw,42px); }
+ .session-utilities #utility-actions { width:100%; justify-self:stretch; }
+ .is-today .session-utilities .header-education,.is-today .session-utilities #countdown-button { min-height:44px; height:auto; }
+ .is-today .journey > .journey-heading { grid-template-columns:minmax(0,1fr); padding:0 7px 6px; }
+ .is-today .journey .history-nav { justify-content:flex-start; }
+ #view .activity-cards > button { min-height:48px; }
+}
+@media(max-width:360px) {
+ #today-header .app-nav [data-tab] { gap:2px; }
+ #today-header .app-nav .nav-symbol { width:14px; height:14px; }
+ #view .activity-cards .planning-control-icon { width:24px; height:24px; }
 }

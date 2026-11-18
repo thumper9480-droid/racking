@@ -108,7 +108,7 @@ function monthlyPlanForm(){
   const d=i+1,date=persianToLocal(year,month,d),day=planDayKey(date),w=monthWakes.find(w=>w.day===day),holiday=planHoliday(year,month,d),on=wakeChoice?wakeChoice.days.includes(day):monthWakes.length?!!w:true;
   return `<div class="month-plan-row" data-month-day="${day}"><label class="check month-day-label ${holiday?'official-holiday':''}"><input type="checkbox" data-month-goal ${planDayIsOpen(day)?'checked':'disabled'}><span><b>${PLAN_WEEKDAYS[(date.getDay()+1)%7]}</b><small>${fa(d)} ${monthNames[month-1]} ماه</small></span></label><div class="month-wake"><label class="check"><input type="checkbox" data-month-wake ${on?'checked':''}>بیدارباش</label><input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}></div><output data-month-total>۰ دقیقه</output><div class="month-quota-inputs"><label>نوبت<input type="number" inputmode="numeric" min="0" max="1000" value="0" data-month-count></label><label>دقیقه<input type="number" inputmode="numeric" min="0" max="1440" value="0" data-month-minutes></label></div><small class="month-wake-status" data-month-wake-status></small><p class="month-row-error" data-month-error hidden></p></div>`;
  }).join('');
- const opened=modal('پلان‌ریزی ماهانه برای '+monthNames[month-1]+' '+fa(year),`${monthPicker}${activitySelect().replace(' required','')}<p class="plan-help">روزهای ناخواسته را خاموش کنید. بیدارباش مستقل از فعالیت است؛ زمان گذشته با زنگ خاموش ذخیره می‌شود. زنگ وب به بازبودن صفحه وابسته است.</p><p id="month-plan-error" class="month-form-error" role="alert" hidden></p><div class="month-total-heading"><span>جمع ماه برای فعالیت انتخاب‌شده</span><output id="month-plan-total">۰ دقیقه</output></div><div class="monthly-select-all"><input type="checkbox" id="month-select-all" aria-label="تیک همهٔ روزهای قابل برنامه‌ریزی"></div><div class="month-plan-scroll" role="region" aria-label="تمام روزهای ماه؛ اسکرول عمودی و افقی" tabindex="0">${rows}</div>`,()=>{
+ const opened=modal('پلان‌ریزی ماهانه برای '+monthNames[month-1]+' '+fa(year),`${monthPicker}${activitySelect().replace(' required','')}<p class="plan-help">روزهای ناخواسته را خاموش کنید. بیدارباش مستقل از فعالیت است؛ زمان گذشته با زنگ خاموش ذخیره می‌شود. زنگ وب به بازبودن صفحه وابسته است.</p><p id="month-plan-error" class="month-form-error" role="alert" hidden></p><div class="month-total-heading"><span>جمع ماه برای فعالیت انتخاب‌شده</span><output id="month-plan-total">۰ دقیقه</output></div><div class="monthly-select-all"><input type="checkbox" id="month-select-all" aria-label="تیک همهٔ روزهای قابل برنامه‌ریزی"></div><div class="month-plan-scroll" role="region" aria-label="تمام روزهای ماه" tabindex="0">${rows}</div>`,()=>{
   clearErrors();capture();
   if(!select.value&&unnamedDraft?.some(x=>x.on&&planDayIsOpen(x.day)&&(x.count!==0||x.minutes!==0)))return fail('ابتدا فعالیت را از بالای پنجره انتخاب کنید.',null,select);
   const changes=[];
@@ -173,8 +173,12 @@ function monthlyPlanForm(){
  };
  for(const field of form.querySelectorAll('[data-month-count],[data-month-minutes]'))enableMonthNumberSwipe(field);
  select.onchange=()=>{capture();clearErrors();load(select.value);};
- form.oninput=event=>{if(event.target.closest('[data-month-day]'))dirtyRows=true;clearErrors();refreshMonthlyTotals();};
- form.onchange=event=>{if(event.target.closest('[data-month-day]'))dirtyRows=true;refreshMonthlyTotals();};
+ form.oninput=event=>{
+  if(!event.target.closest('[data-month-day]'))return;
+  dirtyRows=true;
+  clearErrors();
+  refreshMonthlyTotals();
+ };
  // Time values remain on the row; expand only the active wheel, then restore the compact row.
  form.querySelectorAll('.shared-time-picker').forEach(picker=>{const close=document.createElement('button');close.type='button';close.className='month-time-done';close.textContent='تأیید ساعت';close.onclick=()=>{picker.hidden=true;picker.parentElement.querySelector('input').setAttribute('aria-expanded','false');picker.parentElement.querySelector('.time-wheel-toggle').setAttribute('aria-expanded','false');};picker.append(close);});load('');
 }

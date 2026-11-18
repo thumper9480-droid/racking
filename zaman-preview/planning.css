@@ -90,31 +90,39 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
 #plan-period-wheel>button { display:block; height:44px; min-height:44px; line-height:24px; width:100%; padding:10px 4px; scroll-snap-align:center; background:transparent; color:#80917c; border-radius:7px; font-size:12px; }
 #plan-period-wheel>[aria-selected=true] { font-weight:850; color:#245e42; background:#e1eddf; }
 #plan-period-title { font-size:13px; color:#426b43; margin:8px 0; text-align:center; }
-@media(max-width:450px) {
- .monthly-plan-dialog { padding:12px; }
- .monthly-plan-dialog #form { max-height:calc(94dvh - 24px); }
- .month-plan-row { grid-template-columns:64px 100px 48px 72px; gap:5px; min-width:299px; }
- .month-day-label { font-size:10px; }
- .month-day-label small { font-size:9px; }
- .month-quota-inputs { gap:3px; }
- .month-quota-inputs input { font-size:11px; }
- .month-wake .time-picker-control { width:57px; }
- .month-wake .time-picker-control>input { font-size:13px; }
- .month-plan-row>output { font-size:9px; }
- .month-total-heading { font-size:10px; }
+@media(max-width:520px) {
+ .monthly-plan-dialog { width:calc(100% - 16px); padding:12px; overflow:auto; }
+ .monthly-plan-dialog #form { max-height:none; }
+ .monthly-plan-dialog #form>.actions {
+  position:sticky; inset-block-end:-12px; z-index:1; margin:0 -12px -12px; padding:9px 12px;
+  background:var(--theme-surface,#fff); border-block-start:1px solid var(--theme-border,#e8dff0);
+ }
+ .month-plan-scroll { flex:none; overflow:visible; padding-inline-end:0; }
+ .month-plan-row {
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  grid-template-areas:"date total" "wake quota" "status status";
+  min-width:0; gap:7px; padding:10px 0;
+ }
+ .month-day-label { grid-area:date; align-self:center; min-width:0; }
+ .month-day-label input { width:19px; height:19px; }
+ .month-day-label small { white-space:normal; }
+ .month-plan-row>output { grid-area:total; justify-self:end; padding-inline:9px; }
+ .month-wake { grid-area:wake; min-width:0; flex-wrap:wrap; }
+ .month-wake .time-picker-control { width:65px; max-width:100%; }
+ .month-wake:has(.shared-time-picker:not([hidden])) { grid-area:status; }
+ .month-wake .time-picker-control:has(.shared-time-picker:not([hidden])),
+ .month-wake .shared-time-picker { width:min(100%,240px); }
+ .month-plan-row:has(.shared-time-picker:not([hidden])) .month-wake-status { grid-area:auto; grid-column:1/-1; }
+ .month-wake-status { grid-area:status; }
+ .month-quota-inputs { grid-area:quota; grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .month-quota-inputs input { height:38px; margin-block-start:3px; font-size:16px; }
+ .monthly-select-all { min-height:44px; }
+ .monthly-select-all #month-select-all { width:24px; height:24px; }
  .overview-week { padding:8px; }
- .overview-week-title>span { font-size:9px; }
  .overview-table th,.overview-table td { min-width:94px; padding-inline:5px; }
  .overview-table tbody th { min-width:75px; }
 }
 @media(max-width:350px) {
- .month-total-heading { font-size:9px; }
- .month-plan-row { grid-template-columns:58px 90px 42px 64px; min-width:266px; gap:4px; }
- .month-day-label { font-size:9px; gap:2px!important; }
- .month-day-label small { font-size:8px; }
- .month-wake .time-picker-control { width:51px; }
- .month-wake .time-picker-control>input { font-size:12px; }
- .month-wake .check { font-size:7px; }
  .progress-ring { width:57px; height:57px; }
 }
 
