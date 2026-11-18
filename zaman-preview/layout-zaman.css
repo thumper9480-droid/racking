@@ -139,7 +139,7 @@ dialog#dialog { border-radius:22px; }
  main { padding:8px 9px 22px; }
  #today-header.app-masthead {
   grid-template-columns:minmax(0,1.25fr) minmax(90px,1fr);
-  grid-template-areas:'brand clock' 'nav nav' 'tools tools';
+  grid-template-areas:'brand clock' 'nav nav';
   gap:6px; margin-block-end:10px; padding:9px 7px; border-radius:17px;
  }
  #today-header #today-brand { min-height:35px; max-width:152px; }
@@ -279,13 +279,14 @@ dialog#dialog { border-radius:22px; }
  .is-today .journey .history-table :is(td,th) { padding-inline:3px; }
 }
 @media(max-width:520px) {
- .is-today .activity-session { grid-template-columns:minmax(0,1fr); gap:9px; }
- .is-today .session-quick-button { min-height:48px; padding:6px; }
+ .is-today .activity-session { grid-template-columns:minmax(0,1fr) minmax(90px,.58fr); gap:6px 8px; }
+ .is-today .activity-session .session-clock { grid-column:1 / -1; }
+ .is-today .session-quick-button { min-height:72px; padding:4px 2px; }
  .is-today .session-clock .clock { font-size:clamp(26px,9vw,42px); }
- .session-utilities #utility-actions { width:100%; justify-self:stretch; }
- .is-today .session-utilities .header-education,.is-today .session-utilities #countdown-button { min-height:44px; height:auto; }
- .is-today .journey > .journey-heading { grid-template-columns:minmax(0,1fr); padding:0 7px 6px; }
- .is-today .journey .history-nav { justify-content:flex-start; }
+ .session-utilities #utility-actions { width:100%; max-width:120px; }
+ .is-today .session-utilities .header-education,.is-today .session-utilities #countdown-button { min-height:34px; height:auto; }
+ .is-today .journey .section-toggle { font-size:12px; }
+ .is-today .journey .history-nav button { min-width:27px; min-height:32px; padding-inline:4px; }
  #view .activity-cards > button { min-height:48px; }
 }
 @media(max-width:360px) {

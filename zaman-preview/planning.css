@@ -116,8 +116,8 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
  .month-wake-status { grid-area:status; }
  .month-quota-inputs { grid-area:quota; grid-template-columns:repeat(2,minmax(0,1fr)); }
  .month-quota-inputs input { height:38px; margin-block-start:3px; font-size:16px; }
- .monthly-select-all { min-height:44px; }
- .monthly-select-all #month-select-all { width:24px; height:24px; }
+ .monthly-plan-dialog .monthly-select-all { min-height:44px; }
+ .monthly-plan-dialog #month-select-all { width:24px; height:24px; }
  .overview-week { padding:8px; }
  .overview-table th,.overview-table td { min-width:94px; padding-inline:5px; }
  .overview-table tbody th { min-width:75px; }

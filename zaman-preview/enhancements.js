@@ -27,7 +27,7 @@ function updateBannerVisibility(){
  const notices=[],web=publishedVersions.web,bazaar=publishedVersions.bazaar;
  if(isPreviewWeb()&&web&&releaseIsVisible('web',web.versionCode)){
   const needsReload=web.versionCode>WEB_BUILD;
-  notices.push(`<div class="release-notice"><span><b>به‌روزرسانی جدید پیش‌نمایش وب</b><small>${needsReload?'برای دیدن آخرین نسخه، صفحه را تازه کنید.':'کارت‌های فعالیت و کنترل‌های فرم ماهانه به‌روز شدند.'}</small></span><button type="button" ${needsReload?'data-reload-preview':'data-dismiss-release="web"'}>${needsReload?'باز کردن نسخهٔ تازه':'متوجه شدم'}</button></div>`);
+  notices.push(`<div class="release-notice"><span><b>به‌روزرسانی جدید پیش‌نمایش وب</b><small>${needsReload?'برای دیدن آخرین نسخه، صفحه را تازه کنید.':'چیدمان گوشی و تیک همهٔ روزها اصلاح شد.'}</small></span><button type="button" ${needsReload?'data-reload-preview':'data-dismiss-release="web"'}>${needsReload?'باز کردن نسخهٔ تازه':'متوجه شدم'}</button></div>`);
  }
  if(!appleDevice()&&!window.IOSZaman&&bazaar&&bazaar.versionCode>APP_VERSION_CODE&&(bazaarDistribution()||isPreviewWeb())&&releaseIsVisible('bazaar',bazaar.versionCode)){
   notices.push(`<div class="release-notice"><span><b>نسخهٔ جدید ${fa(bazaar.versionName)} در بازار منتشر شد</b></span><button type="button" data-market-update>باز کردن بازار</button></div>`);
