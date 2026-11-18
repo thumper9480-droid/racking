@@ -118,3 +118,14 @@
  #today-header #today-brand #life-weeks-open:not([hidden]) { animation:weeks-into-masthead .36s ease-out both; }
 }
 @keyframes weeks-into-masthead { from { opacity:0; transform:perspective(240px) rotateX(24deg); } to { opacity:1; transform:perspective(240px) rotateX(0); } }
+
+#brand-weeks-tile:not([hidden]) {
+ width:100%; display:grid; justify-items:center; gap:4px;
+}
+#today-header #today-brand #brand-weeks-tile .brand-launcher-icon {
+ display:block; width:36px; height:36px; object-fit:contain; border-radius:9px;
+}
+#today-header.app-masthead #today-brand #brand-weeks-tile #life-weeks-open {
+ min-height:28px; flex-direction:row; padding:3px 4px; font-size:clamp(8px,9cqi,11px);
+}
+#today-header #today-brand #brand-weeks-tile #life-weeks-open svg { width:12px; height:12px; }

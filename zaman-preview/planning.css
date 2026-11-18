@@ -152,3 +152,18 @@ nav .activities-nav svg { width:18px; height:18px; flex-shrink:0; }
 .monthly-select-all { display:flex; justify-content:flex-start; min-height:38px; align-items:center; padding-inline-start:8px; }
 .monthly-select-all #month-select-all { width:20px; height:20px; margin:0; }
 .month-quota-inputs input { touch-action:none; }
+
+.month-quota-actions { grid-column:1/-1; display:flex; flex-wrap:wrap; gap:4px; }
+.month-quota-actions button,.month-wake-offsets button {
+ min-width:28px; min-height:28px; padding:3px 6px; border:1px solid var(--theme-border);
+ border-radius:7px; background:var(--theme-subtle); font-size:11px; line-height:1.25;
+}
+.month-quota-actions [data-month-copy] { flex:1 1 auto; white-space:normal; }
+.month-wake { flex-wrap:wrap; }
+.month-wake-offsets { display:flex; flex-wrap:wrap; gap:3px; }
+.month-wake .shared-time-picker { max-width:100%; }
+@media(max-width:520px) {
+ .month-quota-actions button,.month-wake-offsets button { min-height:34px; }
+ .month-wake-offsets { width:100%; }
+ .month-quota-actions [data-month-copy] { width:100%; }
+}

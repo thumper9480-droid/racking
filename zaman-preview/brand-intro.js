@@ -4,7 +4,7 @@
  const root=document.querySelector('#brand-intro');
  if(!root)return;
  const stage=root.querySelector('.amd-stage'),brand=root.closest('#today-brand');
- const wordmark=brand.querySelector(':scope > img'),weeks=brand.querySelector('#life-weeks-open');
+ const wordmark=brand.querySelector(':scope > img'),weeks=brand.querySelector('#brand-weeks-tile');
  const stars=root.querySelector('.amd-stars');
  if(!wordmark||!weeks)return;
  let opened=false,finishTimer;

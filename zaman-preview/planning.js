@@ -95,6 +95,18 @@ function validateMonthSelections(value){
 function storeMonthSelection(field,month,days,name){
  state[field]??=[];const old=state[field].find(x=>x.month===month&&(name===undefined||normalizeActivity(x.name)===normalizeActivity(name))),item={month,days};if(name!==undefined)item.name=name;if(old)Object.assign(old,item);else state[field].push(item);
 }
+function previousPlanDay(day){
+ const date=new Date(planBounds(day).start);
+ date.setDate(date.getDate()-1);
+ return planDayKey(date);
+}
+function earlierWakeTime(time,offset){
+ const match=/^([01]\d|2[0-3]):([0-5]\d)$/.exec(time||'');
+ if(!match)return '';
+ const total=Number(match[1])*60+Number(match[2])-offset;
+ if(total<0)return '';
+ return String(Math.floor(total/60)).padStart(2,'0')+':'+String(total%60).padStart(2,'0');
+}
 function monthlyPlanForm(){
  const currentYear=planJalali().year,j=planningMonth||planJalali(),year=j.year,month=j.month;
  const monthKey=year+'-'+String(month).padStart(2,'0'),days=planMonthDays(year,month),drafts=new Map();
@@ -104,11 +116,15 @@ function monthlyPlanForm(){
   <label>سال<select name="monthlyPlanYear">${Array.from({length:4},(_,i)=>currentYear+i).map(value=>`<option value="${value}" ${value===year?'selected':''}>${fa(value)}</option>`).join('')}</select></label>
  </div>`;
  const wakeChoice=(state.wakeMonthSelections||[]).find(x=>x.month===monthKey),monthWakes=(state.plannedWakes||[]).filter(w=>{const p=planJalali(planBounds(w.day).start);return p.year===year&&p.month===month;});
+ const wakeOffsets=[5,10,15,30];
  const rows=Array.from({length:days},(_,i)=>{
-  const d=i+1,date=persianToLocal(year,month,d),day=planDayKey(date),w=monthWakes.find(w=>w.day===day),holiday=planHoliday(year,month,d),on=wakeChoice?wakeChoice.days.includes(day):monthWakes.length?!!w:true;
-  return `<div class="month-plan-row" data-month-day="${day}"><label class="check month-day-label ${holiday?'official-holiday':''}"><input type="checkbox" data-month-goal ${planDayIsOpen(day)?'checked':'disabled'}><span><b>${PLAN_WEEKDAYS[(date.getDay()+1)%7]}</b><small>${fa(d)} ${monthNames[month-1]} ماه</small></span></label><div class="month-wake"><label class="check"><input type="checkbox" data-month-wake ${on?'checked':''}>بیدارباش</label><input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}></div><output data-month-total>۰ دقیقه</output><div class="month-quota-inputs"><label>نوبت<input type="number" inputmode="numeric" min="0" max="1000" value="0" data-month-count></label><label>دقیقه<input type="number" inputmode="numeric" min="0" max="1440" value="0" data-month-minutes></label></div><small class="month-wake-status" data-month-wake-status></small><p class="month-row-error" data-month-error hidden></p></div>`;
+  const d=i+1,date=persianToLocal(year,month,d),day=planDayKey(date);
+  if(!planDayIsOpen(day))return '';
+  const w=monthWakes.find(w=>w.day===day),holiday=planHoliday(year,month,d),on=wakeChoice?wakeChoice.days.includes(day):monthWakes.length?!!w:true;
+  return `<div class="month-plan-row" data-month-day="${day}"><label class="check month-day-label ${holiday?'official-holiday':''}"><input type="checkbox" data-month-goal checked><span><b>${PLAN_WEEKDAYS[(date.getDay()+1)%7]}</b><small>${fa(d)} ${monthNames[month-1]} ماه</small></span></label><div class="month-wake"><div class="month-wake-offsets" role="group" aria-label="بیدارباش زودتر از روز قبل">${wakeOffsets.map(offset=>`<button type="button" data-month-wake-offset="${offset}" aria-label="${fa(offset)} دقیقه زودتر از بیدارباش روز قبل">${fa(offset)}−</button>`).join('')}</div><label class="check"><input type="checkbox" data-month-wake ${on?'checked':''}>بیدارباش</label><input type="time" name="wakeTime${d}" data-month-time aria-label="ساعت بیدارباش ${fa(d)} ${monthNames[month-1]}" value="${journalTime(w?.at??new Date(planBounds(day).start).setHours(9,0,0,0))}" ${on?'':'disabled'}></div><output data-month-total>۰ دقیقه</output><div class="month-quota-inputs"><label>نوبت<input type="number" inputmode="numeric" min="0" max="1000" value="0" data-month-count></label><label>دقیقه<input type="number" inputmode="numeric" min="0" max="1440" value="0" data-month-minutes></label><div class="month-quota-actions"><button type="button" data-month-step="1" aria-label="افزایش نوبت">+</button><button type="button" data-month-step="-1" aria-label="کاهش نوبت">−</button><button type="button" data-month-copy>مثل روز قبل</button></div></div><small class="month-wake-status" data-month-wake-status></small><p class="month-row-error" data-month-error hidden></p></div>`;
  }).join('');
- const opened=modal('پلان‌ریزی ماهانه برای '+monthNames[month-1]+' '+fa(year),`${monthPicker}${activitySelect().replace(' required','')}<p class="plan-help">روزهای ناخواسته را خاموش کنید. بیدارباش مستقل از فعالیت است؛ زمان گذشته با زنگ خاموش ذخیره می‌شود. زنگ وب به بازبودن صفحه وابسته است.</p><p id="month-plan-error" class="month-form-error" role="alert" hidden></p><div class="month-total-heading"><span>جمع ماه برای فعالیت انتخاب‌شده</span><output id="month-plan-total">۰ دقیقه</output></div><div class="monthly-select-all"><input type="checkbox" id="month-select-all" aria-label="تیک همهٔ روزهای قابل برنامه‌ریزی"></div><div class="month-plan-scroll" role="region" aria-label="تمام روزهای ماه" tabindex="0">${rows}</div>`,()=>{
+ const opened=modal('پلان‌ریزی ماهانه برای '+monthNames[month-1]+' '+fa(year),`${monthPicker}${activitySelect().replace(' required','')}<p class="plan-help">روزهای ناخواسته را خاموش کنید. دکمه‌های کنار بیدارباش، ساعت را نسبت به بیدارباش روز قبل جلو می‌آورند. زنگ وب به بازبودن صفحه وابسته است.</p><p id="month-plan-error" class="month-form-error" role="alert" hidden></p><div class="month-total-heading"><span>جمع ماه برای فعالیت انتخاب‌شده</span><output id="month-plan-total">۰ دقیقه</output></div><div class="monthly-select-all"><input type="checkbox" id="month-select-all" aria-label="تیک همهٔ روزهای قابل برنامه‌ریزی"></div><div class="month-plan-scroll" role="region" aria-label="امروز و روزهای آیندهٔ ماه" tabindex="0">${rows||'<p class="plan-empty">در این ماه روزی برای برنامه‌ریزی باقی نمانده است.</p>'}</div>`,()=>{
+  if(!rows)return false;
   clearErrors();capture();
   if(!select.value&&unnamedDraft?.some(x=>x.on&&planDayIsOpen(x.day)&&(x.count!==0||x.minutes!==0)))return fail('ابتدا فعالیت را از بالای پنجره انتخاب کنید.',null,select);
   const changes=[];
@@ -123,6 +139,7 @@ function monthlyPlanForm(){
   const wakes=[];
   for(const row of form.querySelectorAll('[data-month-day]')){
    const day=row.dataset.monthDay,on=row.querySelector('[data-month-wake]').checked;let at=null;
+   if(!planDayIsOpen(day))continue;
    if(on){at=journalParseTime(row.querySelector('[data-month-time]').value,planBounds(day));if(at===null)return fail('ساعت بیدارباش را به صورت ۲۴ساعته انتخاب کنید.',row,row.querySelector('[data-month-time]'));}
    wakes.push({day,at});
   }
@@ -132,10 +149,14 @@ function monthlyPlanForm(){
    const past=previous?.days.filter(day=>!planDayIsOpen(day))??items.filter(x=>!planDayIsOpen(x.day)&&x.on).map(x=>x.day);
    storeMonthSelection('planMonthSelections',monthKey,[...past,...items.filter(x=>planDayIsOpen(x.day)&&x.on).map(x=>x.day)],name);
   }
-  for(const w of wakes)savePlannedWake(w.day,w.at);storeMonthSelection('wakeMonthSelections',monthKey,wakes.filter(w=>w.at!==null).map(w=>w.day));return true;
+  const pastWakes=(wakeChoice?.days??monthWakes.map(w=>w.day)).filter(day=>!planDayIsOpen(day));
+  for(const w of wakes)savePlannedWake(w.day,w.at);
+  storeMonthSelection('wakeMonthSelections',monthKey,[...pastWakes,...wakes.filter(w=>w.at!==null).map(w=>w.day)]);
+  return true;
  });
  if(!opened)return;
  const dialog=document.querySelector('#dialog');dialog.classList.add('monthly-plan-dialog');const form=document.querySelector('#form'),select=form.querySelector('[name=planActivity]');form.noValidate=true;
+ if(!rows)form.querySelector('[type=submit]').disabled=true;
  function clearErrors(){form.querySelector('#month-plan-error').hidden=true;form.querySelectorAll('[data-month-error]').forEach(e=>e.hidden=true);form.querySelectorAll('[aria-invalid]').forEach(e=>e.removeAttribute('aria-invalid'));}
  function fail(message,row,input){const error=form.querySelector('#month-plan-error');error.textContent=(row?row.querySelector('.month-day-label').innerText.replace(/\s+/g,' ')+': ':'')+message;error.hidden=false;if(row){const local=row.querySelector('[data-month-error]');local.textContent=message;local.hidden=false;row.scrollIntoView({block:'nearest'});}input?.setAttribute('aria-invalid','true');input?.focus({preventScroll:true});return false;}
  function capture(){const items=Array.from(form.querySelectorAll('[data-month-day]'),row=>({day:row.dataset.monthDay,on:row.querySelector('[data-month-goal]').checked,count:Number(row.querySelector('[data-month-count]').value),minutes:Number(row.querySelector('[data-month-minutes]').value)}));if(!currentName)unnamedDraft=items;else drafts.set(currentName,items);}
@@ -148,8 +169,78 @@ function monthlyPlanForm(){
    goal.checked=goal.disabled?!!saved:old?old.on:choice?choice.days.includes(day):savedPlans.length?!!saved:initial?initial.on:true;
    row.querySelector('[data-month-count]').value=old?.count??saved?.count??initial?.count??0;row.querySelector('[data-month-minutes]').value=old?.minutes??saved?.minutes??initial?.minutes??0;
   }
-  refreshMonthlyTotals();
+  refreshMonthlyForm();
  }
+ const monthRows=new Map(Array.from(form.querySelectorAll('[data-month-day]'),row=>[row.dataset.monthDay,row]));
+ function previousQuota(row){
+  const day=previousPlanDay(row.dataset.monthDay),draft=monthRows.get(day);
+  if(draft){
+   if(!draft.querySelector('[data-month-goal]').checked)return null;
+   const count=Number(draft.querySelector('[data-month-count]').value),minutes=Number(draft.querySelector('[data-month-minutes]').value);
+   return validDayQuota(day,count,minutes)?{count,minutes}:null;
+  }
+  if(!currentName)return null;
+  return (state.dailyPlans||[]).find(plan=>plan.day===day&&normalizeActivity(plan.name)===normalizeActivity(currentName));
+ }
+ function previousWake(row){
+  const day=previousPlanDay(row.dataset.monthDay),draft=monthRows.get(day);
+  if(draft)return draft.querySelector('[data-month-wake]').checked?draft.querySelector('[data-month-time]').value:'';
+  const wake=(state.plannedWakes||[]).find(item=>item.day===day);
+  return wake?journalTime(wake.at):'';
+ }
+ function refreshMonthlyForm(){
+  refreshMonthlyTotals();
+  for(const row of monthRows.values()){
+   const open=planDayIsOpen(row.dataset.monthDay),count=row.querySelector('[data-month-count]'),minutes=row.querySelector('[data-month-minutes]');
+   const target=row.dataset.monthQuota==='minutes'?minutes:count;
+   const label=target===minutes?'دقیقه':'نوبت';
+   for(const button of row.querySelectorAll('[data-month-step]')){
+    const up=Number(button.dataset.monthStep)>0;
+    button.setAttribute('aria-label',(up?'افزایش ':'کاهش ')+label);
+    button.disabled=!open||target.disabled||(up?Number(target.value)>=Number(target.max):Number(target.value)<=0);
+   }
+   row.querySelector('[data-month-copy]').disabled=!open||!previousQuota(row);
+   const time=previousWake(row);
+   for(const button of row.querySelectorAll('[data-month-wake-offset]')){
+    button.disabled=!open||!earlierWakeTime(time,Number(button.dataset.monthWakeOffset));
+   }
+  }
+ }
+ const scroll=form.querySelector('.month-plan-scroll');
+ scroll.addEventListener('focusin',event=>{
+  const field=event.target;
+  if(!field.matches('[data-month-count],[data-month-minutes]'))return;
+  const row=field.closest('[data-month-day]');
+  row.dataset.monthQuota=field.hasAttribute('data-month-minutes')?'minutes':'count';
+  refreshMonthlyForm();
+ });
+ scroll.addEventListener('click',event=>{
+  const button=event.target.closest('button[data-month-step],button[data-month-copy],button[data-month-wake-offset]');
+  if(!button||button.disabled)return;
+  const row=button.closest('[data-month-day]');
+  if(!planDayIsOpen(row.dataset.monthDay))return;
+  const count=row.querySelector('[data-month-count]'),minutes=row.querySelector('[data-month-minutes]');
+  if(button.hasAttribute('data-month-step')){
+   const target=row.dataset.monthQuota==='minutes'?minutes:count;
+   target.value=Math.max(0,Math.min(Number(target.max),Number(target.value)+Number(button.dataset.monthStep)));
+  }else if(button.hasAttribute('data-month-copy')){
+   const previous=previousQuota(row);
+   if(!previous)return;
+   row.querySelector('[data-month-goal]').checked=true;
+   count.value=previous.count;
+   minutes.value=previous.minutes;
+  }else{
+   const time=earlierWakeTime(previousWake(row),Number(button.dataset.monthWakeOffset));
+   if(!time)return;
+   row.querySelector('[data-month-wake]').checked=true;
+   const input=row.querySelector('[data-month-time]');
+   input.value=time;
+   input.dispatchEvent(new Event('input',{bubbles:true}));
+  }
+  dirtyRows=true;
+  clearErrors();
+  refreshMonthlyForm();
+ });
  const monthSelect=form.elements.monthlyPlanMonth,yearSelect=form.elements.monthlyPlanYear;
  function changePeriod(event){
   const nextMonth=Number(monthSelect.value),nextYear=Number(yearSelect.value),field=event.currentTarget.name;
@@ -169,7 +260,7 @@ function monthlyPlanForm(){
  const selectAll=form.querySelector('#month-select-all');
  selectAll.onchange=()=>{
   for(const toggle of form.querySelectorAll('[data-month-goal]:not(:disabled)'))toggle.checked=selectAll.checked;
-  dirtyRows=true;clearErrors();refreshMonthlyTotals();
+  dirtyRows=true;clearErrors();refreshMonthlyForm();
  };
  for(const field of form.querySelectorAll('[data-month-count],[data-month-minutes]'))enableMonthNumberSwipe(field);
  select.onchange=()=>{capture();clearErrors();load(select.value);};
@@ -177,7 +268,7 @@ function monthlyPlanForm(){
   if(!event.target.closest('[data-month-day]'))return;
   dirtyRows=true;
   clearErrors();
-  refreshMonthlyTotals();
+  refreshMonthlyForm();
  };
  // Time values remain on the row; expand only the active wheel, then restore the compact row.
  form.querySelectorAll('.shared-time-picker').forEach(picker=>{const close=document.createElement('button');close.type='button';close.className='month-time-done';close.textContent='تأیید ساعت';close.onclick=()=>{picker.hidden=true;picker.parentElement.querySelector('input').setAttribute('aria-expanded','false');picker.parentElement.querySelector('.time-wheel-toggle').setAttribute('aria-expanded','false');};picker.append(close);});load('');

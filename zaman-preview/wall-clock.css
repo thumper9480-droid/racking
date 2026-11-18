@@ -2,3 +2,21 @@
 #seven-segment-clock { display:block; width:100%; max-width:176px; height:auto; overflow:visible; }
 .wall-digit polygon { fill:#cbded0; opacity:.16; }
 .wall-digit polygon.lit,.wall-colon { fill:#115a43; opacity:1; }
+
+#day-clock.has-segment-clock {
+ display:grid; place-items:center; min-width:0; width:100%; direction:ltr;
+ padding:6px 3px; margin:0 auto; line-height:1; border-radius:10px;
+ background:linear-gradient(160deg,#fbfdfa,#eef5f0);
+ border:1px solid #d7e5dc;
+ box-shadow:inset 0 1px 2px #103f3614,0 2px 5px #103f3610;
+}
+#seven-segment-activity-clock { display:block; width:100%; height:auto; max-width:265px; }
+#seven-segment-clock,#seven-segment-activity-clock { shape-rendering:geometricPrecision; }
+#seven-segment-activity-clock .wall-digit polygon.lit,#seven-segment-activity-clock .wall-colon { fill:#103f36; }
+@media(max-width:520px) {
+ #day-clock.has-segment-clock { padding:4px 2px; }
+}
+@media(forced-colors:active) {
+ .wall-digit polygon { fill:GrayText; }
+ .wall-digit polygon.lit,.wall-colon,#seven-segment-activity-clock .wall-digit polygon.lit,#seven-segment-activity-clock .wall-colon { fill:CanvasText; }
+}
