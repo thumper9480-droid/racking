@@ -67,11 +67,24 @@ window.addEventListener('storage',event=>{
 });
 $('#silence').onclick=()=>silenceRing(true);
 $('#restart-countdown').onclick=()=>{if(!countdownRing||state.countdown.end||state.countdown.remaining!==0)return;$('#silence').click();soundReady();const duration=state.countdown.duration||600000;state.countdown.remaining=duration;state.countdown.end=Date.now()+duration;save();render();};
+const compactPhoneHeader=matchMedia('(max-width:520px)');
+function placeUtilityActions(){
+ const utilities=$('#utility-actions');
+ const target=tab==='today'
+  ?(compactPhoneHeader.matches?$('#mobile-utilities'):$('#today-utilities'))
+  :$('#utility-home');
+ if(!utilities||!target||utilities.parentElement===target)return;
+ const focused=utilities.contains(document.activeElement)?document.activeElement:null;
+ target.append(utilities);
+ focused?.focus({preventScroll:true});
+}
+if(compactPhoneHeader.addEventListener)compactPhoneHeader.addEventListener('change',placeUtilityActions);
+else compactPhoneHeader.addListener(placeUtilityActions);
 function render(){
  const utilityActions=$('#utility-actions'),utilityHome=$('#utility-home');
  const focusedShortcut=utilityActions?.contains(document.activeElement)?document.activeElement:null;
  if(utilityActions&&utilityHome&&$('#view').contains(utilityActions))utilityHome.append(utilityActions);
-closeExpiredDay();document.querySelector('main').classList.toggle('is-today',tab==='today');initCompactTodayLayout();updateBannerVisibility();cancelDeleteHold();document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('selected',b.dataset.tab===(['planning','reports'].includes(tab)?'activities':tab)));updateDatePanel();$('#date').hidden=false;$('#header-clock').hidden=false;$('#today-brand').hidden=false;$('#today-header').hidden=false;$('#view').classList.toggle('projects-screen',tab==='projects');$('#view').dataset.projectTheme=projectsMode;$('#view').innerHTML=(['activities','planning','reports'].includes(tab)?activityToolbar():'')+(tab==='today'?today():tab==='alarms'?alarms():tab==='projects'?projects():tab==='reports'?reportsPage():tab==='planning'?planningPage():tab==='life-weeks'?lifeWeeksPage():activitiesPage());const utilityTarget=$('#today-utilities')||utilityHome;if(utilityActions&&utilityTarget&&utilityActions.parentElement!==utilityTarget)utilityTarget.append(utilityActions);focusedShortcut?.focus({preventScroll:true});reconcileProjectAudio();syncRingActions();refreshCountdownPopup();tickClocks();if(tab==='planning'&&planningProgressView)setupPlanReportWheel();}
+closeExpiredDay();document.querySelector('main').classList.toggle('is-today',tab==='today');initCompactTodayLayout();updateBannerVisibility();cancelDeleteHold();document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('selected',b.dataset.tab===(['planning','reports'].includes(tab)?'activities':tab)));updateDatePanel();$('#date').hidden=false;$('#header-clock').hidden=false;$('#today-brand').hidden=false;$('#today-header').hidden=false;$('#view').classList.toggle('projects-screen',tab==='projects');$('#view').dataset.projectTheme=projectsMode;$('#view').innerHTML=(['activities','planning','reports'].includes(tab)?activityToolbar():'')+(tab==='today'?today():tab==='alarms'?alarms():tab==='projects'?projects():tab==='reports'?reportsPage():tab==='planning'?planningPage():tab==='life-weeks'?lifeWeeksPage():activitiesPage());placeUtilityActions();focusedShortcut?.focus({preventScroll:true});reconcileProjectAudio();syncRingActions();refreshCountdownPopup();tickClocks();if(tab==='planning'&&planningProgressView)setupPlanReportWheel();}
 function localTime(n){return new Date(n).toLocaleTimeString('fa-IR',{hour:'2-digit',minute:'2-digit',hour12:false});}
 function minuteCount(ms){return fa(Math.ceil(Math.max(0,ms)/60000));}
 function countdownReadout(now=Date.now()){const c=state.countdown,ms=Math.max(0,c.end?c.end-now:c.remaining),started=!!c.end||c.remaining<(c.duration||600000);if(!started)return {text:minuteCount(ms),unit:'دقیقه'};const seconds=Math.ceil(ms/1000);return {text:fa(`${Math.floor(seconds/60)}:${String(seconds%60).padStart(2,'0')}`),unit:''};}

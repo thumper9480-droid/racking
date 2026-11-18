@@ -294,3 +294,42 @@ dialog#dialog { border-radius:22px; }
  #today-header .app-nav .nav-symbol { width:14px; height:14px; }
  #view .activity-cards .planning-control-icon { width:24px; height:24px; }
 }
+
+#mobile-utilities { display:none; }
+#today-header.app-masthead #today-brand #life-weeks-open:not([hidden]) {
+ background:var(--theme-ink); border-color:var(--theme-ink); color:var(--theme-surface);
+ font-family:Vazirmatn,Tahoma,sans-serif;
+}
+#today-header.app-masthead #today-brand .weeks-led-label { background:none; color:inherit; }
+#today-header.app-masthead #today-brand #life-weeks-open.selected {
+ background:var(--theme-primary); border-color:var(--theme-field-border); color:var(--theme-ink);
+}
+@media(max-width:520px) {
+ #today-header.app-masthead {
+  grid-template-columns:minmax(0,1fr) minmax(0,.82fr) minmax(0,1.05fr);
+  grid-template-areas:'brand shortcuts clock' 'nav nav nav';
+  gap:6px 5px; align-items:center;
+ }
+ #today-header.app-masthead #today-brand { min-height:70px; max-width:100%; }
+ #today-header.app-masthead #today-brand #life-weeks-open:not([hidden]) {
+  flex-direction:column; justify-content:center; min-height:70px;
+  padding:4px 2px; font-size:clamp(9px,2.7vw,12px);
+ }
+ #today-header .masthead-datetime #date .date-line { font-size:9px; line-height:1.2; gap:2px; }
+ #today-header #header-clock { width:100%; }
+ #mobile-utilities:not(:empty) { display:grid; grid-area:shortcuts; }
+ #mobile-utilities #utility-actions { width:100%; min-width:0; }
+ #mobile-utilities .header-education,#mobile-utilities #countdown-button {
+  height:34px; min-width:0; padding:2px 0; gap:0; font-size:8px;
+ }
+ #mobile-utilities .header-education svg { width:13px; height:13px; }
+ #today-header .app-nav .nav-today-slot { grid-column:1; grid-row:1; }
+ #today-header .app-nav > [data-tab=activities] { grid-column:2; grid-row:1; }
+ #today-header .app-nav > [data-tab=projects] { grid-column:3; grid-row:1; }
+ #today-header .app-nav { grid-template-columns:minmax(0,1fr) minmax(0,1.16fr) minmax(0,1fr); }
+ .is-today .activity-session { grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr); gap:6px; }
+ .is-today .activity-session .session-clock { grid-column:auto; }
+ .is-today .session-clock .clock { font-size:clamp(17px,5.2vw,30px); letter-spacing:0; }
+ .is-today .session-quick-button { min-height:60px; }
+ .is-today .session-utilities:empty { display:none; }
+}
