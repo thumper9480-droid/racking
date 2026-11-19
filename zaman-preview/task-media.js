@@ -30,13 +30,12 @@ function deleteTaskMedia(projectId,taskId){
  });
 }
 function clearTaskMedia(){return mediaTransaction('readwrite',store=>store.clear());}
-function setupTaskMedia(task,projectId){
+function setupTaskMedia(task,projectId,host){
  closeTaskMedia();
  const wrap=document.createElement('section');
  wrap.className='task-media';
  wrap.innerHTML='<h3>عکس و ویدئو</h3><div class="task-media-controls"><label class="small">عکس با دوربین<input type="file" accept="image/*" capture="environment" aria-label="عکس با دوربین"></label><label class="small">ویدئو با دوربین<input type="file" accept="video/*" capture="environment" aria-label="ویدئو با دوربین"></label><label class="small">گالری<input type="file" accept="image/*,video/*" aria-label="انتخاب عکس یا ویدئو از گالری"></label></div><p role="status"></p><div class="task-media-list"></div>';
- const form=document.querySelector('#form');
- form.querySelector('.actions').before(wrap);
+ host.append(wrap);
  const view={urls:[],task:JSON.stringify([projectId,task.id])};
  mediaView=view;
  const status=wrap.querySelector('[role=status]'),list=wrap.querySelector('.task-media-list');
@@ -94,4 +93,27 @@ function playbackSpeedButton(player){
  };
  player.addEventListener('loadedmetadata',()=>{player.playbackRate=speeds[index];});
  return button;
+}
+
+function closeInlineAttachments(){
+ const panel=document.querySelector('.task-attachments-panel:not([hidden])');
+ if(!panel)return;
+ const button=panel.parentElement.querySelector('[data-task-attachments]');
+ closeTaskMedia();closeTaskAudio();
+ panel.replaceChildren();panel.hidden=true;
+ button?.setAttribute('aria-expanded','false');
+}
+function toggleInlineAttachments(button,task,projectId){
+ const panel=button.parentElement.querySelector('.task-attachments-panel');
+ const opening=panel.hidden;
+ closeInlineAttachments();
+ if(!opening)return;
+ stopProjectAudio();
+ panel.hidden=false;
+ button.setAttribute('aria-expanded','true');
+ if(task.voiceNotes?.length){
+  panel.insertAdjacentHTML('beforeend',taskAudioMarkup(false));
+  setupTaskAudio(task,false);
+ }
+ setupTaskMedia(task,projectId,panel);
 }

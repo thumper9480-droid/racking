@@ -380,3 +380,9 @@ dialog#dialog { border-radius:22px; }
 .playback-speed{direction:ltr}
 
 #today-header #brand-intro:not([hidden]){bottom:auto;height:42px}
+
+.task-attachments-toggle,[data-audio-record]{background:#a71d31!important;color:#fff!important;font-size:1rem;min-height:43px;padding:8px 12px}
+.task-attachments-panel:not([hidden]){grid-column:1/-1;flex:0 0 100%;width:100%;min-width:0;padding:12px;background:#fff;border-top:1px solid #d6e5df}
+.task-attachments-panel audio{width:100%}
+.task-attachments-panel .task-media-list img,.task-attachments-panel .task-media-list video{width:min(100%,340px);max-height:230px}
+.task-entry:has(.task-attachments-panel:not([hidden])){flex-wrap:wrap}
