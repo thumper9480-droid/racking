@@ -1,10 +1,10 @@
 'use strict';
-const APP_VERSION='1.100.104',APP_VERSION_CODE=31,MEMORIAL_KEY='ali-mirza-planning-memorial-v1',MEMORIAL_INTERVAL=30*86400000;
+const APP_VERSION='1.100.105',APP_VERSION_CODE=32,MEMORIAL_KEY='ali-mirza-planning-memorial-v1',MEMORIAL_INTERVAL=30*86400000;
 function bazaarDistribution(){try{return window.AndroidZaman?.distributionChannel?.()==='bazaar';}catch{return false;}}
 function openBazaarUpdate(){try{const result=JSON.parse(AndroidZaman.openStore());setUpdateStatus(result.ok?'به‌روزرسانی را در صفحهٔ برنامه در بازار بررسی کنید.':result.error||'بازار باز نشد.');}catch{setUpdateStatus('بازار را باز کنید و مدیریت زمان علی میرزا را جست‌وجو کنید.');}}
 const UPDATE_CACHE_KEY='ali-mirza-planning-update-v1',UPDATE_INTERVAL=300000;
 let lastUpdateCheckAt=0,updateCheckTimeout=null;
-const WEB_BUILD=28,NOTICE_DISMISS_KEY='zaman-preview-dismissed-release-';
+const WEB_BUILD=29,NOTICE_DISMISS_KEY='zaman-preview-dismissed-release-';
 let publishedVersions={},checkingNotices=false;
 let memorialRecord=null,availableUpdate=null,checkingUpdate=false,downloadPoll=null,updateDownloaded=false,downloadBusy=false,updateMessage='',wipeStage=0,wipeBusy=false;
 function memorialDue(now=Date.now()){return !!memorialRecord&&now>=memorialRecord.nextAt;}

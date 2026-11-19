@@ -36,41 +36,20 @@ function upsertDayPlan(day,name,count,minutes){if(!planDayIsOpen(day))return;sta
 function validDayQuota(day,count,minutes){const range=planBounds(day);return range&&Number.isInteger(count)&&count>=1&&count<=1000&&Number.isInteger(minutes)&&minutes>=1&&minutes<=1440&&count*minutes<=(range.end-range.start)/60000;}
 function handlePlanningClick(b){
  if(b.dataset.planReportMode){if(['day','week','month'].includes(b.dataset.planReportMode)){planReportMode=b.dataset.planReportMode;render();}return true;}
- if(b.dataset.planPeriod){planReportAnchor=Number(b.dataset.planPeriod);render();return true;}
+
  if(b.dataset.planReportStep){const range=reportRange(planReportMode,planReportAnchor??Date.now()),step=Number(b.dataset.planReportStep);planReportAnchor=step<0?reportRange(planReportMode,range.start-1).start:range.end;render();return true;}
  
  if(b.hasAttribute('data-plan-progress')){planningProgressView=true;tab='planning';render();window.scrollTo(0,0);return true;}
- if(b.hasAttribute('data-plan-calendar')||b.hasAttribute('data-plan-month-bulk')){monthlyPlanForm();return true;}
+ if(b.hasAttribute('data-plan-month-bulk')){monthlyPlanForm();return true;}
  return false;
 }
 function tickPlanning(){}
-function overviewPercent(assigned,target){return target?Math.min(100,Math.floor(assigned/target*1000)/10):0;}
-function overviewProgress(assigned,target,label){const percent=overviewPercent(assigned,target),text=fa(percent.toLocaleString('en-US',{maximumFractionDigits:1}));return `<div class="overview-progress"><span>${text}٪</span><progress value="${assigned}" max="${target||1}" aria-label="${esc(label)}: ${text} درصد"></progress></div>`;}
+function planProgressPercent(assigned,target){return target?Math.min(100,Math.floor(assigned/target*1000)/10):0;}
 function planRing(assigned,target,label){
- const percent=overviewPercent(assigned,target);
+ const percent=planProgressPercent(assigned,target);
  return `<div class="progress-ring ${target&&assigned>=target?'complete':''}" style="--ring-progress:${percent}%" role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span>${fa(percent)}٪</span></div>`;
 }
-function planOverviewMarkup(){
- const plans=[...(state.dailyPlans||[])].sort((a,b)=>a.day.localeCompare(b.day)),heading='<h3>نمایش کل پلان</h3>';
- if(!plans.length)return heading+'<p class="plan-empty">ابتدا در پلان‌ریزی ماهانه برای یک فعالیت پلان تعیین کنید.</p>';
- const allocations=new Map(),activities=new Map(),byDay=new Map();
- for(const p of plans){const key=normalizeActivity(p.name);if(!activities.has(key)){activities.set(key,p.name);for(const[id,data]of planAllocation(p.name))allocations.set(id,data);}if(!byDay.has(p.day))byDay.set(p.day,new Map());byDay.get(p.day).set(key,p);}
- const first=new Date(planBounds(plans[0].day).start),last=planBounds(plans.at(-1).day).start;first.setDate(first.getDate()-(first.getDay()+1)%7);
- if((last-first.getTime())/86400000>1540)return heading+'<p class="plan-empty">فاصلهٔ اولین و آخرین روز برای نمایش یک‌جا بیش از محدودهٔ این تقویم است.</p>';
- let weeks='',index=1,totalTarget=0,totalAssigned=0;const ordinal=['اول','دوم','سوم','چهارم','پنجم','ششم','هفتم','هشتم','نهم','دهم'];
- for(let start=first.getTime();start<=last;index++){
-  let rows='',weekTarget=0,weekAssigned=0;
-  for(let i=0;i<7;i++){
-   const date=new Date(start);date.setDate(date.getDate()+i);const day=planDayKey(date),daily=byDay.get(day)||new Map(),j=planJalali(date),holiday=planHoliday(j.year,j.month,j.day);let dayTarget=0,dayAssigned=0;
-   const cells=Array.from(activities,([key,name])=>{const p=daily.get(key);if(!p)return '<td class="overview-empty">بدون پلان</td>';const data=allocations.get(p.id);dayTarget+=data.target;dayAssigned+=data.assigned;return `<td class="overview-task ${data.complete?'complete':''}" data-overview-plan="${esc(p.id)}">${planRing(data.assigned,data.target,name)}<small>${planMinutes(data.assigned)} از ${planMinutes(data.target)} دقیقه</small></td>`;}).join('');
-   rows+=`<tr data-overview-row="${day}"><th scope="row"><div class="overview-day-header ${holiday?'official-holiday':''}"><b>${PLAN_WEEKDAYS[i]}</b><span>${fa(j.day)} ${monthNames[j.month-1]}</span></div></th>${cells}<td class="overview-day-total" data-day-assigned="${dayAssigned}" data-day-target="${dayTarget}">${dayTarget?planRing(dayAssigned,dayTarget,'جمع روز'):'<span class="overview-empty">بدون پلان</span>'}</td></tr>`;
-   weekTarget+=dayTarget;weekAssigned+=dayAssigned;
-  }
-  const end=new Date(start);end.setDate(end.getDate()+6);weeks+=`<section class="overview-week" data-overview-week="${index}"><div class="week-watermark" aria-hidden="true">هفتهٔ ${ordinal[index-1]||fa(index)}</div><div class="overview-week-title"><h3>هفتهٔ ${ordinal[index-1]||fa(index)}</h3><span>${new Date(start).toLocaleDateString('fa-IR',{month:'long',day:'numeric'})} تا ${end.toLocaleDateString('fa-IR',{month:'long',day:'numeric'})}</span></div><div class="overview-week-total"><span>جمع هفته: ${planMinutes(weekAssigned)} از ${planMinutes(weekTarget)} دقیقه</span>${overviewProgress(weekAssigned,weekTarget,'جمع هفته')}</div><div class="overview-table-scroll" role="region" aria-label="جدول پیشرفت هفتهٔ ${fa(index)}؛ پیمایش افقی" tabindex="0"><table class="overview-table"><thead><tr><th scope="col">روز</th>${Array.from(activities.values(),name=>`<th scope="col">${esc(name)}</th>`).join('')}<th scope="col">جمع روز</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
-  totalTarget+=weekTarget;totalAssigned+=weekAssigned;const next=new Date(start);next.setDate(next.getDate()+7);start=next.getTime();
- }
- return `${heading}<p class="plan-help">هفته‌ها از شنبه تا جمعه مرتب‌اند. زمان اضافهٔ یک فعالیت، سهم روزهای بعد همان فعالیت را پر می‌کند.</p><article class="overview-all-total"><b>پیشرفت کل پلان</b><span>${planMinutes(totalAssigned)} از ${planMinutes(totalTarget)} دقیقه</span>${overviewProgress(totalAssigned,totalTarget,'پیشرفت کل پلان')}</article>${weeks}`;
-}
+
 function validatePlannedWakes(value){if(value.plannedWakes!==undefined&&!Array.isArray(value.plannedWakes))throw Error('wake plans');const days=new Set(),ids=new Set();for(const w of value.plannedWakes||[]){const range=planBounds(w?.day);if(!range||typeof w.id!=='string'||!w.id||ids.has(w.id)||days.has(w.day)||!Number.isFinite(w.at)||w.at<range.start||w.at>=range.end)throw Error('wake plan');days.add(w.day);ids.add(w.id);}}
 function savePlannedWake(day,at){state.plannedWakes??=[];const old=state.plannedWakes.find(w=>w.day===day);if(at===null){if(old){state.plannedWakes=state.plannedWakes.filter(w=>w.id!==old.id);state.alarms=state.alarms.filter(a=>a.plannedWakeId!==old.id);}return;}const w=old||{id:uid(),day,at};w.at=at;if(!old)state.plannedWakes.push(w);const existing=state.alarms.find(a=>a.plannedWakeId===w.id);if(existing?.at===at)return;const alarm={id:existing?.id||uid(),plannedWakeId:w.id,title:'بیدارباش '+new Date(at).toLocaleDateString('fa-IR',{weekday:'long',month:'long',day:'numeric'}),at,repeat:'none',projectId:'',enabled:at>Date.now()};if(existing)Object.assign(existing,alarm);else state.alarms.push(alarm);}
 // Persist deliberate unchecked dates; only new monthly templates start fully selected.
@@ -362,13 +341,26 @@ function planReportPeriods(){
  let lastKey='';while(date<end){const range=reportRange(planReportMode,date),key=planDayKey(range.start);if(key!==lastKey){items.push({at:range.start,key,label:planPeriodTitle(range)});lastKey=key;}const next=new Date(date);if(planReportMode==='month')next.setTime(range.end);else next.setDate(next.getDate()+(planReportMode==='week'?7:1));date=next;}
  return items;
 }
-function setupPlanReportWheel(){
- const wheel=document.querySelector('#plan-period-wheel');if(!wheel)return;const options=[...wheel.querySelectorAll('[data-plan-period]')],selected=options.findIndex(e=>e.getAttribute('aria-selected')==='true');wheel.scrollTop=Math.max(0,selected)*44;let timer;
- function settle(){if(!wheel.isConnected)return;const option=options[Math.max(0,Math.min(options.length-1,Math.round(wheel.scrollTop/44)))];if(option&&option.getAttribute('aria-selected')!=='true'){planReportAnchor=Number(option.dataset.planPeriod);render();}}
- wheel.addEventListener('scroll',()=>{clearTimeout(timer);timer=setTimeout(settle,180);});wheel.addEventListener('scrollend',settle);
- wheel.addEventListener('keydown',e=>{if(!['ArrowDown','ArrowUp','Home','End'].includes(e.key))return;e.preventDefault();const current=options.findIndex(e=>e.getAttribute('aria-selected')==='true'),index=e.key==='Home'?0:e.key==='End'?options.length-1:Math.max(0,Math.min(options.length-1,current+(e.key==='ArrowDown'?1:-1)));planReportAnchor=Number(options[index].dataset.planPeriod);render();document.querySelector('#plan-period-wheel')?.focus({preventScroll:true});});
+function setupPlanReportPeriod(){
+ const select=document.querySelector('#plan-report-period');
+ if(!select)return;
+ select.onchange=()=>{
+  planReportAnchor=Number(select.value);
+  render();
+  document.querySelector('#plan-report-period')?.focus({preventScroll:true});
+ };
 }
+
+function planReportActivityCard(item){
+ const percent=planProgressPercent(item.assigned,item.target);
+ return '<article class="routine-report-card" data-plan-report-name="'+esc(item.name)+'"><div class="routine-report-card-heading"><b>'+esc(item.name)+'</b><strong>'+fa(percent)+'٪</strong></div><small>'+planMinutes(item.assigned)+' از '+planMinutes(item.target)+' دقیقه</small><div class="routine-report-bar" role="progressbar" aria-label="'+esc(item.name)+'" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+percent+'"><span style="width:'+percent+'%"></span></div></article>';
+}
+
 function planningProgressPage(){
- const range=reportRange(planReportMode,planReportAnchor??Date.now()),data=planReportData(range),periods=planReportPeriods();
- return `<div class="row"><h2>گزارش فعالیت‌های روتین</h2>${planReportMode==='day'?'':'<button type="button" class="small" data-plan-calendar>بازگشت به تقویم</button>'}</div><div class="plan-report-modes" role="group" aria-label="بازهٔ گزارش فعالیت‌های روتین">${Object.entries({day:'روزانه',week:'هفتگی',month:'ماهانه'}).map(([mode,label])=>`<button type="button" data-plan-report-mode="${mode}" aria-pressed="${planReportMode===mode}" class="${planReportMode===mode?'selected':''}">${label}</button>`).join('')}</div><div class="plan-period-picker"><button type="button" class="small" data-plan-report-step="-1" aria-label="بازهٔ قبل">↑</button><div id="plan-period-wheel" role="listbox" tabindex="0" aria-label="انتخاب روز، هفته یا ماه با اسکرول" aria-activedescendant="plan-period-${range.start}">${periods.map(p=>`<button type="button" id="plan-period-${p.at}" role="option" data-plan-period="${p.at}" aria-selected="${p.at===range.start}">${p.label}</button>`).join('')}</div><button type="button" class="small" data-plan-report-step="1" aria-label="بازهٔ بعد">↓</button></div><h3 id="plan-period-title">${planPeriodTitle(range)}</h3><p class="plan-help">پیشرفت از زمان ثبت‌شده محاسبه می‌شود؛ مازاد به سهم روزهای بعد می‌رسد.</p><section class="daily-progress-row" data-plan-range-start="${planDayKey(range.start)}" data-plan-range-end="${planDayKey(range.end)}"><div class="plan-range-total"><div><b>جمع بازه</b><small>${planMinutes(data.assigned)} از ${planMinutes(data.target)} دقیقه</small></div>${planRing(data.assigned,data.target,'جمع بازه')}</div><div class="daily-progress-activities">${data.groups.map(item=>`<article class="daily-progress-activity" data-plan-report-name="${esc(item.name)}"><div><b>${esc(item.name)}</b><small>${planMinutes(item.assigned)} از ${planMinutes(item.target)} دقیقه</small></div>${planRing(item.assigned,item.target,item.name)}</article>`).join('')||'<p class="plan-empty">در این بازه پلانی ثبت نشده است.</p>'}</div></section>${planReportMode==='day'?`<section class="routine-plan-overview">${planOverviewMarkup()}</section>`:''}`;
+ const range=reportRange(planReportMode,planReportAnchor??Date.now());
+ const data=planReportData(range);
+ const periods=planReportPeriods();
+ const modes={day:'روزانه',week:'هفتگی',month:'ماهانه'};
+ const totalLabel={day:'پیشرفت روز',week:'پیشرفت هفته',month:'پیشرفت ماه'}[planReportMode];
+ return '<section class="routine-report"><h2>گزارش فعالیت‌های روتین</h2><div class="plan-report-modes" role="group" aria-label="بازهٔ گزارش فعالیت‌های روتین">'+Object.entries(modes).map(([mode,label])=>'<button type="button" data-plan-report-mode="'+mode+'" aria-pressed="'+(planReportMode===mode)+'" class="'+(planReportMode===mode?'selected':'')+'">'+label+'</button>').join('')+'</div><div class="plan-period-picker"><button type="button" class="small" data-plan-report-step="-1" aria-label="بازهٔ قبل">›</button><span class="routine-period-select"><span aria-hidden="true">'+planActionIcon('month')+'</span><select id="plan-report-period" aria-label="انتخاب بازهٔ گزارش">'+periods.map(period=>'<option value="'+period.at+'" '+(period.at===range.start?'selected':'')+'>'+esc(period.label)+'</option>').join('')+'</select></span><button type="button" class="small" data-plan-report-step="1" aria-label="بازهٔ بعد">‹</button></div><section class="routine-report-summary" data-plan-range-start="'+planDayKey(range.start)+'" data-plan-range-end="'+planDayKey(range.end)+'">'+planRing(data.assigned,data.target,totalLabel)+'<div><b>'+totalLabel+'</b><small>'+planMinutes(data.assigned)+' از '+planMinutes(data.target)+' دقیقه</small></div></section><div class="routine-report-cards">'+(data.groups.length?data.groups.map(planReportActivityCard).join(''):'<p class="plan-empty">در این بازه پلانی ثبت نشده است.</p>')+'</div><p class="plan-help">زمان اضافهٔ هر فعالیت به سهم روزهای بعد همان فعالیت می‌رسد.</p></section>';
 }
