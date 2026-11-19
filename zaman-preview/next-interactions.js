@@ -26,52 +26,150 @@ function journalEditAllowed(item,start,end,now){
   && !(state.day&&end>state.day.segment&&start<journalLiveEnd(now));
 }
 
-let closeJournalTimeEditor=null;
+let closeJournalEditor=null;
 
-function showJournalTimeEditor(button,editor,input,confirm){
- const listeners=new AbortController(), options={signal:listeners.signal};
- editor.classList.add('journal-time-float');
+function showJournalEditor(button,editor,label,{alignStart=false}={}){
+ const listeners=new AbortController(),options={signal:listeners.signal};
  editor.setAttribute('role','dialog');
- editor.setAttribute('aria-label',button.dataset.historyField==='start'?'از ساعت':'تا ساعت');
+ editor.setAttribute('aria-label',label);
  button.setAttribute('aria-expanded','true');
  document.body.append(editor);
  function close(restoreFocus=true){
   listeners.abort();
   editor.remove();
   button.removeAttribute('aria-expanded');
-  closeJournalTimeEditor=null;
+  closeJournalEditor=null;
   if(restoreFocus&&button.isConnected)button.focus({preventScroll:true});
  }
- closeJournalTimeEditor=close;
+ closeJournalEditor=close;
  function position(){
   if(!button.isConnected){close(false);return;}
-  const bounds=button.getBoundingClientRect();
+  const bounds=button.getBoundingClientRect(),viewport=window.visualViewport;
+  const top=viewport?.offsetTop||0,left=viewport?.offsetLeft||0;
+  const bottom=top+(viewport?.height||innerHeight),right=left+(viewport?.width||innerWidth),gutter=8;
   if(bounds.bottom<0||bounds.top>innerHeight){close(false);return;}
-  const gutter=8,width=editor.offsetWidth,height=editor.offsetHeight;
-  editor.style.left=Math.max(gutter,Math.min(innerWidth-width-gutter,bounds.right-width))+'px';
+  editor.style.maxHeight=Math.max(72,bottom-top-2*gutter)+'px';
+  editor.style.maxWidth=Math.max(0,right-left-2*gutter)+'px';
+  const width=editor.offsetWidth,height=editor.offsetHeight;
+  const x=alignStart?bounds.left:bounds.right-width;
+  editor.style.left=Math.max(left+gutter,Math.min(right-width-gutter,x))+'px';
   const below=bounds.bottom+gutter,above=bounds.top-gutter-height;
-  editor.style.top=(below+height<=innerHeight-gutter?below:Math.max(gutter,above))+'px';
+  editor.style.top=(below+height<=bottom-gutter?Math.max(top+gutter,below):Math.max(top+gutter,above))+'px';
  }
+ window.addEventListener('resize',position,options);
+ window.addEventListener('scroll',event=>{if(!(event.target instanceof Node)||!editor.contains(event.target))position();},{...options,capture:true});
+ window.visualViewport?.addEventListener('resize',position,options);
+ window.visualViewport?.addEventListener('scroll',position,options);
+ document.addEventListener('pointerdown',event=>{
+  if(!editor.contains(event.target)&&!button.contains(event.target))close(false);
+ },options);
+ editor.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){
+   event.preventDefault();
+   event.stopPropagation();
+   close();
+  }
+ },options);
+ position();
+ return {close,position};
+}
+
+function showJournalTimeEditor(button,editor,input,confirm){
+ editor.classList.add('journal-time-float');
+ const label=button.dataset.historyField==='start'?'از ساعت':'تا ساعت';
+ const {close,position}=showJournalEditor(button,editor,label);
  input.click();
  position();
  editor.querySelector('.shared-time-wheel').focus({preventScroll:true});
  editor.querySelector('.journal-edit-cancel').onclick=()=>close();
- window.addEventListener('resize',position,options);
- window.addEventListener('scroll',event=>{if(!(event.target instanceof Node)||!editor.contains(event.target))position();},{...options,capture:true});
- document.addEventListener('pointerdown',event=>{
-  if(!editor.contains(event.target)&&!button.contains(event.target))close(false);
- },options);
- document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'){
+ editor.addEventListener('keydown',event=>{
+  if(event.target.closest('.shared-time-wheel')&&['Enter','Escape'].includes(event.key)){
    event.preventDefault();
    event.stopImmediatePropagation();
-   close();
-  }else if(event.key==='Enter'&&event.target.closest('.shared-time-wheel')){
-   event.preventDefault();
-   event.stopImmediatePropagation();
-   confirm.click();
+   if(event.key==='Enter')confirm.click();
+   else close();
   }
- },{...options,capture:true});
+ },true);
+}
+
+function showJournalActivityEditor(button,editor,item,commit){
+ editor.classList.add('journal-activity-float');
+ editor.innerHTML='<strong class="journal-activity-title">ویرایش فعالیت</strong>'
+  +'<div class="journal-activity-fields"><input type="text" maxlength="100" autocomplete="off" aria-label="نام فعالیت" placeholder="جست‌وجو یا تایپ نام فعالیت">'
+  +'<div class="journal-activity-options" role="group" aria-label="فعالیت‌های ثبت‌شده"></div>'
+  +'<div class="journal-activity-actions"><button type="button" class="primary" data-activity-confirm>تأیید</button><button type="button" class="small" data-activity-cancel>انصراف</button>'
+  +(item?'<button type="button" class="small journal-delete-entry">حذف ردیف</button>':'')+'</div></div>';
+ const input=editor.querySelector('input'),list=editor.querySelector('.journal-activity-options');
+ const confirm=editor.querySelector('[data-activity-confirm]');
+ const original=item&&!item.unknown?item.name:'';
+ let selected=original;
+ const catalog=activityCatalog().map(activity=>activity.name);
+ const originalKey=normalizeActivity(original);
+ const names=original?[original,...catalog.filter(name=>normalizeActivity(name)!==originalKey)]:catalog;
+ const {close,position}=showJournalEditor(button,editor,'ویرایش فعالیت',{alignStart:true});
+
+ function refresh(){
+  const query=normalizeActivity(input.value);
+  list.replaceChildren();
+  for(const name of names){
+   const key=normalizeActivity(name);
+   if(query&&!key.includes(query))continue;
+   const option=document.createElement('button');
+   const active=key===normalizeActivity(selected);
+   option.type='button';
+   option.setAttribute('aria-pressed',String(active));
+   option.textContent=name+(active?' ✓':'');
+   option.onclick=()=>{
+    selected=name;
+    input.value=name;
+    refresh();
+    confirm.focus({preventScroll:true});
+   };
+   list.append(option);
+  }
+  if(!list.childElementCount){
+   const empty=document.createElement('p');
+   empty.textContent=query?'با تأیید، همین نام ثبت می‌شود.':'نام فعالیت را بنویسید.';
+   list.append(empty);
+  }
+ }
+ function apply(){
+  const value=input.value.trim()||selected;
+  if(!value){input.focus();return;}
+  commit(value);
+ }
+ input.oninput=()=>{selected='';refresh();};
+ input.onkeydown=event=>{
+  if(event.key==='Enter'){event.preventDefault();apply();}
+  else if(event.key==='ArrowDown'){event.preventDefault();list.querySelector('button')?.focus();}
+ };
+ confirm.onclick=apply;
+ editor.querySelector('[data-activity-cancel]').onclick=()=>close();
+ const remove=editor.querySelector('.journal-delete-entry');
+ if(remove)remove.onclick=()=>{
+  const fields=editor.querySelector('.journal-activity-fields');
+  fields.hidden=true;
+  const prompt=document.createElement('div');
+  prompt.className='journal-delete-confirmation';
+  prompt.innerHTML='<p>این ثبت از جدول و گزارش‌ها حذف شود؟</p><div class="journal-activity-actions"><button type="button" class="small journal-delete-entry">حذف ردیف</button><button type="button" class="small">بازگشت</button></div>';
+  editor.append(prompt);
+  const [accept,back]=prompt.querySelectorAll('button');
+  back.onclick=()=>{prompt.remove();fields.hidden=false;position();remove.focus({preventScroll:true});};
+  accept.onclick=()=>{
+   const index=state.history.indexOf(item);
+   if(index<0){close();return;}
+   state.history.splice(index,1);
+   save();
+   render();
+   toast('ردیف فعالیت حذف شد.');
+  };
+  position();
+  back.focus({preventScroll:true});
+ };
+ refresh();
+ position();
+ editor.tabIndex=-1;
+ editor.focus({preventScroll:true});
 }
 
 function editJournalCell(button){
@@ -85,14 +183,6 @@ function editJournalCell(button){
  editor.className='journal-inline-editor';
 
 
- const cancel=()=>{
-  editor.remove();
-  button.hidden=false;
-  button.focus();
- };
- editor.addEventListener('keydown',event=>{
-  if(event.key==='Escape'){event.stopPropagation();cancel();}
- });
  function commit(value){
   if(!editor.isConnected)return false;
   const interval=item||gap;
@@ -141,16 +231,7 @@ function editJournalCell(button){
   return true;
  }
  if(field==='name'){
-  button.hidden=true;
-  button.after(editor);
-  editor.innerHTML='<input type="text" maxlength="100" aria-label="نام فعالیت"><button type="button" class="small">تأیید</button><button type="button" class="small">انصراف</button>';
-  const input=editor.querySelector('input');
-  const [confirm,dismiss]=editor.querySelectorAll('button');
-  input.value=item?.unknown?'':item?.name||'';
-  confirm.onclick=()=>commit(input.value);
-  dismiss.onclick=cancel;
-  input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();confirm.click();}});
-  input.focus();
+  showJournalActivityEditor(button,editor,item,commit);
  }else{
   const title=field==='start'?'از ساعت':'تا ساعت';
   editor.innerHTML='<strong class="journal-time-title">'+title+'</strong><input type="time" readonly><button type="button" class="small journal-edit-cancel">انصراف</button>';
