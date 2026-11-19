@@ -19,6 +19,7 @@ async function mediaTransaction(mode,perform){
 }
 function closeTaskMedia(){
  if(!mediaView)return;
+ if(mediaView.draft)deleteTaskMedia(mediaView.projectId,mediaView.taskId).catch(()=>{});
  for(const url of mediaView.urls)URL.revokeObjectURL(url);
  mediaView=null;
 }
@@ -30,16 +31,16 @@ function deleteTaskMedia(projectId,taskId){
  });
 }
 function clearTaskMedia(){return mediaTransaction('readwrite',store=>store.clear());}
-function setupTaskMedia(task,projectId,host){
+function setupTaskMedia(task,projectId,host,options={}){
  closeTaskMedia();
  const wrap=document.createElement('section');
  wrap.className='task-media';
  wrap.innerHTML='<h3>عکس و ویدئو</h3><div class="task-media-controls"><label class="small">عکس با دوربین<input type="file" accept="image/*" capture="environment" aria-label="عکس با دوربین"></label><label class="small">ویدئو با دوربین<input type="file" accept="video/*" capture="environment" aria-label="ویدئو با دوربین"></label><label class="small">گالری<input type="file" accept="image/*,video/*" aria-label="انتخاب عکس یا ویدئو از گالری"></label></div><p role="status"></p><div class="task-media-list"></div>';
- host.append(wrap);
- const view={urls:[],task:JSON.stringify([projectId,task.id])};
+ if(options.draft)host.querySelector('.actions').before(wrap);else host.append(wrap);
+ const view={urls:[],task:JSON.stringify([projectId,task.id]),projectId,taskId:task.id,draft:!!options.draft};
  mediaView=view;
  const status=wrap.querySelector('[role=status]'),list=wrap.querySelector('.task-media-list');
- function exists(){return state.projects.some(p=>p.id===projectId&&!p.deletedAt&&p.tasks.some(t=>t.id===task.id));}
+ function exists(){return (view.draft&&mediaView===view)||state.projects.some(p=>p.id===projectId&&!p.deletedAt&&p.tasks.some(t=>t.id===task.id));}
  let renderSequence=0;
  async function show(){
   const sequence=++renderSequence;
@@ -117,3 +118,5 @@ function toggleInlineAttachments(button,task,projectId){
  }
  setupTaskMedia(task,projectId,panel);
 }
+
+function commitDraftMedia(id){if(mediaView?.taskId===id)mediaView.draft=false;}

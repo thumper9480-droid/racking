@@ -59,9 +59,14 @@ public class MainActivity extends Activity {
         if(params.isCaptureEnabled()&&media){
           intent=new Intent(photo?android.provider.MediaStore.ACTION_IMAGE_CAPTURE:android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
         }else{
-          intent=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
-              .setType(media?"*/*":"application/json");
-          if(media)intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"image/*","video/*"});
+          if(media&&android.os.Build.VERSION.SDK_INT>=33){
+            intent=new Intent(android.provider.MediaStore.ACTION_PICK_IMAGES);
+          }else if(media){
+            intent=new Intent(Intent.ACTION_PICK).setType("*/*")
+                .putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"image/*","video/*"});
+          }else{
+            intent=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType("application/json");
+          }
         }
         try{startActivityForResult(intent,10);}
         catch(ActivityNotFoundException error){chooser=null;callback.onReceiveValue(null);toast("انتخاب فایل یا دوربین در این دستگاه در دسترس نیست.");}

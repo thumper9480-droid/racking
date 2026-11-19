@@ -386,3 +386,19 @@ dialog#dialog { border-radius:22px; }
 .task-attachments-panel audio{width:100%}
 .task-attachments-panel .task-media-list img,.task-attachments-panel .task-media-list video{width:min(100%,340px);max-height:230px}
 .task-entry:has(.task-attachments-panel:not([hidden])){flex-wrap:wrap}
+
+.overall-report.card{background:#f0f1ff;border-color:#d5d8f4;color:#30366a}
+.overall-select{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:8px 0 14px}
+.inline-journal-editor{display:grid;gap:5px}
+.inline-journal-editor .shared-time-picker{min-width:125px}
+.history-table:has(.inline-journal-editor) .time-cell{min-width:60px}
+.monthly-new-activity{margin:7px 0 13px}
+
+.journal-inline-editor {display:grid; gap:.25rem; min-width:0}
+.journal-inline-editor input {width:100%; min-width:0; padding:.3rem}
+.journal-inline-editor .shared-time-picker {min-width:7.5rem}
+.time-wheel-confirm {display:block; margin:.35rem auto 0}
+.dashboard-date-controls {display:flex; flex-wrap:wrap; gap:.75rem; align-items:flex-start}
+.dashboard-date-controls label {flex:1 1 8rem; min-width:0}
+.dashboard-date-controls select {width:100%}
+.dashboard-date-controls select[size] {overflow:auto}

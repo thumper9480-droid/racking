@@ -26,4 +26,5 @@
   if(focused&&document.activeElement===document.body)button.focus({preventScroll:true});
   active=false;
  };
+ button.click();
 })();

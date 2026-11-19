@@ -40,9 +40,7 @@ function activityToolbar(){
  const routineReport=tab==='planning'&&planningProgressView;
  const active=on=>on?'class="is-current" aria-current="page"':'';
  return `<div class="activities-toolbar activity-cards" role="group" aria-label="منوی فعالیت‌های روتین">
-  <button type="button" data-action="add-activity">${planActionIcon('add')}<span>فعالیت روتین جدید</span></button>
   <button type="button" data-plan-month-bulk aria-haspopup="dialog">${planActionIcon('month')}<span>پلان‌ریزی ماهانه</span></button>
-  <button type="button" ${active(daily)} data-plan-daily>${planActionIcon('day')}<span>پلان‌ریزی روزانه</span></button>
   <button type="button" ${active(routineReport)} data-plan-progress>${planActionIcon('routineReport')}<span>گزارش فعالیت‌های روتین</span></button>
  </div>`;
 }
@@ -69,6 +67,7 @@ function pastTimeForm(options={}){
   const durationOnly=f.get('entryMode')==='duration',approximate=!!f.get('approximate');let start,end,ms;
   if(durationOnly){const minutes=Number(asciiDigits(f.get('durationMinutes')));if(!Number.isInteger(minutes)||minutes<1||minutes>1500)return fail('مدت باید تعداد دقیقهٔ صحیح و مثبت باشد.');ms=minutes*60000;start=pending?pending.start:day.start;end=start;}
   else{start=journalParseTime(f.get('fromTime'),day);end=f.get('endOfDay')?day.end:journalParseTime(f.get('toTime'),day);if((old||oldSleep||pending)&&day.start===initialDay.start&&f.get('fromTime')===journalTime(from))start=from;if((old||oldSleep||pending)&&day.start===initialDay.start&&Boolean(f.get('endOfDay'))===(to===initialDay.end)&&(f.get('endOfDay')||f.get('toTime')===journalTime(to)))end=to;if(start===null||end===null||end<=start||end>now)return fail('بازهٔ گذشته و معتبر انتخاب کنید؛ پایان باید پس از شروع باشد.');ms=end-start;}
+  if(ms<60000)return fail('حداقل زمان قابل ثبت یک دقیقه است.');
   if(pending&&(day.start!==initialDay.start||durationOnly&&ms>pending.end-pending.start||!durationOnly&&(start<pending.start||end>pending.end)))return fail('ثبت باید داخل زمان همین فعالیت جاری باشد.');
   const next={...state,history:state.history.map(h=>({...h})),sleeps:(state.sleeps||[]).map(s=>({...s})),unassigned:(state.unassigned||[]).map(g=>({...g})),day:state.day?{...state.day}:null};
   if(old)next.history.splice(index,1);if(oldSleep)next.sleeps=next.sleeps.filter(s=>s.id!==oldSleep.id);
@@ -97,6 +96,7 @@ function pastTimeForm(options={}){
   state=next;if(type==='activity')rememberActivity(name);historyOffset=Math.round((day.start-journalBounds(now).start)/86400000);return true;
  },{cancel:pending?()=>rollbackPending(pending):null});
  if(!opened)return;
+ addTimePickerConfirm($('#form'));
  const form=$('#form');form.noValidate=true;$('#dialog').classList.add('recovery-dialog');
  function refresh(event){
   const duration=form.elements.entryMode.value==='duration';
