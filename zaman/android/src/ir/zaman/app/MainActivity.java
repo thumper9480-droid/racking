@@ -49,7 +49,24 @@ public class MainActivity extends Activity {
         else{pendingMic=request;requestPermissions(new String[]{android.Manifest.permission.RECORD_AUDIO},41);}
       });}
       @Override public void onPermissionRequestCanceled(PermissionRequest request){runOnUiThread(()->{if(pendingMic==request)pendingMic=null;});}
-      @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){if(chooser!=null)chooser.onReceiveValue(null);chooser=callback;startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).setType("application/json").addCategory(Intent.CATEGORY_OPENABLE),10);return true;}
+      @Override public boolean onShowFileChooser(WebView v,ValueCallback<Uri[]> callback,FileChooserParams params){
+        if(chooser!=null)chooser.onReceiveValue(null);
+        chooser=callback;
+        String accept=String.join(",",params.getAcceptTypes());
+        boolean photo=accept.startsWith("image/"),video=accept.startsWith("video/");
+        boolean media=photo||video;
+        Intent intent;
+        if(params.isCaptureEnabled()&&media){
+          intent=new Intent(photo?android.provider.MediaStore.ACTION_IMAGE_CAPTURE:android.provider.MediaStore.ACTION_VIDEO_CAPTURE);
+        }else{
+          intent=new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE)
+              .setType(media?"*/*":"application/json");
+          if(media)intent.putExtra(Intent.EXTRA_MIME_TYPES,new String[]{"image/*","video/*"});
+        }
+        try{startActivityForResult(intent,10);}
+        catch(ActivityNotFoundException error){chooser=null;callback.onReceiveValue(null);toast("انتخاب فایل یا دوربین در این دستگاه در دسترس نیست.");}
+        return true;
+      }
     });
     web.loadUrl("https://appassets.androidplatform.net/");
   }
@@ -60,7 +77,23 @@ public class MainActivity extends Activity {
   @Override protected void onActivityResult(int request,int result,Intent data){
     super.onActivityResult(request,result,data);
     if(request==40&&dictationRequestId!=null){String id=dictationRequestId;dictationRequestId=null;String text=null;if(result==RESULT_OK&&data!=null){java.util.ArrayList<String> words=data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);if(words!=null&&!words.isEmpty())text=words.get(0);}dictationResult(id,text,null,result!=RESULT_OK);}
-    if(request==10&&chooser!=null){chooser.onReceiveValue(result==RESULT_OK&&data!=null?new Uri[]{data.getData()}:null);chooser=null;}
+    if(request==10&&chooser!=null){
+      ValueCallback<Uri[]> callback=chooser;
+      chooser=null;
+      Uri selected=result==RESULT_OK&&data!=null?data.getData():null;
+      if(selected==null&&result==RESULT_OK&&data!=null&&data.getExtras()!=null
+          &&data.getExtras().get("data") instanceof android.graphics.Bitmap){
+        android.graphics.Bitmap photo=(android.graphics.Bitmap)data.getExtras().get("data");
+        try{
+          java.io.File file=new java.io.File(getCacheDir(),"task-camera-photo.jpg");
+          try(OutputStream out=new java.io.FileOutputStream(file)){
+            if(!photo.compress(android.graphics.Bitmap.CompressFormat.JPEG,92,out))throw new IOException();
+          }
+          selected=Uri.fromFile(file);
+        }catch(IOException error){toast("عکس دوربین ذخیره نشد.");}
+      }
+      callback.onReceiveValue(selected==null?null:new Uri[]{selected});
+    }
     if(request==11){if(result==RESULT_OK&&data!=null&&exportText!=null)try(OutputStream out=getContentResolver().openOutputStream(data.getData())){if(out==null)throw new IOException();out.write(exportText.getBytes(StandardCharsets.UTF_8));}catch(Exception e){toast("ذخیرهٔ فایل انجام نشد");}exportText=null;}
     if(request==12&&result==RESULT_OK&&data!=null&&data.getData()!=null){Uri destination=data.getData();boolean stored=false;try(InputStream in=getAssets().open("user-guide.pdf");OutputStream out=getContentResolver().openOutputStream(destination)){if(out==null)throw new IOException();byte[] block=new byte[32768];int n;while((n=in.read(block))!=-1)out.write(block,0,n);stored=true;}catch(Exception e){toast("ذخیرهٔ جزوه انجام نشد");}if(stored){toast("جزوهٔ PDF ذخیره شد");try{startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(destination,"application/pdf").addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION));}catch(ActivityNotFoundException ignored){toast("فایل ذخیره شد؛ برای خواندن، نمایشگر PDF نصب کنید.");}}}
     if(request==30&&ringtoneKind!=null){if(result==RESULT_OK&&data!=null){Uri uri=data.getParcelableExtra(RingtoneManager.EXTRA_RINGTONE_PICKED_URI);SoundSettings.save(this,ringtoneKind,uri);if(uri!=null)try{getContentResolver().takePersistableUriPermission(uri,Intent.FLAG_GRANT_READ_URI_PERMISSION);}catch(Exception ignored){}}ringtoneKind=null;web.evaluateJavascript("if(typeof updateNativeSounds==='function')updateNativeSounds();",null);}

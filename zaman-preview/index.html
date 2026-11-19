@@ -22,14 +22,15 @@
   <script defer src="reset-time.js?v=1.13.1"></script>
   <link rel="stylesheet" href="journal.css?v=1.13.1">
   <script defer src="journal.js?v=calendar6"></script>
-  <script defer src="reports.js?v=calendar6"></script>
-  <script defer src="enhancements.js?v=calendar34"></script>
+  <script defer src="reports.js?v=calendar35"></script>
+  <script defer src="enhancements.js?v=calendar35"></script>
   <link rel="stylesheet" href="time-picker.css?v=1.13.1">
   <script defer src="time-picker.js?v=1.13.1"></script>
   <link rel="stylesheet" href="task-voice.css?v=1.13.1">
   <script defer src="task-voice.js?v=1.13.1"></script>
   <link rel="stylesheet" href="task-audio.css?v=1.13.1">
-  <script defer src="task-audio.js?v=1.13.1"></script>
+  <script defer src="task-audio.js?v=calendar35"></script>
+  <script defer src="task-media.js?v=1"></script>
   <link rel="stylesheet" href="project-tools.css?v=1.13.1">
   <script defer src="ios-support.js?v=1.13.1"></script>
   <script defer src="project-tools.js?v=1.13.1"></script>
@@ -39,14 +40,14 @@
   <script defer src="holidays.js?v=calendar6"></script>
   <script defer src="planning.js?v=calendar34"></script>
   <link rel="stylesheet" href="day-recovery.css?v=calendar16">
-  <script defer src="day-recovery.js?v=calendar27"></script>
+  <script defer src="day-recovery.js?v=calendar35"></script>
   <link rel="stylesheet" href="countdown-popup.css?v=calendar11">
   <script defer src="countdown-popup.js?v=calendar9"></script>
   <link rel="stylesheet" href="life-weeks.css?v=calendar16">
   <script defer src="life-weeks.js?v=calendar17"></script>
-  <script defer src="app.js?v=calendar34"></script>
-  <script defer src="brand-intro.js?v=5"></script>
-  <link rel="stylesheet" href="layout-zaman.css?v=10">
+  <script defer src="app.js?v=calendar35"></script>
+  <script defer src="brand-intro.js?v=calendar35"></script>
+  <link rel="stylesheet" href="layout-zaman.css?v=calendar35">
   <link rel="stylesheet" href="theme-zarbroker.css?v=9">
   <link rel="stylesheet" href="brand-intro.css?v=8">
 </head>
@@ -56,17 +57,8 @@
     <header id="today-header" class="app-masthead">
       <div id="today-brand"><img src="moment-wordmark.png" alt="علی میرزا — مدیریت زمان" width="720" height="240">
         <div id="brand-intro" hidden aria-hidden="true">
- <div class="amd-stage">
-  <div class="amd-stars" aria-hidden="true"></div>
-  <div class="amd-mark">
-   <div class="amd-base" aria-hidden="true"></div>
-   <div class="amd-wordmark" aria-hidden="true"></div>
-   <p class="amd-dedication amd-memory">به یاد معدن معرفت</p>
-   <div class="amd-needle" aria-hidden="true"></div>
-  </div>
-  <div class="amd-bloom" aria-hidden="true"><img alt="" src="moment-rose.png"></div>
-  <p class="amd-dedication amd-father">پدرم</p>
- </div>
+ <div class="approval-scene" data-logo-scene="dedication">به یاد معدن معرفت</div>
+ <div class="approval-scene approval-father" data-logo-scene="father"><span>پدرم</span><img alt="" src="moment-rose.png"></div>
 </div>
         <div id="brand-weeks-tile" hidden>
           <button type="button" id="replay-brand-intro" aria-label="پخش دوبارهٔ انیمیشن لوگوی علی میرزا">
@@ -88,7 +80,7 @@
       <div class="date-line"><b id="weekday"></b><span id="persian-date"></span></div>
       <div id="gregorian-date" class="gregorian-date"></div>
     </section></div>
-      <div class="masthead-tools" hidden>
+      <div class="masthead-tools">
         <div id="utility-home"><div id="utility-actions" class="masthead-actions" role="group" aria-label="میانبرهای برنامه"><div id="countdown-header-control"><button type="button" id="countdown-button" class="header-education" data-countdown-popup aria-label="تایمر معکوس" aria-haspopup="dialog"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 3h12M6 21h12M7 3v4l5 5-5 5v4M17 3v4l-5 5 5 5v4"/></svg><span>تایمر</span></button><small id="countdown-header-status" hidden dir="ltr" aria-label="زمان باقی‌ماندهٔ تایمر معکوس"></small></div><button type="button" id="education-button" class="header-education" data-education aria-label="آموزش نرم‌افزار"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" aria-hidden="true"><path d="M12 5c-3-2-6-2-9-1v15c3-1 6-1 9 1 3-2 6-2 9-1V4c-3-1-6-1-9 1Zm0 0v15"/></svg><span>آموزش</span></button><button type="button" id="header-reminders" class="header-education" data-tab="alarms" aria-label="یادآورها"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M5 17h14l-2-3V9a5 5 0 0 0-10 0v5zM10 20h4M12 2v2"/></svg><span>یادآورها</span></button><button type="button" id="settings" class="header-education" data-action="settings" aria-label="تنظیمات"><span aria-hidden="true" class="header-settings-icon">⚙</span><span>تنظیمات</span></button></div></div>
       </div>
     </header>
