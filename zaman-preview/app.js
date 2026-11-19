@@ -79,6 +79,7 @@ function placeUtilityActions(){
 if(compactPhoneHeader.addEventListener)compactPhoneHeader.addEventListener('change',placeUtilityActions);
 else compactPhoneHeader.addListener(placeUtilityActions);
 function render(){
+ closeJournalTimeEditor?.(false);
  closeInlineAttachments();
  if(tab!=='projects')stopProjectAudio();
  if(tab!=='projects'&&$('#dialog')?.open&&$('#dialog').classList.contains('task-detail-open'))dismissModal();

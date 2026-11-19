@@ -78,7 +78,7 @@ public class MainActivity extends Activity {
   static WebResourceResponse missing(){return new WebResourceResponse("text/plain","UTF-8",404,"Not Found",java.util.Collections.emptyMap(),new ByteArrayInputStream(new byte[0]));}
   @Override protected void onResume(){super.onResume();voiceResumed=true;if(web!=null){web.onResume();web.evaluateJavascript("if(typeof tick==='function')tick();if(typeof updateNativeStatus==='function')updateNativeStatus();if(typeof restoreUpdateDownload==='function')restoreUpdateDownload();if(typeof autoCheckForUpdate==='function')autoCheckForUpdate(true);",null);}startPendingVoice();AlarmStore.restore(this);}
   @Override protected void onPause(){voiceResumed=false;if(nativeVoice!=null)nativeVoice.stopCurrent();if(web!=null){web.evaluateJavascript("if(typeof stopAudioRecording==='function')stopAudioRecording();if(typeof save==='function')save();",null);web.onPause();}super.onPause();}
-  @Override public void onBackPressed(){if(web.getUrl()!=null&&web.getUrl().startsWith("https://appassets.androidplatform.net/help.html")){if(web.canGoBack())web.goBack();else web.loadUrl("https://appassets.androidplatform.net/");return;}web.evaluateJavascript("if(document.querySelector('#memorial-dialog')?.open){}else if(document.querySelector('#wipe-dialog')?.open&&typeof cancelWipeFlow==='function')cancelWipeFlow();else if(document.querySelector('#education-dialog')?.open)document.querySelector('#education-dialog').close();else if(document.querySelector('#about-dialog')&&document.querySelector('#about-dialog').open)document.querySelector('#about-dialog').close();else if(document.querySelector('#settings-dialog').open)document.querySelector('#settings-dialog').close();else if(document.querySelector('#dialog').open)dismissModal();else{tab='today';render();}",null);}
+  @Override public void onBackPressed(){if(web.getUrl()!=null&&web.getUrl().startsWith("https://appassets.androidplatform.net/help.html")){if(web.canGoBack())web.goBack();else web.loadUrl("https://appassets.androidplatform.net/");return;}web.evaluateJavascript("if(document.querySelector('#memorial-dialog')?.open){}else if(document.querySelector('#wipe-dialog')?.open&&typeof cancelWipeFlow==='function')cancelWipeFlow();else if(document.querySelector('#education-dialog')?.open)document.querySelector('#education-dialog').close();else if(document.querySelector('#about-dialog')&&document.querySelector('#about-dialog').open)document.querySelector('#about-dialog').close();else if(document.querySelector('#suggestion-dialog')?.open)document.querySelector('#suggestion-dialog').close();else if(document.querySelector('#settings-dialog').open)document.querySelector('#settings-dialog').close();else if(document.querySelector('#dialog').open)dismissModal();else{tab='today';render();}",null);}
   @Override protected void onActivityResult(int request,int result,Intent data){
     super.onActivityResult(request,result,data);
     if(request==40&&dictationRequestId!=null){String id=dictationRequestId;dictationRequestId=null;String text=null;if(result==RESULT_OK&&data!=null){java.util.ArrayList<String> words=data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);if(words!=null&&!words.isEmpty())text=words.get(0);}dictationResult(id,text,null,result!=RESULT_OK);}
@@ -150,6 +150,14 @@ public class MainActivity extends Activity {
     @JavascriptInterface public void chooseSound(String kind){if(SoundSettings.validKind(kind))runOnUiThread(()->MainActivity.this.chooseSound(kind));}
     @JavascriptInterface public String soundStatus(){return SoundSettings.status(MainActivity.this);}
     @JavascriptInterface public void testSound(String kind){if(SoundSettings.validKind(kind))runOnUiThread(()->startForegroundService(new Intent(MainActivity.this,AlarmService.class).putExtra("title","آزمایش صدای زنگ").putExtra("kind",kind)));}
+    @JavascriptInterface public void composeSuggestion(String number,String message){
+      if(number==null||!number.matches("\\+?[0-9]{8,15}")||message==null||message.trim().isEmpty()||message.length()>1200)return;
+      runOnUiThread(()->{
+        Intent intent=new Intent(Intent.ACTION_SENDTO,Uri.fromParts("smsto",number,null));
+        intent.putExtra("sms_body",message);
+        try{startActivity(intent);}catch(ActivityNotFoundException ignored){toast("برنامهٔ پیامک روی این گوشی پیدا نشد.");}
+      });
+    }
     @JavascriptInterface public String distributionChannel(){return updates.channel();}
     @JavascriptInterface public String openStore(){return updates.openStore();}
     @JavascriptInterface public void checkForUpdate(){updates.check();}

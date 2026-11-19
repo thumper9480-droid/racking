@@ -402,3 +402,19 @@ dialog#dialog { border-radius:22px; }
 .dashboard-date-controls label {flex:1 1 8rem; min-width:0}
 .dashboard-date-controls select {width:100%}
 .dashboard-date-controls select[size] {overflow:auto}
+
+#settings-dialog {background:#fffdff;}
+#settings-dialog > section {background:#fdfbfe;}
+#utility-actions > #settings[data-action="settings"] {background:#5b4b67;color:#fff;border-color:#5b4b67;}
+#utility-actions > #settings[data-action="settings"]:hover {background:#665571;filter:none;}
+#suggestion-dialog {width:min(440px,calc(100% - 24px));}
+#suggestion-form textarea {display:block;width:100%;margin-top:.45rem;resize:vertical;}
+.history-table button[aria-expanded=true] {background:#d8efe4;outline:2px solid #579a81;border-radius:6px;}
+.journal-time-float {position:fixed;z-index:50;width:min(184px,calc(100vw - 16px));display:block;padding:10px;background:white;border:1px solid #b7dbc9;border-radius:15px;box-shadow:0 8px 25px #2a1d3a3d;}
+.journal-time-title {display:block;font-size:12px;color:#2a564b;margin:0 3px 3px;}
+.journal-time-float .time-picker-control {display:block;margin:0;}
+.journal-time-float :is(input,.time-wheel-toggle) {display:none;}
+.journal-time-float .shared-time-picker {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px;min-width:0;background:transparent;border:0;padding:0;margin:0;}
+.journal-time-float .shared-time-wheels {grid-column:1/-1;}
+.journal-time-float .time-wheel-confirm {background:#b6e3ce;color:#35283f;font-weight:bold;margin:0;}
+.journal-time-float button.small {min-height:34px;padding:2px 5px;}

@@ -26,6 +26,54 @@ function journalEditAllowed(item,start,end,now){
   && !(state.day&&end>state.day.segment&&start<journalLiveEnd(now));
 }
 
+let closeJournalTimeEditor=null;
+
+function showJournalTimeEditor(button,editor,input,confirm){
+ const listeners=new AbortController(), options={signal:listeners.signal};
+ editor.classList.add('journal-time-float');
+ editor.setAttribute('role','dialog');
+ editor.setAttribute('aria-label',button.dataset.historyField==='start'?'از ساعت':'تا ساعت');
+ button.setAttribute('aria-expanded','true');
+ document.body.append(editor);
+ function close(restoreFocus=true){
+  listeners.abort();
+  editor.remove();
+  button.removeAttribute('aria-expanded');
+  closeJournalTimeEditor=null;
+  if(restoreFocus&&button.isConnected)button.focus({preventScroll:true});
+ }
+ closeJournalTimeEditor=close;
+ function position(){
+  if(!button.isConnected){close(false);return;}
+  const bounds=button.getBoundingClientRect();
+  if(bounds.bottom<0||bounds.top>innerHeight){close(false);return;}
+  const gutter=8,width=editor.offsetWidth,height=editor.offsetHeight;
+  editor.style.left=Math.max(gutter,Math.min(innerWidth-width-gutter,bounds.right-width))+'px';
+  const below=bounds.bottom+gutter,above=bounds.top-gutter-height;
+  editor.style.top=(below+height<=innerHeight-gutter?below:Math.max(gutter,above))+'px';
+ }
+ input.click();
+ position();
+ editor.querySelector('.shared-time-wheel').focus({preventScroll:true});
+ editor.querySelector('.journal-edit-cancel').onclick=()=>close();
+ window.addEventListener('resize',position,options);
+ window.addEventListener('scroll',event=>{if(!(event.target instanceof Node)||!editor.contains(event.target))position();},{...options,capture:true});
+ document.addEventListener('pointerdown',event=>{
+  if(!editor.contains(event.target)&&!button.contains(event.target))close(false);
+ },options);
+ document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'){
+   event.preventDefault();
+   event.stopImmediatePropagation();
+   close();
+  }else if(event.key==='Enter'&&event.target.closest('.shared-time-wheel')){
+   event.preventDefault();
+   event.stopImmediatePropagation();
+   confirm.click();
+  }
+ },{...options,capture:true});
+}
+
 function editJournalCell(button){
  if(document.querySelector('.journal-inline-editor'))return;
  const field=button.dataset.historyField, day=historyDay();
@@ -35,8 +83,8 @@ function editJournalCell(button){
  if(!item&&!gap)return;
  const editor=document.createElement('span');
  editor.className='journal-inline-editor';
- button.hidden=true;
- button.after(editor);
+
+
  const cancel=()=>{
   editor.remove();
   button.hidden=false;
@@ -93,6 +141,8 @@ function editJournalCell(button){
   return true;
  }
  if(field==='name'){
+  button.hidden=true;
+  button.after(editor);
   editor.innerHTML='<input type="text" maxlength="100" aria-label="نام فعالیت"><button type="button" class="small">تأیید</button><button type="button" class="small">انصراف</button>';
   const input=editor.querySelector('input');
   const [confirm,dismiss]=editor.querySelectorAll('button');
@@ -102,13 +152,17 @@ function editJournalCell(button){
   input.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();confirm.click();}});
   input.focus();
  }else{
-  editor.innerHTML='<input type="time" readonly><button type="button" class="small journal-edit-cancel">انصراف</button>';
+  const title=field==='start'?'از ساعت':'تا ساعت';
+  editor.innerHTML='<strong class="journal-time-title">'+title+'</strong><input type="time" readonly><button type="button" class="small journal-edit-cancel">انصراف</button>';
   const input=editor.querySelector('input');
   input.value=journalTime(item[field]);
-  editor.querySelector('.journal-edit-cancel').onclick=cancel;
   setupTimePickers(editor);
+  const dismiss=editor.querySelector('.journal-edit-cancel');
+  const picker=editor.querySelector('.shared-time-picker');
   addTimePickerConfirm(editor,commit);
-  input.click();
+  const confirm=picker.querySelector('.time-wheel-confirm');
+  confirm.after(dismiss);
+  showJournalTimeEditor(button,editor,input,confirm);
  }
 }
 
